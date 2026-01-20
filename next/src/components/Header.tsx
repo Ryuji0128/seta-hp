@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import ProfileConsoleModal from "@/components/ProfileConsoleModal";
 import { useSimpleBar } from "@/components/SimpleBarWrapper";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -20,7 +19,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { SessionProvider } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -89,8 +88,7 @@ export default function Header() {
               <Box display="flex" alignItems="center">
                 <Image
                   src="/mizuki_logo_transparent.jpg"
-                  alt="瀬田製作所
-ロゴ"
+                  alt="瀬田製作所ロゴ"
                   height={isTablet ? 30 : 40}
                   width={isTablet ? 30 : 40}
                 />
@@ -104,7 +102,6 @@ export default function Header() {
                   }}
                 >
                   瀬田製作所
-
                 </Typography>
               </Box>
             </Link>

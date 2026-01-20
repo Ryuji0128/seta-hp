@@ -41,7 +41,6 @@ export default function Message02() {
               sx={{ fontSize: { xs: "1.2rem", md: "1.4rem" } }}
             >
               瀬田製作所
-
             </Typography>
           </Stack>
         </Grid>

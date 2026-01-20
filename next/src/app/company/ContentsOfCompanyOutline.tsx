@@ -2,8 +2,7 @@ import { Box, Grid, Typography } from "@mui/material";
 
 export default function CompanyInfoTable() {
   const companyData = [
-    { label: "会社名", value: "瀬田製作所
-" },
+    { label: "会社名", value: "瀬田製作所" },
     { label: "代表者", value: "木村 竜次" },
     { label: "設立年月日", value: "2023年8月" },
     { label: "所在地", value: "〒521-0312 滋賀県米原市上野709" },

@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { Box, Toolbar, Typography, Link } from "@mui/material";
+import { Box, Link, Toolbar, Typography } from "@mui/material";
 import { usePathname } from "next/navigation";
 
 export default function Footer() {
@@ -34,7 +33,6 @@ export default function Footer() {
       >
         <Typography variant="body1" color="inherit">
           &copy; {new Date().getFullYear()} 瀬田製作所
-
         </Typography>
         <Box
           sx={{
