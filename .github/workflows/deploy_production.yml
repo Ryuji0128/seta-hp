@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./next
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Run lint
         working-directory: ./next
