@@ -70,12 +70,16 @@ jobs:
     steps:
       - name: Deploy to Production Server
         uses: appleboy/ssh-action@v0.1.10
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_SECRET_KEY }}
           port: ${{ secrets.SSH_PORT }}
           command_timeout: 10m
+          envs: GH_PAT,GH_USERNAME
           script: |
             set -e
 
@@ -88,7 +92,7 @@ jobs:
             git reset --hard origin/main
 
             echo "Logging in to GitHub Container Registry..."
-            echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u ${{ secrets.GH_USERNAME }} --password-stdin
+            echo "${GH_PAT}" | docker login ghcr.io -u "${GH_USERNAME}" --password-stdin
 
             echo "Pulling latest image..."
             docker compose pull
