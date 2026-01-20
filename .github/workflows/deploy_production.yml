@@ -58,7 +58,7 @@ jobs:
 
             echo "Deploying Mizuki Clinic HP (Docker)..."
 
-            cd ~/mizuki-hp
+            cd ~/seta-hp
 
             echo "Pulling latest code..."
             git fetch origin main
