@@ -117,11 +117,11 @@ export const data: ISection[] = [
       {
         type: "paragraph",
         content: [
-          "住所： 〒521-0312 滋賀県米原市上野709",
+          "住所： 〒553-0001",
           "社名： 瀬田製作所",
           "代表取締役： 木村 竜次",
           "担当部署： 木村 竜次",
-          "Eメールアドレス： t_hiroki@mizuki-clinic.online",
+          "Eメールアドレス： k_ryuji@setaseisakusyo.com",
         ],
       },
     ],
