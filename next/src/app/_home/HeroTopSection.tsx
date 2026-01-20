@@ -1,9 +1,6 @@
-
-// slick-carousel の CSS をインポート 
-// yarn add swiper
 "use client";
 
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import React from "react";
 import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -13,12 +10,12 @@ import "swiper/css/pagination";
 
 const HeroTopSection: React.FC = () => {
   const slides = [
-    { image: "/top/image1.jpg", title: "" },
-    { image: "/top/image2.jpg", title: "" },
-    { image: "/top/image3.jpg", title: "" },
-    { image: "/top/image4.jpg", title: "" },
-    { image: "/top/image5.jpg", title: "" },
-    { image: "/top/image6.jpg", title: "" },
+    "/top/image1.jpg",
+    "/top/image2.jpg",
+    "/top/image3.jpg",
+    "/top/image4.jpg",
+    "/top/image5.jpg",
+    "/top/image6.jpg",
   ];
 
   return (
@@ -50,36 +47,17 @@ const HeroTopSection: React.FC = () => {
           speed={800}
           style={{ width: "100%", height: "100%" }}
         >
-          {slides.map((slide, index) => (
+          {slides.map((image, index) => (
             <SwiperSlide key={index}>
               <Box
                 sx={{
                   position: "relative",
                   height: "500px",
-                  backgroundImage: `url(${slide.image})`,
+                  backgroundImage: `url(${image})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  color: "white",
-                  textAlign: "center",
-                  backgroundColor: "rgba(0, 0, 0, 0.3)",
                 }}
-              >
-                {/* <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: "bold",
-                    backgroundColor: "rgba(0,0,0,0.3)",
-                    borderRadius: "8px",
-                    px: 2,
-                    py: 1,
-                  }}
-                >
-                  {slide.title}
-                </Typography> */}
-              </Box>
+              />
             </SwiperSlide>
           ))}
         </Swiper>

@@ -3,14 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAFBFC;
+  --foreground: #263238;
+  --primary: #1565C0;
+  --primary-light: #64B5F6;
+  --secondary: #00ACC1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #ffffff;
-    --foreground: #171717;
+    --background: #FAFBFC;
+    --foreground: #263238;
+    --primary: #1565C0;
+    --primary-light: #64B5F6;
+    --secondary: #00ACC1;
   }
 }
 
@@ -20,23 +26,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* reCaptcha非表示 */
-/* バッジの表示による動作確認の際は要コメントアウト */
 .grecaptcha-badge { visibility: hidden; }
-
-/* 以下reCaptchaバッジを左に移動するためのスタイル設定（必要があれば） */
-
-/* .grecaptcha-badge {
-  width: 70px !important;
-  overflow: hidden !important;
-  transition: all 0.3s ease !important;
-  left: 0px !important;
-  bottom: 0px !important;
-}
-
-.grecaptcha-badge:hover {
-  width: 256px !important;
-} */
 
 @font-face {
   font-family: 'Yuji Syuku';

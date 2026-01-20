@@ -1,4 +1,3 @@
-// 型を拡張
 declare module "@mui/material/styles" {
   interface SimplePaletteColorOptions {
     pale?: string;
@@ -23,8 +22,6 @@ declare module "@mui/material/styles" {
       };
     };
   }
-
-  // Themeの拡張でcustom項目が利用可能に
   interface ThemeOptions {
     custom?: {
       subTitle: {
@@ -47,45 +44,43 @@ declare module "@mui/material/styles" {
 export const themeConstants = {
   palette: {
     primary: {
-      pale: "#E5F0FF",
-      light: "#A8C9F5",
-      main: "#47D45A", //メインテーマの色
-      dark: "#034092",
+      pale: "#E3F2FD",
+      light: "#64B5F6",
+      main: "#1565C0",
+      dark: "#0D47A1",
       contrastText: "#FFFFFF",
     },
     secondary: {
-      pale: "#CDEBD3",
-      light: "#61D5A8",
-      main: "#14A37D",
-      dark: "#0B5155",
+      pale: "#E0F7FA",
+      light: "#4DD0E1",
+      main: "#00ACC1",
+      dark: "#006064",
       contrastText: "#FFFFFF",
     },
     info: {
       pale: "#FFFFFF",
-      light: "#9D9D9D",
-      main: "#4F4F4F",
-      dark: "#121212",
+      light: "#90A4AE",
+      main: "#546E7A",
+      dark: "#263238",
     },
     warning: {
-      pale: "#FFFAEA",
-      light: "#FFEDB5",
-      main: "#F2C94C",
-      dark: "#BE9109",
+      pale: "#FFF8E1",
+      light: "#FFE082",
+      main: "#FFA726",
+      dark: "#F57C00",
     },
     error: {
-      pale: "#FFEBEB",
-      light: "#FFABAB",
-      main: "#E15757",
-      dark: "#A81A1A",
+      pale: "#FFEBEE",
+      light: "#EF9A9A",
+      main: "#EF5350",
+      dark: "#C62828",
     },
     background: {
-      default: "#FFFFFF",
-      paper: "#FAFAFA",
-      dark: "#000000",
+      default: "#FAFBFC",
+      paper: "#FFFFFF",
+      dark: "#102027",
     },
   },
-
-
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
@@ -130,7 +125,6 @@ export const themeConstants = {
   },
   custom: {
     header: {
-      // AppBarのデフォルトの高さを採用しているため、明示的に指定
       height: {
         mobile: 56,
         desktop: 64,

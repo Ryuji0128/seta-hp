@@ -51,39 +51,7 @@ export default function Footer() {
           >
             プライバシーポリシー
           </Link>
-          {/* <Link
-            href="/terms-of-service"
-            color="inherit"
-            sx={{
-              textDecoration: "none",
-              "&:hover": { textDecoration: "underline" },
-            }}
-          >
-            利用規約
-          </Link> */}
         </Box>
-        {/* FooterにreCaptchaのプライバシーポリシー及び利用規約を表示 */}
-        {/* This site is protected by reCAPTCHA and the Google
-        <Link
-          href="https://policies.google.com/privacy"
-          color="inherit"
-          sx={{
-            textDecoration: "none",
-            "&:hover": { textDecoration: "underline" },
-          }}
-        >
-          Privacy Policy
-        </Link>
-        <Link
-          href="https://policies.google.com/terms"
-          color="inherit"
-          sx={{
-            textDecoration: "none",
-            "&:hover": { textDecoration: "underline" },
-          }}
-        >
-          Terms of Service
-        </Link> */}
       </Toolbar>
     </Box>
   );

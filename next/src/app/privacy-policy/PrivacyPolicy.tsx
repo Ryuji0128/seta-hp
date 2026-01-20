@@ -1,5 +1,5 @@
 import React from "react";
-import { data, ListItem, Paragraph } from "@/app/contents/privacy-policy";
+import { data, ListItem, Paragraph } from "./privacy-policy-data";
 
 const PrivacyPolicy: React.FC = () => {
   // 型ガード関数
