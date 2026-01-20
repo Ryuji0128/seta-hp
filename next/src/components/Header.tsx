@@ -17,7 +17,6 @@ import {
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { SessionProvider } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -46,9 +45,10 @@ export default function Header() {
   };
 
   const contentsList = [
-    { title: "クリニック概要", href: "/discription" },
-    { title: "診療案内", href: "/consultation" },
+    { title: "サービス", href: "/consultation" },
+    { title: "会社概要", href: "/discription" },
     { title: "オンライン決済", href: "/payment" },
+    { title: "お問い合わせ", href: "/contact" },
   ];
 
   return (
@@ -79,19 +79,31 @@ export default function Header() {
               style={{ textDecoration: "none", color: "inherit" }}
             >
               <Box display="flex" alignItems="center">
-                <Image
-                  src="/mizuki_logo_transparent.jpg"
-                  alt="瀬田製作所ロゴ"
-                  height={isTablet ? 30 : 40}
-                  width={isTablet ? 30 : 40}
-                />
-                <Typography
-                  variant="h6"
+                <Box
                   sx={{
-                    ml: 1,
-                    fontSize: { xs: "16px", md: "20px" },
+                    width: isTablet ? 36 : 48,
+                    height: isTablet ? 36 : 48,
+                    bgcolor: "primary.main",
+                    borderRadius: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: isTablet ? 18 : 24,
+                  }}
+                >
+                  S
+                </Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    ml: 1.5,
+                    fontSize: { xs: "20px", md: "28px" },
                     color: scrolled ? "info.pale" : "info.dark",
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    letterSpacing: "0.05em",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   瀬田製作所
