@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         <hr />
         <p>２営業日以内に、担当者よりご連絡いたします。</p>
         <p>瀬田製作所<br>
-        〒521-0312 滋賀県米原市上野709<br>
+        〒<br>
         Email: info@setaseisakusyo.com<br>
         </p>
       `,
