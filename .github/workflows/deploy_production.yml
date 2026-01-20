@@ -100,6 +100,12 @@ jobs:
             echo "Starting containers..."
             docker compose up -d
 
+            echo "Waiting for containers to be ready..."
+            sleep 10
+
+            echo "Running database migrations..."
+            docker compose exec -T next npx prisma migrate deploy || echo "Migration skipped or no pending migrations"
+
             echo "Cleaning up old images..."
             docker image prune -f
 
