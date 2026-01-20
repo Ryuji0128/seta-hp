@@ -30,8 +30,8 @@
 
 ```bash
 # 1. リポジトリをクローン
-git clone https://github.com/Ryuji0128/mizuki-hp.git
-cd mizuki-hp
+git clone https://github.com/Ryuji0128/seta-hp.git
+cd seta-hp
 
 # 2. 環境変数ファイルを配置
 cp next/.env.example next/.env
@@ -120,7 +120,7 @@ GitHub Actionsによる自動デプロイ：
 
 ```bash
 ssh your-server
-cd ~/mizuki-hp
+cd ~/seta-hp
 git pull origin main
 docker compose up -d --build
 docker compose exec next npx prisma migrate deploy
@@ -151,7 +151,7 @@ docker compose exec next npx prisma migrate deploy
 ## ディレクトリ構成
 
 ```
-mizuki-hp/
+seta-hp/
 ├── docker-compose.yml      # Docker Compose設定
 ├── nginx/
 │   └── default.conf        # Nginx設定
