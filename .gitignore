@@ -57,3 +57,5 @@ node_modules/
 
 # mysql
 mysql/data/
+
+docker-compose.override.yml

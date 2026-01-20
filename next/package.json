@@ -46,6 +46,7 @@
     "react-slick": "^0.31.0",
     "simplebar-react": "^3.3.0",
     "slick-carousel": "^1.8.1",
+    "stripe": "^20.2.0",
     "swiper": "^12.0.2",
     "xss": "^1.0.15",
     "zod": "^3.24.2"

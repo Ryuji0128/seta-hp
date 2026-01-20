@@ -11,7 +11,8 @@ services:
       - NEXTAUTH_URL=https://mizuki-clinic.online
       - NEXTAUTH_TRUST_HOST=true
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
 
   mysql:
@@ -25,6 +26,11 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-app_pass}
     volumes:
       - ./mysql/data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   nginx:
     image: nginx:latest
