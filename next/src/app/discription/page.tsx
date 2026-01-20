@@ -1,12 +1,13 @@
-import { Box, Container, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from "@mui/material";
-import PageMainTitle from "@/components/PageMainTitle";
 import BaseContainer from "@/components/BaseContainer";
+import PageMainTitle from "@/components/PageMainTitle";
+import { Box, Container, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from "@mui/material";
 
 const companyInfo = [
   { label: "会社名", value: "瀬田製作所" },
   { label: "設立", value: "2024年" },
   { label: "代表者", value: "木村 竜次" },
-  { label: "所在地", value: "〒521-0312 滋賀県米原市上野709" },
+  // { label: "所在地", value: "〒521-0312 滋賀県米原市上野709" },
+  { label: "所在地", value: "〒553-0001" },
   { label: "事業内容", value: "ソフトウェア開発、ハードウェア開発、ものづくり・試作、技術コンサルティング" },
   { label: "Email", value: "contact@seta-seisakusho.com" },
 ];

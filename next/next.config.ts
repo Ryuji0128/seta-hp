@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    output: "standalone",
     distDir: ".next",
     experimental: {
         serverActions: { bodySizeLimit: "2mb" },
@@ -9,7 +10,7 @@ const nextConfig: NextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
-                hostname: "mizuki-clinic.online",
+                hostname: "setaseisakusyo.com",
             },
         ],
     },

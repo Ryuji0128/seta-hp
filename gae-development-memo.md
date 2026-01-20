@@ -17,7 +17,7 @@
   - [記事3](https://blog.g-gen.co.jp/entry/google-app-engine-explained)
 
 ### 手順:
-- 風雪ホームページがローカルで動作することを確認
+- 瀬田製作所ホームページがローカルで動作することを確認
 - GCPプロジェクトの作成
 - GAE初期設定（言語選択、リージョン選択、）
 - gcloud SDKの初期設定

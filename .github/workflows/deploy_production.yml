@@ -7,10 +7,17 @@ on:
     types: [closed]
   workflow_dispatch:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ryuji0128/seta-hp
+
 jobs:
-  test:
-    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop')
+  build-and-push:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout repository
@@ -31,16 +38,33 @@ jobs:
         working-directory: ./next
         run: yarn lint
 
-      - name: Run build
-        working-directory: ./next
-        run: yarn build
-        env:
-          AUTH_SECRET: test-secret
-          NEXTAUTH_URL: http://localhost:3000
-          DATABASE_URL: mysql://test:test@localhost:3306/test
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./next
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DATABASE_URL=mysql://test:test@localhost:3306/test
+            AUTH_SECRET=${{ secrets.AUTH_SECRET }}
+            NEXTAUTH_URL=https://setaseisakusyo.com
 
   deploy:
-    needs: test
+    needs: build-and-push
     runs-on: ubuntu-latest
 
     steps:
@@ -51,12 +75,11 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_SECRET_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          command_timeout: 20m
+          command_timeout: 10m
           script: |
             set -e
-            export COMPOSE_HTTP_TIMEOUT=300
 
-            echo "Deploying Mizuki Clinic HP (Docker)..."
+            echo "Deploying Seta-HP..."
 
             cd ~/seta-hp
 
@@ -64,21 +87,16 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            echo "Building & starting containers..."
+            echo "Logging in to GitHub Container Registry..."
+            echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u ${{ secrets.GH_USERNAME }} --password-stdin
+
+            echo "Pulling latest image..."
             docker compose pull
+
+            echo "Starting containers..."
             docker compose up -d
 
-            echo "Waiting for next_app to be ready..."
-            for i in {1..30}; do
-              if docker compose ps next | grep -q "Up"; then
-                echo "next_app is running"
-                break
-              fi
-              echo "Waiting... ($i/30)"
-              sleep 2
-            done
-
-            echo "Running Prisma migrations..."
-            docker compose exec -T next_app npx prisma migrate deploy || echo "Migration skipped or failed"
+            echo "Cleaning up old images..."
+            docker image prune -f
 
             echo "Deployment completed successfully!"
