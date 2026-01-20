@@ -89,7 +89,8 @@ export default function Header() {
               <Box display="flex" alignItems="center">
                 <Image
                   src="/mizuki_logo_transparent.jpg"
-                  alt="みずきクリニックロゴ"
+                  alt="瀬田製作所
+ロゴ"
                   height={isTablet ? 30 : 40}
                   width={isTablet ? 30 : 40}
                 />
@@ -102,7 +103,8 @@ export default function Header() {
                     fontWeight: 600,
                   }}
                 >
-                  みずきクリニック
+                  瀬田製作所
+
                 </Typography>
               </Box>
             </Link>

@@ -28,7 +28,8 @@ const AboutFusetsuDetail = () => {
         >
           {/* <Image
             src="/arrow_vector_image.svg"
-            alt="みずきクリニックロゴ"
+            alt="瀬田製作所
+ロゴ"
             width={100} // 任意のダミー値
             height={100} // 任意のダミー値
             style={{ width: "100%", height: "auto" }} // パーセントの設定、画像の幅と高さをレスポンシブに調整
@@ -85,7 +86,8 @@ const AboutFusetsuDetail = () => {
           <Box
             sx={{ paddingTop: "4rem", lineHeight: 1.8, fontSize: "0.95rem" }}
           >
-            <p>みずきクリニックは、社長をはじめ“作りたい気持ち”を大切にしています。</p>
+            <p>瀬田製作所
+は、社長をはじめ“作りたい気持ち”を大切にしています。</p>
             <p>「これが面白い」「これがあったら嬉しい」——そんな想いから生まれた製品が、</p>
             <p>結果的に多くの人に喜んでもらえる。</p>
             <p>私たちは、そんな自由で楽しいものづくりを続けています。</p>

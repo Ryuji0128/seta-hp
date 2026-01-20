@@ -40,7 +40,8 @@ export default function Message02() {
               color="text.secondary"
               sx={{ fontSize: { xs: "1.2rem", md: "1.4rem" } }}
             >
-              みずきクリニック
+              瀬田製作所
+
             </Typography>
           </Stack>
         </Grid>

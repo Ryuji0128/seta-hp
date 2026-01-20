@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
 
     // 🔸 管理者宛メール
     await transporter.sendMail({
-      from: `"みずきクリニック Webフォーム" <${process.env.SMTP_USER}>`,
+      from: `"瀬田製作所
+ Webフォーム" <${process.env.SMTP_USER}>`,
       to: adminAddress,
       subject: `【お問い合わせ】${sanitizedData.name} 様より`,
       html: `
@@ -68,7 +69,8 @@ export async function POST(req: NextRequest) {
 
     // 🔸 自動返信メール
     await transporter.sendMail({
-      from: `"みずきクリニック" <${process.env.SMTP_USER}>`,
+      from: `"瀬田製作所
+" <${process.env.SMTP_USER}>`,
       to: sanitizedData.email,
       subject: "【自動返信】お問い合わせありがとうございます",
       html: `
@@ -79,7 +81,8 @@ export async function POST(req: NextRequest) {
         <p>${sanitizedData.inquiry}</p>
         <hr />
         <p>２営業日以内に、担当者よりご連絡いたします。</p>
-        <p>みずきクリニック<br>
+        <p>瀬田製作所
+<br>
         石川県金沢市みずき1丁目3-5<br>
         TEL: 076-255-0337<br>
         </p>

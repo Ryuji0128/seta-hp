@@ -4,7 +4,8 @@ export default function DoctorIntroduction() {
     <Box sx={{ maxWidth: 800, mx: "auto", lineHeight: 1.8 }}>
       {/* 本文 */}
       <Typography variant="body1" lineHeight={2.0}>
-        みずきクリニックは、地域の皆様に対して快適で、納得できる、安心な医療を提供することのできる<br></br>
+        瀬田製作所
+は、地域の皆様に対して快適で、納得できる、安心な医療を提供することのできる<br></br>
         『気持ちの良いクリニック』であることを目指します。<br></br>
       </Typography>
       <List sx={{ listStyleType: "decimal", pl: 4 }}>
