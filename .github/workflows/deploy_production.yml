@@ -94,10 +94,10 @@ jobs:
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_USERNAME}" --password-stdin
 
             echo "Pulling latest image..."
-            docker compose pull
+            docker compose -f docker-compose.yml pull
 
             echo "Starting containers..."
-            docker compose up -d
+            docker compose -f docker-compose.yml up -d
 
             echo "Waiting for containers to be ready..."
             sleep 10
