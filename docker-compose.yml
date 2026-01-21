@@ -1,6 +1,6 @@
 services:
   next:
-    build: ./next
+    image: ghcr.io/ryuji0128/seta-hp:latest 
     container_name: next_app
     ports:
       - "2999:3000"
@@ -13,6 +13,7 @@ services:
     depends_on:
       - mysql
     restart: unless-stopped
+    mem_limit: 512m
 
   mysql:
     image: mysql:8.0
