@@ -17,6 +17,8 @@
 - [ディレクトリ構成](#ディレクトリ構成)
 - [開発ルール](#開発ルール)
 - [DB運用](#db運用)
+- [セキュリティ](#セキュリティ)
+- [運用スクリプト](#運用スクリプト)
 - [その他設定](#その他設定)
 
 ## クイックスタート
@@ -57,12 +59,15 @@ docker compose down
 |---------|-----------|--------|------|
 | next | next_app | 2999:3000 | Next.jsアプリケーション |
 | mysql | mysql_db | 3306 | MySQL 8.0 データベース |
-| nginx | nginx_proxy | 80:80 | リバースプロキシ |
+| nginx | nginx_proxy | 80, 443 | リバースプロキシ（SSL対応） |
+| certbot | certbot | - | SSL証明書管理 |
 
 ### アーキテクチャ
 
 ```
-[ブラウザ] → [nginx:80] → [next:3000] → [mysql:3306]
+[ブラウザ] → [nginx:443] → [next:3000] → [mysql:3306]
+              ↑ SSL/TLS
+         [certbot] (証明書更新)
 ```
 
 ## 環境変数の設定
@@ -154,9 +159,22 @@ docker compose exec next npx prisma migrate deploy
 seta-hp/
 ├── docker-compose.yml      # Docker Compose設定
 ├── nginx/
-│   └── default.conf        # Nginx設定
+│   └── default.conf.template  # Nginx設定テンプレート
 ├── mysql/
 │   └── data/               # MySQLデータ（gitignore）
+├── scripts/                # 運用スクリプト
+│   ├── renew-ssl.sh        # SSL証明書更新
+│   ├── backup-db.sh        # DBバックアップ
+│   ├── monitor.sh          # サービス監視
+│   └── setup-monitoring.sh # 監視セットアップ
+├── fail2ban/               # fail2ban設定
+│   ├── jail.local          # メイン設定
+│   └── filter.d/           # フィルター定義
+├── logwatch/               # logwatch設定
+│   └── logwatch.conf       # レポート設定
+├── certbot/                # SSL証明書（gitignore）
+│   ├── conf/               # Let's Encrypt設定
+│   └── www/                # チャレンジ用
 └── next/
     ├── Dockerfile          # Next.jsコンテナ設定
     ├── .env                # 環境変数（gitignore）
@@ -167,7 +185,7 @@ seta-hp/
     └── src/
         ├── app/            # ページ・APIルート
         ├── components/     # 共通コンポーネント
-        ├── lib/            # ユーティリティ
+        ├── lib/            # ユーティリティ（rateLimit含む）
         └── theme/          # MUIテーマ設定
 ```
 
@@ -217,6 +235,96 @@ docker compose exec next sh -c "rm -rf node_modules/.prisma && npx prisma genera
 
 # DB接続確認
 docker compose exec mysql mysql -u app_user -papp_pass app_db
+```
+
+## セキュリティ
+
+### 実装済みセキュリティ機能
+
+| 機能 | 説明 |
+|-----|------|
+| NextAuth認証 | bcryptによるパスワードハッシュ |
+| ユーザーロール | ADMIN / EDITOR / VIEWER |
+| レート制限 | IP単位でのリクエスト制限 |
+| API保護 | ADMIN権限チェック（upload/delete） |
+| reCAPTCHA v3 | フォームスパム対策 |
+| XSSサニタイズ | xssパッケージによる入力サニタイズ |
+
+### Nginx セキュリティヘッダー
+
+`nginx/default.conf.template`で以下を設定：
+
+- `X-Frame-Options: SAMEORIGIN`
+- `X-Content-Type-Options: nosniff`
+- `X-XSS-Protection: 1; mode=block`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Strict-Transport-Security` (HSTS)
+- Content-Security-Policy (CSP)
+
+### fail2ban
+
+SSH/Nginxへの不正アクセス対策：
+
+```bash
+# 設定ファイルをコピー
+sudo cp fail2ban/jail.local /etc/fail2ban/
+sudo cp fail2ban/filter.d/* /etc/fail2ban/filter.d/
+
+# 再起動
+sudo systemctl restart fail2ban
+```
+
+### logwatch
+
+日次ログレポート：
+
+```bash
+# 設定ファイルをコピー
+sudo cp logwatch/logwatch.conf /etc/logwatch/conf/
+
+# テスト実行
+sudo logwatch --output stdout
+```
+
+## 運用スクリプト
+
+`scripts/`ディレクトリに運用スクリプトを配置：
+
+| スクリプト | 説明 |
+|-----------|------|
+| `renew-ssl.sh` | SSL証明書の更新 |
+| `backup-db.sh` | DBバックアップ（7日間保持） |
+| `monitor.sh` | サービス死活監視 |
+| `setup-monitoring.sh` | 監視環境セットアップ |
+
+### SSL証明書更新
+
+```bash
+# 手動実行
+./scripts/renew-ssl.sh
+
+# cron設定（毎日3時に実行）
+0 3 * * * /root/seta-hp/scripts/renew-ssl.sh >> /var/log/ssl-renew.log 2>&1
+```
+
+### DBバックアップ
+
+```bash
+# 手動実行
+./scripts/backup-db.sh
+
+# cron設定（毎日2時に実行）
+0 2 * * * /root/seta-hp/scripts/backup-db.sh >> /var/log/backup.log 2>&1
+```
+
+### サービス監視
+
+```bash
+# 監視セットアップ
+./scripts/setup-monitoring.sh
+
+# 死活監視実行
+./scripts/monitor.sh
 ```
 
 ## その他設定
