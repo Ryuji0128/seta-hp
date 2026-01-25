@@ -1,0 +1,84 @@
+# fail2ban設定ファイル
+# /etc/fail2ban/jail.local にコピーして使用
+
+[DEFAULT]
+# デフォルトのBAN時間（24時間）
+bantime = 86400
+# 監視期間（10分）
+findtime = 600
+# 最大失敗回数
+maxretry = 5
+# BAN時の通知先メールアドレス
+destemail = admin@example.com
+sender = fail2ban@example.com
+# アクション（メール通知 + iptables BAN）
+action = %(action_mwl)s
+
+# ----------------------------------
+# SSH保護
+# ----------------------------------
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 86400
+findtime = 600
+
+# ----------------------------------
+# Nginx - 悪意のあるBot対策
+# ----------------------------------
+[nginx-badbots]
+enabled = true
+port = http,https
+filter = apache-badbots
+logpath = /var/log/nginx/access.log
+maxretry = 2
+bantime = 86400
+
+# ----------------------------------
+# Nginx - 404連打ブロック
+# ----------------------------------
+[nginx-404]
+enabled = true
+port = http,https
+filter = nginx-404
+logpath = /var/log/nginx/access.log
+maxretry = 10
+findtime = 60
+bantime = 3600
+
+# ----------------------------------
+# Nginx - 認証失敗
+# ----------------------------------
+[nginx-http-auth]
+enabled = true
+port = http,https
+filter = nginx-http-auth
+logpath = /var/log/nginx/error.log
+maxretry = 3
+bantime = 86400
+
+# ----------------------------------
+# Nginx - Proxyスキャン対策
+# ----------------------------------
+[nginx-proxy]
+enabled = true
+port = http,https
+filter = nginx-proxy
+logpath = /var/log/nginx/access.log
+maxretry = 2
+bantime = 86400
+
+# ----------------------------------
+# ブルートフォース対策
+# ----------------------------------
+[nginx-limit-req]
+enabled = true
+port = http,https
+filter = nginx-limit-req
+logpath = /var/log/nginx/error.log
+maxretry = 10
+findtime = 120
+bantime = 7200

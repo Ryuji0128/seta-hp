@@ -1,4 +1,6 @@
+import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
+import { rateLimit } from "@/lib/rateLimit";
 import { validateInquiry } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
@@ -6,11 +8,39 @@ import xss from "xss";
 
 const prisma = getPrismaClient();
 
+// レート制限設定: 3回/分
+const RATE_LIMIT = 3;
+const RATE_WINDOW = 60 * 1000; // 1分
+
+/**
+ * IPアドレスを取得
+ */
+function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp;
+  }
+  return "unknown";
+}
+
 /**
  * ✅ 問い合わせ登録（メール送信 + DB保存）
  */
 export async function POST(req: NextRequest) {
   try {
+    // レート制限チェック
+    const clientIp = getClientIp(req);
+    if (!rateLimit(clientIp, RATE_LIMIT, RATE_WINDOW)) {
+      return NextResponse.json(
+        { success: false, error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
+        { status: 429 }
+      );
+    }
+
     const inquiryData = await req.json();
 
     // 🔹 XSS対策
@@ -100,10 +130,16 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * ✅ 問い合わせ一覧取得
+ * ✅ 問い合わせ一覧取得（認証必須）
  */
 export async function GET() {
   try {
+    // 認証チェック
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    }
+
     const inquiries = await prisma.inquiry.findMany({
       orderBy: { createdAt: "desc" },
     });
@@ -118,10 +154,21 @@ export async function GET() {
 }
 
 /**
- * ✅ 問い合わせ削除
+ * ✅ 問い合わせ削除（ADMIN必須）
  */
 export async function DELETE(req: NextRequest) {
   try {
+    // 認証チェック
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    }
+
+    // ADMINロールチェック
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+    }
+
     const body = await req.json();
     const { id } = body;
 

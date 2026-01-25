@@ -82,7 +82,7 @@ jobs:
           script: |
             set -e
 
-            echo "Deploying Seta-HP..."
+            echo "Deploying seta-hp..."
 
             cd ~/seta-hp
 
