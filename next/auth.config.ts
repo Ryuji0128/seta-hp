@@ -3,21 +3,16 @@ import { getPrismaClient } from "@/lib/db";
 import bcryptjs from "bcryptjs";
 import { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 
 const prisma = getPrismaClient();
 
 const authConfig = {
+  trustHost: true,
   pages: {
     signIn: "/portal-login",
   },
 
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    }),
-
     Credentials({
       name: "Credentials",
       credentials: {

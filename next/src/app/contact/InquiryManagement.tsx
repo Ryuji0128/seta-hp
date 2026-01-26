@@ -30,13 +30,6 @@ interface Inquiry {
   inquiry: string;
 }
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: "ADMIN" | "EDITOR" | "VIEWER";
-}
-
 interface InquiryManagementProps {
   session: Session;
 }
@@ -48,7 +41,9 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
   const [inquiryToDelete, setInquiryToDelete] = useState<number | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+
+  // sessionからroleを取得
+  const userRole = (session?.user as { role?: string })?.role;
 
   const theme = useTheme();
   const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.sm}px)`);
@@ -77,22 +72,6 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
   useEffect(() => {
     fetchInquiries();
   }, [fetchInquiries]);
-
-  useEffect(() => {
-    if (session) {
-      const fetchUser = async () => {
-        try {
-          const response = await axios.get<{ users: User[] }>(
-            `/api/user?email=${encodeURIComponent(session?.user?.email ?? "")}`
-          );
-          setUser(response.data.users[0]);
-        } catch (error) {
-          console.error("ユーザー情報の取得に失敗:", error);
-        }
-      };
-      fetchUser();
-    }
-  }, [session]);
 
   // 問い合わせの削除
   const deleteInquiry = async () => {
@@ -190,7 +169,7 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
                     電話番号
                   </TableCell>
                 )}
-                {user?.role === "ADMIN" && (
+                {userRole === "ADMIN" && (
                   <TableCell sx={{ fontWeight: "bold", width: "160px", textAlign: "center" }}>
                     操作
                   </TableCell>
@@ -253,7 +232,7 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
                     >
                       詳細
                     </Button>
-                    {user?.role === "ADMIN" && (
+                    {userRole === "ADMIN" && (
                       <Button
                         variant="outlined"
                         color="error"

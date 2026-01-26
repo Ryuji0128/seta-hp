@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, Paper, Typography } from "@mui/material";
 import BaseContainer from "@/components/BaseContainer";
-import GoogleLoginButton from "./GoogleLoginButton";
 import CredentialsLoginForm from "./CredentialsLoginForm";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
@@ -78,9 +77,6 @@ export default function LoginContents() {
 
           {/* Credentials ログイン */}
           <CredentialsLoginForm />
-
-          {/* Google ログイン */}
-          <GoogleLoginButton />
         </Paper>
       </Box>
     </BaseContainer>

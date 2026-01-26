@@ -80,15 +80,6 @@ model Account {
   @@index([userId])
 }
 
-model Blog {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String
-  content   String
-  imageUrl  String?
-}
-
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique

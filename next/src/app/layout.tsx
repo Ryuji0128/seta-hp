@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "瀬田製作所",
   description:
     "瀬田製作所は、Webアプリケーションやモバイルアプリの開発を中心に、多様なプロジェクトで信頼を得ているエンジニアチームです。先進技術を用いた、最適なソリューションを提供します。",
+  icons: {
+    icon: "/seta_logo.svg",
+  },
 };
 
 export default function RootLayout({

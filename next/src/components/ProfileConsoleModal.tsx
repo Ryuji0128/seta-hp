@@ -27,9 +27,6 @@ const ProfileConsoleModal = () => {
   const menuItems = [
     { label: "お知らせ管理", path: "/news" },
     { label: "問い合わせ管理", path: "/contact" },
-    { label: "プロフィール編集", path: "/portal-admin/register-user" },
-    { label: "ユーザー登録", path: "/portal-admin/register-user" },
-    { label: "ブログ投稿", path: "/portal-admin/blog" },
   ];
 
   return (
@@ -37,7 +34,7 @@ const ProfileConsoleModal = () => {
       {status === "authenticated" && (
         <>
           <IconButton onClick={handleMenuOpen} color="inherit">
-            <Avatar src={session?.user?.image ?? undefined} alt={session?.user?.name ?? ""} />
+            <Avatar src="/seta_logo.svg" alt={session?.user?.name ?? ""} sx={{ width: 32, height: 32 }} />
           </IconButton>
           <Menu
             anchorEl={anchorEl}
@@ -54,8 +51,8 @@ const ProfileConsoleModal = () => {
           >
             <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", p: 2 }}>
               <Avatar
-                src={session?.user?.image ?? undefined}
-                sx={{ width: 56, height: 56, mb: 1 }}
+                src="/seta_logo.svg"
+                sx={{ width: 48, height: 48, mb: 1 }}
                 alt={session?.user?.name ?? ""}
               />
               <Typography variant="body1">{session?.user?.name}</Typography>
