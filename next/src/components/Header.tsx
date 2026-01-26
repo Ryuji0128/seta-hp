@@ -48,7 +48,7 @@ export default function Header() {
   const contentsList = [
     { title: "サービス", href: "/consultation" },
     { title: "会社概要", href: "/discription" },
-    { title: "オンライン決済", href: "/payment" },
+    { title: "提供サービス", href: "/payment" },
     { title: "お問い合わせ", href: "/contact" },
   ];
 

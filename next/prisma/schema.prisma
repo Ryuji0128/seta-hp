@@ -39,6 +39,17 @@ model Inquiry {
   inquiry   String
 }
 
+model Estimate {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  fileName    String
+  filePath    String
+  amount      Int
+  paymentId   String?
+  status      String   @default("pending")
+}
+
 model User {
   id            String          @id @default(cuid())
   name          String?
