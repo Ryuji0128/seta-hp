@@ -55,7 +55,7 @@ services:
       - ./certbot/www:/var/www/certbot:ro
       - ./uploads:/var/www/uploads:ro
       - /var/log/nginx:/var/log/nginx
-    command: /bin/sh /docker-entrypoint.sh
+    entrypoint: ["/bin/sh", "/docker-entrypoint.sh"]
     depends_on:
       - next
 
