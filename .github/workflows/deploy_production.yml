@@ -102,6 +102,19 @@ jobs:
             echo "Waiting for containers to be ready..."
             sleep 10
 
+            echo "Checking SSL certificate..."
+            CERT_PATH="./certbot/conf/live/setaseisakusyo.com/fullchain.pem"
+            if [ ! -f "$CERT_PATH" ]; then
+              echo "SSL certificate not found. Obtaining certificate..."
+              docker compose run --rm certbot
+              echo "Restarting nginx with SSL..."
+              docker compose restart nginx
+            else
+              echo "SSL certificate exists. Checking for renewal..."
+              docker compose run --rm certbot renew --quiet || true
+              docker compose restart nginx
+            fi
+
             echo "Running database migrations..."
             docker compose exec -T next npx prisma migrate deploy || echo "Migration skipped or no pending migrations"
 
