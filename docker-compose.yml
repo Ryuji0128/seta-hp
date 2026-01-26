@@ -50,11 +50,12 @@ services:
       - SERVER_NAME=${SERVER_NAME:-localhost}
     volumes:
       - ./nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template:ro
+      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot:ro
       - ./uploads:/var/www/uploads:ro
       - /var/log/nginx:/var/log/nginx
-    command: /bin/sh -c "envsubst '$$SERVER_NAME' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    command: /bin/sh /docker-entrypoint.sh
     depends_on:
       - next
 
@@ -64,3 +65,4 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email k_ryuji@setaseisakusyo.com --agree-tos --no-eff-email -d setaseisakusyo.com -d www.setaseisakusyo.com --keep-until-expiring
