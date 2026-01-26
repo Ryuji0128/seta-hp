@@ -27,6 +27,7 @@ const ProfileConsoleModal = () => {
   const menuItems = [
     { label: "お知らせ管理", path: "/news" },
     { label: "問い合わせ管理", path: "/contact" },
+    { label: "見積書管理", path: "/estimates" },
   ];
 
   return (

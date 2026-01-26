@@ -4,11 +4,10 @@ import { Box, Container, Grid, Paper, Table, TableBody, TableCell, TableContaine
 
 const companyInfo = [
   { label: "会社名", value: "瀬田製作所" },
-  { label: "設立", value: "2024年" },
-  { label: "代表者", value: "木村 竜次" },
-  { label: "所在地", value: "〒553-0001" },
+  { label: "設立", value: "2023年8月8日" },
+  { label: "代表者", value: "伊藤 竜次" },
   { label: "事業内容", value: "ソフトウェア開発、ハードウェア開発、ものづくり・試作、技術コンサルティング" },
-  { label: "Email", value: "contact@seta-seisakusho.com" },
+  { label: "Email", value: "info@setaseisakusyo.com" },
 ];
 
 const values = [

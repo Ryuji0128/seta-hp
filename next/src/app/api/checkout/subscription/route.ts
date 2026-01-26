@@ -13,7 +13,7 @@ function getStripe() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { amount } = await request.json();
+    const { amount, productName } = await request.json();
 
     if (!amount || amount < 100) {
       return NextResponse.json(
@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const stripe = getStripe();
+    const name = productName || "瀬田製作所 - 月額サブスクリプション";
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: "jpy",
             product_data: {
-              name: "瀬田製作所 - 月額サブスクリプション",
+              name: name,
               description: `月額¥${amount.toLocaleString()}のサブスクリプション`,
             },
             unit_amount: amount,
