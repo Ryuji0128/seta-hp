@@ -5,12 +5,9 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "@/lib/validation";
 import {
-  Typography,
   TextField,
   Button,
   Box,
-  Divider,
-  Link,
   InputAdornment,
   IconButton,
   Alert,
@@ -156,24 +153,6 @@ export default function CredentialsLoginForm() {
       >
         {isSubmitting ? "ログイン中..." : "ログイン"}
       </Button>
-
-      {/* ユーザー登録リンク */}
-      <Typography variant="body2" sx={{ mt: 1, textAlign: "center", color: "text.secondary" }}>
-        アカウントをお持ちでない方は{" "}
-        <Link
-          href="/portal-admin/register-user"
-          sx={{ textDecoration: "none", fontWeight: "bold", color: "primary.main" }}
-        >
-          新規登録
-        </Link>
-      </Typography>
-
-      {/* OR Divider */}
-      <Divider sx={{ my: 1 }}>
-        <Typography variant="body2" color="text.secondary">
-          または
-        </Typography>
-      </Divider>
     </Box>
   );
 }

@@ -14,7 +14,8 @@ services:
       - ./uploads:/app/public/uploads
     command: sh -c "npx prisma db push && yarn start -H 0.0.0.0 -p 3000"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     restart: "no"
     # mem_limit: 512m
 
@@ -32,6 +33,12 @@ services:
     mem_limit: 256m
     volumes:
       - ./mysql/data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   nginx:
     image: nginx:latest

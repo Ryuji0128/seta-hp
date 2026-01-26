@@ -17,6 +17,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { SessionProvider } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -51,6 +52,8 @@ export default function Header() {
     { title: "お問い合わせ", href: "/contact" },
   ];
 
+  const staffLogin = { title: "スタッフ\nログイン", href: "/portal-login" };
+
   return (
     <>
       <AppBar
@@ -79,22 +82,13 @@ export default function Header() {
               style={{ textDecoration: "none", color: "inherit" }}
             >
               <Box display="flex" alignItems="center">
-                <Box
-                  sx={{
-                    width: isTablet ? 36 : 48,
-                    height: isTablet ? 36 : 48,
-                    bgcolor: "primary.main",
-                    borderRadius: 1.5,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontWeight: 700,
-                    fontSize: isTablet ? 18 : 24,
-                  }}
-                >
-                  S
-                </Box>
+                <Image
+                  src="/seta_logo.svg"
+                  alt="瀬田製作所ロゴ"
+                  width={isTablet ? 36 : 48}
+                  height={isTablet ? 36 : 48}
+                  priority
+                />
                 <Typography
                   variant="h5"
                   sx={{
@@ -154,6 +148,21 @@ export default function Header() {
                     </Link>
                   </MenuItem>
                 ))}
+                <MenuItem onClick={handleMenuClose}>
+                  <Link
+                    href={staffLogin.href}
+                    passHref
+                    style={{
+                      textDecoration: "none",
+                      color: "gray",
+                      width: "100%",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontSize: "12px", whiteSpace: "pre-line" }}>
+                      {staffLogin.title}
+                    </Typography>
+                  </Link>
+                </MenuItem>
               </Menu>
             </>
           ) : (
@@ -183,6 +192,23 @@ export default function Header() {
                     </Button>
                   </Link>
                 ))}
+                <Link href={staffLogin.href} passHref>
+                  <Button
+                    sx={{
+                      color: "gray",
+                      "&:hover": {
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                      },
+                      fontSize: { xs: "10px", md: "11px" },
+                      padding: { xs: "0.3rem 0.4rem", md: "0.3rem 0.6rem" },
+                      whiteSpace: "pre-line",
+                      lineHeight: 1.2,
+                      textAlign: "center",
+                    }}
+                  >
+                    {staffLogin.title}
+                  </Button>
+                </Link>
                 <SessionProvider>
                   <ProfileConsoleModal />
                 </SessionProvider>
