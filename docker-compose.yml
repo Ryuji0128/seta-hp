@@ -12,7 +12,7 @@ services:
       - NEXTAUTH_TRUST_HOST=true
     volumes:
       - ./uploads:/app/public/uploads
-    command: sh -c "npx prisma db push && node server.js"
+    command: sh -c "node node_modules/prisma/build/index.js db push --skip-generate && node server.js"
     depends_on:
       mysql:
         condition: service_healthy
