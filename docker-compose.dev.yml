@@ -1,0 +1,35 @@
+services:
+  next:
+    build: ./next
+    container_name: next_app
+    ports:
+      - "2999:3000"
+    env_file:
+      - ./next/.env
+    environment:
+      - DATABASE_URL=mysql://app_user:${MYSQL_PASSWORD:-app_pass}@mysql:3306/app_db
+      - NEXTAUTH_URL=http://localhost:2999
+      - NEXTAUTH_TRUST_HOST=true
+    volumes:
+      - ./uploads:/app/public/uploads
+    command: sh -c "node node_modules/prisma/build/index.js db push --skip-generate && node server.js"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-app_db}
+      MYSQL_USER: ${MYSQL_USER:-app_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-app_pass}
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
