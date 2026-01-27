@@ -59,12 +59,9 @@ export async function POST(req: Request) {
         const filePath = path.join(uploadDir, fileName);
         await writeFile(filePath, buffer);
 
-        console.log("✅ ファイル保存成功:", filePath);
-
         const imageUrl = `/uploads/${fileName}`;
         return NextResponse.json({ url: imageUrl });
-    } catch (error) {
-        console.error("❌ アップロードエラー:", error);
+    } catch {
         return NextResponse.json({ error: "アップロードに失敗しました" }, { status: 500 });
     }
 }
