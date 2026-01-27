@@ -57,10 +57,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
-          build-args: |
-            DATABASE_URL=mysql://test:test@localhost:3306/test
-            AUTH_SECRET=${{ secrets.AUTH_SECRET }}
-            NEXTAUTH_URL=https://setaseisakusyo.com
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build-and-push
@@ -116,7 +113,7 @@ jobs:
             fi
 
             echo "Running database migrations..."
-            docker compose exec -T next npx prisma migrate deploy || echo "Migration skipped or no pending migrations"
+            docker compose exec -T next node node_modules/prisma/build/index.js migrate deploy || echo "Migration skipped or no pending migrations"
 
             echo "Cleaning up old images..."
             docker image prune -f
