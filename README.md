@@ -38,30 +38,38 @@ cd seta-hp
 cp next/.env.example next/.env
 # .envファイルを編集して必要な値を設定
 
-# 3. Docker環境を起動
-docker compose up -d
+# 3. Docker環境を起動（開発）
+docker compose -f docker-compose.dev.yml up
 
 # 4. ブラウザでアクセス
-# http://localhost:80 (Nginx経由)
-# http://localhost:2999 (Next.js直接)
+# http://localhost:3000
 ```
 
 ### 停止
 
 ```bash
-docker compose down
+docker compose -f docker-compose.dev.yml down
 ```
 
 ## Docker環境の構成
 
+### 開発環境（docker-compose.dev.yml）
+
 | サービス | コンテナ名 | ポート | 説明 |
 |---------|-----------|--------|------|
-| next | next_app | 2999:3000 | Next.jsアプリケーション |
+| next | next_app | 3000:3000 | Next.js（yarn dev / ホットリロード） |
+| mysql | mysql_db | 3306 | MySQL 8.0 データベース |
+
+### 本番環境（docker-compose.yml）
+
+| サービス | コンテナ名 | ポート | 説明 |
+|---------|-----------|--------|------|
+| next | next_app | 2999:3000 | Next.js（standalone / ghcr.ioからpull） |
 | mysql | mysql_db | 3306 | MySQL 8.0 データベース |
 | nginx | nginx_proxy | 80, 443 | リバースプロキシ（SSL対応） |
 | certbot | certbot | - | SSL証明書管理 |
 
-### アーキテクチャ
+### アーキテクチャ（本番）
 
 ```
 [ブラウザ] → [nginx:443] → [next:3000] → [mysql:3306]
@@ -76,7 +84,7 @@ docker compose down
 ```env
 # 認証
 AUTH_SECRET=your-secret-key-here
-NEXTAUTH_URL=http://localhost:2999
+NEXTAUTH_URL=http://localhost:3000
 
 # データベース
 DATABASE_URL=mysql://app_user:app_pass@mysql:3306/app_db
@@ -89,27 +97,26 @@ AUTH_GOOGLE_SECRET=your-google-client-secret
 ## 開発コマンド
 
 ```bash
-# コンテナ起動
-docker compose up -d
+# 開発環境の起動（yarn dev + ホットリロード）
+docker compose -f docker-compose.dev.yml up
 
-# コンテナ停止
-docker compose down
+# 停止
+docker compose -f docker-compose.dev.yml down
 
 # ログ確認
-docker compose logs -f        # 全コンテナ
-docker compose logs -f next   # Next.jsのみ
-
-# コンテナ再ビルド（Dockerfile変更時）
-docker compose up -d --build
-
-# Prismaマイグレーション
-docker compose exec next npx prisma migrate dev
-
-# Prismaクライアント再生成
-docker compose exec next npx prisma generate
+docker compose -f docker-compose.dev.yml logs -f next
 
 # コンテナ内でシェル実行
-docker compose exec next sh
+docker compose -f docker-compose.dev.yml exec next sh
+
+# Lint実行
+cd next && yarn lint
+```
+
+エイリアスを設定すると便利です（`~/.bashrc`に追加）：
+
+```bash
+alias dc-dev='docker compose -f docker-compose.dev.yml'
 ```
 
 ## 本番デプロイ
@@ -117,9 +124,14 @@ docker compose exec next sh
 GitHub Actionsによる自動デプロイ：
 
 1. `develop` → `main` へのPRをマージ
-2. 自動的にテスト実行
-3. テスト成功後、本番サーバーへSSHデプロイ
-4. SSL証明書の自動取得/更新
+2. Lint実行
+3. マルチステージビルドでDockerイメージをビルド & ghcr.ioにpush
+4. 本番サーバーでイメージをpull & 起動
+5. SSL証明書の自動取得/更新
+
+### Dockerイメージ
+
+マルチステージビルドにより軽量イメージ（~500MB）を生成。本番サーバーではpullのみ行い、ビルドは行わない。
 
 ### SSL証明書の自動管理
 
@@ -138,8 +150,8 @@ nginx は証明書の有無を自動判定：
 ssh your-server
 cd ~/seta-hp
 git pull origin main
-docker compose up -d --build
-docker compose exec next npx prisma migrate deploy
+docker compose pull
+docker compose up -d
 ```
 
 ## 主要技術スタック
@@ -168,7 +180,8 @@ docker compose exec next npx prisma migrate deploy
 
 ```
 seta-hp/
-├── docker-compose.yml      # Docker Compose設定
+├── docker-compose.yml      # 本番用Docker Compose
+├── docker-compose.dev.yml  # 開発用Docker Compose
 ├── nginx/
 │   ├── default.conf.template  # Nginx設定テンプレート
 │   └── docker-entrypoint.sh   # SSL自動判定スクリプト
@@ -402,11 +415,11 @@ MS 365との連携設定は別途ドキュメント参照。
 
 ### ESLint
 
-`next/core-web-vitals`と`next/typescript`を使用。
+`next/core-web-vitals`と`next/typescript`を使用。設定ファイル: `next/.eslintrc.json`
 
 ```bash
 # Lint実行
-docker compose exec next npm run lint
+cd next && yarn lint
 ```
 
 ## ライセンス
