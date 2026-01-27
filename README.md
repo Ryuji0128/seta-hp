@@ -120,6 +120,18 @@ GitHub Actionsによる自動デプロイ：
 1. `develop` → `main` へのPRをマージ
 2. 自動的にテスト実行
 3. テスト成功後、本番サーバーへSSHデプロイ
+4. SSL証明書の自動取得/更新
+
+### SSL証明書の自動管理
+
+デプロイ時に以下の処理が自動実行されます：
+
+- **初回デプロイ**: Let's Encrypt から SSL 証明書を自動取得
+- **2回目以降**: 証明書の有効期限をチェックし、必要に応じて更新
+
+nginx は証明書の有無を自動判定：
+- 証明書なし → HTTP のみで起動
+- 証明書あり → HTTPS 有効、HTTP→HTTPS リダイレクト
 
 ### 手動デプロイ
 
@@ -159,7 +171,8 @@ docker compose exec next npx prisma migrate deploy
 seta-hp/
 ├── docker-compose.yml      # Docker Compose設定
 ├── nginx/
-│   └── default.conf.template  # Nginx設定テンプレート
+│   ├── default.conf.template  # Nginx設定テンプレート
+│   └── docker-entrypoint.sh   # SSL自動判定スクリプト
 ├── mysql/
 │   └── data/               # MySQLデータ（gitignore）
 ├── scripts/                # 運用スクリプト
@@ -252,14 +265,16 @@ docker compose exec mysql mysql -u app_user -papp_pass app_db
 
 ### Nginx セキュリティヘッダー
 
-`nginx/default.conf.template`で以下を設定：
+`nginx/docker-entrypoint.sh`でHTTPS有効時に以下を設定：
 
-- `X-Frame-Options: SAMEORIGIN`
-- `X-Content-Type-Options: nosniff`
-- `X-XSS-Protection: 1; mode=block`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Strict-Transport-Security` (HSTS)
-- Content-Security-Policy (CSP)
+| ヘッダー | 値 | 効果 |
+|---------|-----|------|
+| `X-Frame-Options` | SAMEORIGIN | クリックジャッキング防止 |
+| `X-Content-Type-Options` | nosniff | MIMEスニッフィング防止 |
+| `X-XSS-Protection` | 1; mode=block | XSS攻撃防止 |
+| `Referrer-Policy` | strict-origin-when-cross-origin | リファラー情報制限 |
+| `Strict-Transport-Security` | max-age=31536000 | HTTPS強制（HSTS） |
+| `Permissions-Policy` | camera=(), microphone=()... | ブラウザ機能制限 |
 
 ### fail2ban
 
@@ -339,7 +354,19 @@ MS 365との連携設定は別途ドキュメント参照。
 
 ### Sitemap
 
-`next-sitemap`で自動生成。Google Search Consoleに登録済み。
+`next-sitemap`で自動生成。設定ファイル: `next-sitemap.config.cjs`
+
+**Google向け最適化済み:**
+- `changefreq` / `priority` は Google が無視するため不使用
+- `lastmod` のみを設定
+- 管理画面・API・決済完了ページは除外
+
+**除外されるパス:**
+- `/portal-admin*`, `/portal-login*`
+- `/payment/success`, `/payment/cancel`
+- `/api/*`
+
+Google Search Console に登録済み。
 
 ## ライセンス
 

@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import BaseContainer from "@/components/BaseContainer";
 import PageMainTitle from "@/components/PageMainTitle";
 import { Box, Container, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from "@mui/material";
+
+export const metadata: Metadata = {
+  title: "会社概要",
+  description:
+    "瀬田製作所の会社概要。2023年設立、ソフトウェア開発・ハードウェア開発・ものづくり試作・技術コンサルティングを提供するエンジニアチームです。",
+  alternates: {
+    canonical: "/discription",
+  },
+};
 
 const companyInfo = [
   { label: "会社名", value: "瀬田製作所" },
