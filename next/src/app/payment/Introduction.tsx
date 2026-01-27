@@ -4,7 +4,7 @@ import { themeConstants } from "@/theme/themeConstants";
 import React from "react";
 
 const BusinessIntroduction: React.FC = () => {
-  const titlesOfMessage01 = ["提供サービス"];
+  const titlesOfMessage01 = ["お支払い"];
 
   const titlesWidth = {
     xs: themeConstants.custom.subTitle.widthXs,
@@ -18,7 +18,7 @@ const BusinessIntroduction: React.FC = () => {
 
   return (
     <>
-      {/* 提供サービス */}
+      {/* お支払い */}
       <ResponsiveAdjustmentContainer
         titlesWidth={titlesWidth}
         contentWidth={contentWidth}

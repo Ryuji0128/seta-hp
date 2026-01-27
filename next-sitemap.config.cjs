@@ -1,38 +1,46 @@
-// siteUrlに環境変数を使うべきだが、本ファイルがjs指定で読み込まれるため、envConfigは使用不可。
-// Google向け最適化: changefreqとpriorityはGoogleが無視するため削除
-
-const locs = [
-  "/",
-  "/contact",
-  "/news",
-];
+/**
+ * next-sitemap 設定ファイル
+ * @see https://github.com/iamvishnusankar/next-sitemap
+ *
+ * Google向け最適化:
+ * - changefreq と priority は Google が無視するため使用しない
+ * - lastmod のみを設定
+ */
 
 module.exports = {
-  siteUrl: "https://setaseisakusyo.com", // サイトのベースURL
-  generateRobotsTxt: true, // robots.txt を生成
-  sitemapSize: 5000, // 1つのサイトマップに含めるURL数
-  exclude: ["/portal-admin*", "/portal-login*"], // サイトマップから除外するパス
-  additionalPaths: async () => [
-    // サイトマップに含める追加のパス（動的ページとして認識され、自動捕捉されないため）
-    ...locs.map(loc => ({ loc, lastmod: new Date().toISOString() })),
+  siteUrl: "https://setaseisakusyo.com",
+  generateRobotsTxt: true,
+  sitemapSize: 5000,
+
+  // サイトマップから除外するパス
+  exclude: [
+    "/portal-admin*",
+    "/portal-login*",
+    "/payment/success",
+    "/payment/cancel",
+    "/api/*",
   ],
-  transform: async (config, path) => ({
-    loc: `${config.siteUrl}${path}`,
-    lastmod: new Date().toISOString(),
-  }),
+
+  // robots.txt 設定
   robotsTxtOptions: {
     policies: [
       {
         userAgent: "*",
         allow: "/",
+        disallow: [
+          "/portal-admin",
+          "/portal-login",
+          "/payment/success",
+          "/payment/cancel",
+          "/api/",
+        ],
       },
-      {
-        userAgent: "*",
-        disallow: ["/portal-admin", "/portal-login"],
-      },
-    ],
-    additionalSitemaps: [
-      "https://setaseisakusyo.com/sitemap.xml",
     ],
   },
+
+  // URLのトランスフォーム（lastmodのみ設定）
+  transform: async (_config, path) => ({
+    loc: path,
+    lastmod: new Date().toISOString(),
+  }),
 };
