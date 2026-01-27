@@ -82,7 +82,6 @@ const authConfig = {
         token.role = dbUser?.role || "VIEWER";
       }
 
-      console.log("JWT TOKEN >>>", token);
       return token;
     },
 
@@ -94,7 +93,6 @@ const authConfig = {
         session.user.role = token.role as string;
       }
 
-      console.log("SESSION CALLBACK >>>", session);
       return session;
     },
   },

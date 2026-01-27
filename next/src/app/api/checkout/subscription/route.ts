@@ -48,8 +48,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err) {
-    console.error(err);
+  } catch {
     return NextResponse.json(
       { error: "サブスクリプションセッションの作成に失敗しました" },
       { status: 500 }

@@ -1,6 +1,4 @@
-#瀬田製作所 ホームページ
-
-
+# 瀬田製作所 ホームページ
 
 ## 概要
 
@@ -17,6 +15,7 @@
 - [ディレクトリ構成](#ディレクトリ構成)
 - [開発ルール](#開発ルール)
 - [DB運用](#db運用)
+- [SEO設定](#seo設定)
 - [セキュリティ](#セキュリティ)
 - [運用スクリプト](#運用スクリプト)
 - [その他設定](#その他設定)
@@ -250,6 +249,55 @@ docker compose exec next sh -c "rm -rf node_modules/.prisma && npx prisma genera
 docker compose exec mysql mysql -u app_user -papp_pass app_db
 ```
 
+## SEO設定
+
+### メタデータ
+
+`next/src/app/layout.tsx`でサイト全体のSEO設定を管理：
+
+| 項目 | 説明 |
+|-----|------|
+| OGP | Open Graph Protocol（SNS共有用） |
+| Twitter Card | Twitter向けカード表示 |
+| robots | 検索エンジンクローラー設定 |
+| canonical | 正規URL指定 |
+| JSON-LD | 構造化データ（Organization） |
+
+### OG画像
+
+`next/public/og-image.png` - 1200x630px
+
+SNSでシェアされた際に表示されるサムネイル画像。
+
+### 各ページのメタデータ
+
+主要ページに個別のメタデータを設定済み：
+
+| ページ | ファイル |
+|-------|---------|
+| トップ | `src/app/page.tsx` |
+| お問い合わせ | `src/app/contact/page.tsx` |
+| 会社概要 | `src/app/discription/page.tsx` |
+| サービス | `src/app/consultation/page.tsx` |
+| お支払い | `src/app/payment/layout.tsx` |
+| プライバシーポリシー | `src/app/privacy-policy/page.tsx` |
+
+### Sitemap
+
+`next-sitemap`で自動生成。設定ファイル: `next/next-sitemap.config.cjs`
+
+**Google向け最適化済み:**
+- `changefreq` / `priority` は Google が無視するため不使用
+- `lastmod` のみを設定
+- 管理画面・API・決済完了ページは除外
+
+**除外されるパス:**
+- `/portal-admin*`, `/portal-login*`
+- `/payment/success`, `/payment/cancel`
+- `/api/*`
+
+Google Search Console に登録済み。
+
 ## セキュリティ
 
 ### 実装済みセキュリティ機能
@@ -352,21 +400,14 @@ MS 365との連携設定は別途ドキュメント参照。
 
 問い合わせフォームのスパム対策として導入。
 
-### Sitemap
+### ESLint
 
-`next-sitemap`で自動生成。設定ファイル: `next-sitemap.config.cjs`
+`next/core-web-vitals`と`next/typescript`を使用。
 
-**Google向け最適化済み:**
-- `changefreq` / `priority` は Google が無視するため不使用
-- `lastmod` のみを設定
-- 管理画面・API・決済完了ページは除外
-
-**除外されるパス:**
-- `/portal-admin*`, `/portal-login*`
-- `/payment/success`, `/payment/cancel`
-- `/api/*`
-
-Google Search Console に登録済み。
+```bash
+# Lint実行
+docker compose exec next npm run lint
+```
 
 ## ライセンス
 

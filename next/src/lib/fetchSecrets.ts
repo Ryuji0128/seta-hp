@@ -90,8 +90,8 @@ type SecretValues = Record<string, string>;
  * 本番で使用する場合は GCP 認証を再度有効化してください。
  */
 async function getSecretValues(secretNames: string[]): Promise<SecretValues> {
-  console.warn("[fetchSecrets] Google Secret Manager は現在無効化されています。");
-  // process.env から値を取得して返す（ローカル想定）
+  // process.env から値を取得して返す
+  // 本番で Secret Manager を使用する場合は GCP 認証を再度有効化してください
   return secretNames.reduce((acc, secretName) => {
     const value = process.env[secretName];
     return { ...acc, [secretName]: value || "" };
