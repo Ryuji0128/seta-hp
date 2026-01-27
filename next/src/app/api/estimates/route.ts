@@ -58,7 +58,6 @@ export async function POST(req: NextRequest) {
 
       // ファイル名を生成
       const timestamp = Date.now();
-      const ext = path.extname(file.name);
       fileName = `${timestamp}-${file.name}`;
       filePath = `/uploads/estimates/${fileName}`;
 

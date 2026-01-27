@@ -12,22 +12,7 @@ export const {
   signOut,
 } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: {
-    strategy: "jwt",
-  },
-  jwt: {
-    maxAge: 60 * 60 * 1000, // 1時間
-  },
+  session: { strategy: "jwt" },
+  jwt: { maxAge: 60 * 60 },
   ...authConfig,
-  callbacks: {
-    // 必要に応じて有効化
-    // async session({ session, token }) {
-    //   session.user.id = token.id;
-    //   return session;
-    // },
-    // async jwt({ token, user }) {
-    //   if (user) token.id = user.id;
-    //   return token;
-    // },
-  },
 });
