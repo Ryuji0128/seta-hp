@@ -3,6 +3,8 @@ import { getPrismaClient } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
+import { fetchSecret } from "@/lib/fetchSecrets";
+import axios from "axios";
 
 const prisma = getPrismaClient();
 
@@ -14,6 +16,39 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const amount = formData.get("amount") as string;
+    const recaptchaToken = formData.get("recaptchaToken") as string | null;
+
+    // 本番環境でreCAPTCHA検証（RECAPTCHA_SECRET_KEYが設定されている場合のみ）
+    const recaptchaKey = await fetchSecret("RECAPTCHA_SECRET_KEY").catch(() => null);
+    if (recaptchaKey && recaptchaKey.trim() !== "") {
+      if (!recaptchaToken) {
+        return NextResponse.json(
+          { error: "reCAPTCHA検証が必要です" },
+          { status: 400 }
+        );
+      }
+
+      const verificationUrl = "https://www.google.com/recaptcha/api/siteverify";
+      const response = await axios.post(verificationUrl, null, {
+        params: {
+          secret: recaptchaKey,
+          response: recaptchaToken,
+        },
+      });
+
+      const { success, score, action, hostname } = response.data;
+
+      // hostname検証（本番環境のみ）
+      const allowedHostnames = process.env.ALLOWED_RECAPTCHA_HOSTNAMES?.split(',') || [];
+      const hostnameValid = allowedHostnames.length === 0 || allowedHostnames.includes(hostname);
+
+      if (!success || score < 0.5 || action !== "estimate_upload" || !hostnameValid) {
+        return NextResponse.json(
+          { error: "reCAPTCHA検証に失敗しました" },
+          { status: 403 }
+        );
+      }
+    }
 
     if (!amount || parseInt(amount, 10) < 100) {
       return NextResponse.json(
@@ -35,7 +70,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 許可するファイルタイプ
+      // 許可するファイルタイプ（クライアント申告値）
       const allowedTypes = [
         "application/pdf",
         "image/png",
@@ -52,16 +87,42 @@ export async function POST(req: NextRequest) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
+      // Magic Number検証（ファイル内容の実際の形式を確認）
+      const magicNumber = buffer.subarray(0, 8);
+      const isPDF = magicNumber[0] === 0x25 && magicNumber[1] === 0x50 &&
+                    magicNumber[2] === 0x44 && magicNumber[3] === 0x46; // %PDF
+      const isPNG = magicNumber[0] === 0x89 && magicNumber[1] === 0x50 &&
+                    magicNumber[2] === 0x4E && magicNumber[3] === 0x47; // PNG
+      const isJPEG = magicNumber[0] === 0xFF && magicNumber[1] === 0xD8 &&
+                     magicNumber[2] === 0xFF; // JPEG
+
+      if (!isPDF && !isPNG && !isJPEG) {
+        return NextResponse.json(
+          { error: "ファイルの形式が不正です" },
+          { status: 400 }
+        );
+      }
+
       // アップロードディレクトリ
       const uploadDir = path.join(process.cwd(), "public", "uploads", "estimates");
       await mkdir(uploadDir, { recursive: true });
 
-      // ファイル名を生成
+      // ファイル名を生成（パストラバーサル対策: basenameで正規化 + 許可文字のみ）
       const timestamp = Date.now();
-      fileName = `${timestamp}-${file.name}`;
+      const safeBaseName = path.basename(file.name).replace(/[^a-zA-Z0-9._-]/g, "_");
+      fileName = `${timestamp}-${safeBaseName}`;
       filePath = `/uploads/estimates/${fileName}`;
 
-      await writeFile(path.join(uploadDir, fileName), buffer);
+      // 最終パスが想定ディレクトリ内であることを検証
+      const finalPath = path.join(uploadDir, fileName);
+      if (!finalPath.startsWith(uploadDir)) {
+        return NextResponse.json(
+          { error: "無効なファイル名です" },
+          { status: 400 }
+        );
+      }
+
+      await writeFile(finalPath, buffer);
     }
 
     // DB保存
