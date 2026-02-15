@@ -48,7 +48,7 @@ export default function Header() {
   const contentsList = [
     { title: "サービス", href: "/consultation" },
     { title: "会社概要", href: "/discription" },
-    { title: "提供サービス", href: "/payment" },
+    // { title: "お支払い", href: "/payment" },  // Stripe決済は一時的に非表示
     { title: "お問い合わせ", href: "/contact" },
   ];
 

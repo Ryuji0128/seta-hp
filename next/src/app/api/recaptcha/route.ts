@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { token } = await req.json();
+  const { token, expectedAction } = await req.json();
 
   if (!token) {
     return NextResponse.json({ success: false, message: 'No token provided' }, { status: 400 });
@@ -51,12 +51,29 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const { success, score } = response.data;
+    const { success, score, action, hostname } = response.data;
 
     if (!success) {
       // トークンが無効な場合
       return NextResponse.json(
         { success: false, message: 'Invalid token' },
+        { status: 400 }
+      );
+    }
+
+    // action検証（指定された場合のみ）
+    if (expectedAction && action !== expectedAction) {
+      return NextResponse.json(
+        { success: false, message: 'Action mismatch' },
+        { status: 400 }
+      );
+    }
+
+    // hostname検証（本番環境のみ）
+    const allowedHostnames = process.env.ALLOWED_RECAPTCHA_HOSTNAMES?.split(',') || [];
+    if (allowedHostnames.length > 0 && !allowedHostnames.includes(hostname)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid hostname' },
         { status: 400 }
       );
     }

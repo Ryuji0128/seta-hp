@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useCallback, useRef, useState } from "react";
+import { useReCaptcha } from "next-recaptcha-v3";
 
 interface FormErrors {
   name?: string;
@@ -38,6 +39,8 @@ export default function ContactForm() {
   const [modalContent, setModalContent] = useState<
     "loading" | "success" | "error"
   >("loading");
+
+  const { executeRecaptcha, loaded: recaptchaLoaded } = useReCaptcha();
 
   // モーダルを閉じる
   const closeModal = () => setIsModalOpen(false);
@@ -68,7 +71,15 @@ export default function ContactForm() {
     setModalContent("loading");
 
     try {
-      // ✅ reCAPTCHA は一旦スキップ
+      // reCAPTCHA検証
+      const token = await executeRecaptcha("contact_form");
+      const recaptchaRes = await axios.post("/api/recaptcha", { token, expectedAction: "contact_form" });
+
+      if (!recaptchaRes.data.success) {
+        setModalContent("error");
+        return;
+      }
+
       const emailRes = await axios.post("/api/email", formData);
 
       if (emailRes.data.success) {
@@ -87,7 +98,7 @@ export default function ContactForm() {
       console.error("送信エラー:", error);
       setModalContent("error");
     }
-  }, []);
+  }, [executeRecaptcha]);
 
   return (
     <BaseContainer>
@@ -174,6 +185,7 @@ export default function ContactForm() {
           <Button
             type="submit"
             variant="contained"
+            disabled={!recaptchaLoaded}
             sx={{
               backgroundColor: "primary.main",
               color: "primary.contrastText",
@@ -181,7 +193,7 @@ export default function ContactForm() {
               "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
-            送信
+            {recaptchaLoaded ? "送信" : "準備中..."}
           </Button>
         </Box>
       </Box>

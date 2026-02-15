@@ -50,6 +50,12 @@ server {
         proxy_read_timeout 60s;
     }
 
+    location /uploads/ {
+        alias /var/www/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
+
     location /_next/static/ {
         proxy_pass http://next_app:3000;
         proxy_cache_valid 200 60m;
@@ -60,6 +66,19 @@ server {
         proxy_pass http://next_app:3000;
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
+}
+
+# www → non-www リダイレクト (HTTPS)
+server {
+    listen 443 ssl;
+    server_name www.${SERVER_NAME};
+
+    ssl_certificate /etc/letsencrypt/live/setaseisakusyo.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/setaseisakusyo.com/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    return 301 https://${SERVER_NAME}$request_uri;
 }
 EOF
     # SERVER_NAME を再度展開
