@@ -2,7 +2,8 @@ import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import HeroSection from "./_home/HeroSection";
 import NewsSection from "./_home/NewsSection";
-import ServicesSection from "./_home/ServicesSection";
+import EngineeringSection from "./_home/EngineeringSection";
+import FabricationSection from "./_home/FabricationSection";
 import AboutSection from "./_home/AboutSection";
 import TechStackSection from "./_home/TechStackSection";
 import CTASection from "./_home/CTASection";
@@ -22,7 +23,8 @@ export default function HomePage() {
     <Box>
       <HeroSection />
       <NewsSection />
-      <ServicesSection />
+      <EngineeringSection />
+      <FabricationSection />
       <AboutSection />
       <TechStackSection />
       <CTASection />

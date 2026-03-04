@@ -6,7 +6,7 @@ import { Box, Container, Grid, Paper, Table, TableBody, TableCell, TableContaine
 export const metadata: Metadata = {
   title: "会社概要",
   description:
-    "瀬田製作所の会社概要。2023年設立、ソフトウェア開発・ハードウェア開発・ものづくり試作・技術コンサルティングを提供するエンジニアチームです。",
+    "瀬田製作所の会社概要。2023年設立、ソフトウェア開発・ハードウェア開発・ものづくり試作を提供するエンジニアチームです。",
   alternates: {
     canonical: "/discription",
   },
@@ -16,7 +16,7 @@ const companyInfo = [
   { label: "会社名", value: "瀬田製作所" },
   { label: "設立", value: "2023年8月8日" },
   { label: "代表者", value: "伊藤 竜次" },
-  { label: "事業内容", value: "ソフトウェア開発、ハードウェア開発、ものづくり・試作、技術コンサルティング" },
+  { label: "事業内容", value: "ソフトウェア開発、ハードウェア開発、ものづくり・試作" },
   { label: "Email", value: "info@setaseisakusyo.com" },
 ];
 

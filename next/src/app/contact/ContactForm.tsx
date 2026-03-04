@@ -12,8 +12,9 @@ import {
   Typography
 } from "@mui/material";
 import axios from "axios";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReCaptcha } from "next-recaptcha-v3";
+import { useSearchParams } from "next/navigation";
 
 interface FormErrors {
   name?: string;
@@ -41,6 +42,23 @@ export default function ContactForm() {
   >("loading");
 
   const { executeRecaptcha, loaded: recaptchaLoaded } = useReCaptcha();
+  const searchParams = useSearchParams();
+
+  // URLパラメータから商品名を取得して自動入力
+  useEffect(() => {
+    const product = searchParams.get("product");
+    if (product && inquiryRef.current) {
+      // XSS対策: HTMLエスケープ処理
+      const sanitizedProduct = product
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;")
+        .slice(0, 200); // 長さ制限
+      inquiryRef.current.value = `【商品購入のお問い合わせ】\n商品名: ${sanitizedProduct}\n\n`;
+    }
+  }, [searchParams]);
 
   // モーダルを閉じる
   const closeModal = () => setIsModalOpen(false);
