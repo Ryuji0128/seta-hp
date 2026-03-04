@@ -6,8 +6,8 @@ import BaseContainer from "@/components/BaseContainer";
 export const metadata: Metadata = {
   title: "サービス",
   description:
-    "瀬田製作所のサービス一覧。Webアプリ・モバイルアプリ開発、組み込みシステム・IoT開発、3Dプリント・試作、技術コンサルティングを提供します。",
-  keywords: ["Web開発", "アプリ開発", "IoT", "組み込み", "3Dプリント", "技術コンサルティング"],
+    "瀬田製作所のサービス一覧。Webアプリ・モバイルアプリ開発、組み込みシステム・IoT開発、3Dプリント・試作を提供します。",
+  keywords: ["Web開発", "アプリ開発", "IoT", "組み込み", "3Dプリント", ""],
   alternates: {
     canonical: "/consultation",
   },
@@ -30,7 +30,7 @@ const services = [
     features: ["3Dプリント", "レーザー加工", "筐体設計", "プロトタイピング"],
   },
   {
-    title: "技術コンサルティング",
+    title: "",
     description: "技術選定、アーキテクチャ設計、開発プロセス改善などをサポートします。",
     features: ["技術選定", "設計レビュー", "開発支援", "技術研修"],
   },

@@ -28,6 +28,8 @@ const ProfileConsoleModal = () => {
     { label: "お知らせ管理", path: "/news" },
     { label: "問い合わせ管理", path: "/contact" },
     { label: "見積書管理", path: "/estimates" },
+    { label: "商品管理", path: "/products" },
+    { label: "制作事例管理", path: "/works-manage" },
   ];
 
   return (

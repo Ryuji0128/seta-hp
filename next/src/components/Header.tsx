@@ -46,9 +46,11 @@ export default function Header() {
   };
 
   const contentsList = [
-    { title: "サービス", href: "/consultation" },
+    { title: "ソフト＆ハード開発", href: "/engineering" },
+    { title: "3Dモデル＆試作", href: "/fabrication" },
+    { title: "制作事例", href: "/works" },
+    { title: "販売", href: "/shop" },
     { title: "会社概要", href: "/discription" },
-    // { title: "お支払い", href: "/payment" },  // Stripe決済は一時的に非表示
     { title: "お問い合わせ", href: "/contact" },
   ];
 

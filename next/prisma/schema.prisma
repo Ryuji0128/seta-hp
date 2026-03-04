@@ -50,6 +50,32 @@ model Estimate {
   status      String   @default("pending")
 }
 
+model Product {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String   @db.Text
+  price       Int
+  category    String   // "3dprint" | "lasercut"
+  tags        String   // カンマ区切りで保存
+  image       String?
+  stock       String   @default("在庫あり") // "在庫あり" | "残りわずか" | "受注生産" | "売り切れ"
+  isPublished Boolean  @default(true)
+}
+
+model Work {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String
+  description String   @db.Text
+  category    String   // "modeling" | "print" | "laser" | "mockup"
+  tags        String   // カンマ区切りで保存
+  image       String?
+  isPublished Boolean  @default(true)
+}
+
 model User {
   id            String          @id @default(cuid())
   name          String?

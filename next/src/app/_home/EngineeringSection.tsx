@@ -1,35 +1,35 @@
 "use client";
 
 import { Box, Card, CardContent, Container, Grid, Typography } from "@mui/material";
-import CodeIcon from "@mui/icons-material/Code";
 import MemoryIcon from "@mui/icons-material/Memory";
-import BuildIcon from "@mui/icons-material/Build";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import WebIcon from "@mui/icons-material/Web";
+import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
+import DeveloperBoardIcon from "@mui/icons-material/DeveloperBoard";
 
 const services = [
   {
-    icon: <CodeIcon sx={{ fontSize: 48 }} />,
-    title: "ソフトウェア開発",
-    description: "Webアプリ、モバイルアプリ、業務システムなど、あらゆるソフトウェアを開発します。",
-  },
-  {
     icon: <MemoryIcon sx={{ fontSize: 48 }} />,
-    title: "ハードウェア開発",
-    description: "組み込みシステム、IoTデバイス、電子回路設計など、ハードウェアの開発も手がけます。",
+    title: "組み込みマイコン",
+    description: "STM32、ESP32、PICなどのマイコンを使ったファームウェア開発を行います。",
   },
   {
-    icon: <BuildIcon sx={{ fontSize: 48 }} />,
-    title: "ものづくり・試作",
-    description: "3Dプリンタやレーザー加工機を活用し、アイデアを素早くカタチにします。",
+    icon: <WebIcon sx={{ fontSize: 48 }} />,
+    title: "Webアプリ開発",
+    description: "ホームページ、業務システム、ECサイトなど、Webアプリケーションを開発します。",
   },
   {
-    icon: <RocketLaunchIcon sx={{ fontSize: 48 }} />,
-    title: "新規事業・R&D",
-    description: "やりたいことを一緒に実現。新しい挑戦を技術でサポートします。",
+    icon: <PhoneIphoneIcon sx={{ fontSize: 48 }} />,
+    title: "モバイルアプリ",
+    description: "iOS・Androidに対応したモバイルアプリケーションを開発します。",
+  },
+  {
+    icon: <DeveloperBoardIcon sx={{ fontSize: 48 }} />,
+    title: "電子回路設計",
+    description: "基板設計から回路設計まで、電子回路のトータルサポートを行います。",
   },
 ];
 
-const ServicesSection = () => {
+const EngineeringSection = () => {
   return (
     <Box sx={{ py: 10, bgcolor: "background.default" }}>
       <Container maxWidth="lg">
@@ -42,13 +42,13 @@ const ServicesSection = () => {
               mb: 2,
             }}
           >
-            What We Do
+            ソフト＆ハード開発
           </Typography>
           <Typography
             variant="h6"
             sx={{ color: "text.secondary", fontWeight: 400 }}
           >
-            ソフトとハード、両方できるからこそ生まれる価値があります
+            組み込みマイコンからホームページまで、幅広い受託開発
           </Typography>
         </Box>
 
@@ -90,4 +90,4 @@ const ServicesSection = () => {
   );
 };
 
-export default ServicesSection;
+export default EngineeringSection;
