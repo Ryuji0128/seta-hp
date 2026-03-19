@@ -6,6 +6,8 @@ import FeaturedProductsSection from "./_home/FeaturedProductsSection";
 import FeaturesSection from "./_home/FeaturesSection";
 import CTASection from "./_home/CTASection";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "SETA Craft | カード好きが作ったディスプレイ",
   description:
