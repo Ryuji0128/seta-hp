@@ -7,6 +7,8 @@ import Image from "next/image";
 import { getPrismaClient } from "@/lib/db";
 import { getGalleryCategoryLabel } from "@/lib/constants/categories";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "ギャラリー | SETA Craft",
   description:
