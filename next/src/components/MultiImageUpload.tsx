@@ -10,8 +10,6 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import Image from "next/image";
-
 interface MultiImageUploadProps {
   value: string[];
   onChange: (urls: string[]) => void;
@@ -116,11 +114,11 @@ export default function MultiImageUpload({
               borderColor: index === 0 ? "primary.main" : "grey.300",
             }}
           >
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={url}
               alt={`画像 ${index + 1}`}
-              fill
-              style={{ objectFit: "cover", cursor: "pointer" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }}
               onClick={() => handleMoveUp(index)}
             />
             {index === 0 && (
