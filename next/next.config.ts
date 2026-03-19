@@ -38,6 +38,11 @@ const nextConfig: NextConfig = {
         serverActions: { bodySizeLimit: "2mb" },
     },
     images: {
+        localPatterns: [
+            {
+                pathname: "/uploads/**",
+            },
+        ],
         remotePatterns: [
             {
                 protocol: "https",
