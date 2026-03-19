@@ -1,31 +1,12 @@
 import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
-import { rateLimit } from "@/lib/rateLimit";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateInquiry } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import xss from "xss";
 
 const prisma = getPrismaClient();
-
-// レート制限設定: 3回/分
-const RATE_LIMIT = 3;
-const RATE_WINDOW = 60 * 1000; // 1分
-
-/**
- * IPアドレスを取得
- */
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  const realIp = req.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp;
-  }
-  return "unknown";
-}
 
 /**
  * ✅ 問い合わせ登録（メール送信 + DB保存）
@@ -34,10 +15,19 @@ export async function POST(req: NextRequest) {
   try {
     // レート制限チェック
     const clientIp = getClientIp(req);
-    if (!rateLimit(clientIp, RATE_LIMIT, RATE_WINDOW)) {
+    const rateLimitResult = checkRateLimit(`contact:${clientIp}`, RATE_LIMITS.contact);
+    if (!rateLimitResult.success) {
+      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
       return NextResponse.json(
         { success: false, error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
-        { status: 429 }
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+          },
+        }
       );
     }
 

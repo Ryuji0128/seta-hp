@@ -1,34 +1,24 @@
 import { NextResponse, NextRequest } from "next/server";
 import { fetchSecret } from "@/lib/fetchSecrets";
-import { rateLimit } from "@/lib/rateLimit";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import axios from "axios";
-
-// レート制限設定: 5回/分
-const RATE_LIMIT = 5;
-const RATE_WINDOW = 60 * 1000; // 1分
-
-/**
- * IPアドレスを取得
- */
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  const realIp = req.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp;
-  }
-  return "unknown";
-}
 
 export async function POST(req: NextRequest) {
   // レート制限チェック
   const clientIp = getClientIp(req);
-  if (!rateLimit(`recaptcha:${clientIp}`, RATE_LIMIT, RATE_WINDOW)) {
+  const rateLimitResult = checkRateLimit(`recaptcha:${clientIp}`, RATE_LIMITS.recaptcha);
+  if (!rateLimitResult.success) {
+    const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
     return NextResponse.json(
       { success: false, error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
-      { status: 429 }
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(retryAfter),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+        },
+      }
     );
   }
 

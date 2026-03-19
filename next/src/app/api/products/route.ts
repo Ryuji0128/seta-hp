@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
-
-// 許可されたカテゴリ
-const VALID_CATEGORIES = ["3dprint", "lasercut"];
-const VALID_STOCKS = ["在庫あり", "残りわずか", "受注生産", "売り切れ"];
+import { VALID_PRODUCT_CATEGORIES, VALID_STOCK_OPTIONS } from "@/lib/constants/categories";
 
 // 商品一覧取得（公開用）
 export async function GET(req: NextRequest) {
@@ -13,11 +11,15 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const includeUnpublished = searchParams.get("includeUnpublished") === "true";
 
-    // 認証チェック（非公開商品を含める場合）
+    // 認証・権限チェック（非公開商品を含める場合はADMIN/EDITORのみ）
     if (includeUnpublished) {
       const session = await auth();
       if (!session) {
         return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+      }
+      const userRole = session.user?.role;
+      if (userRole !== "ADMIN" && userRole !== "EDITOR") {
+        return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
       }
     }
 
@@ -41,14 +43,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
     const body = await req.json();
-    const { name, description, price, category, tags, image, stock, isPublished } = body;
+    const { name, description, price, category, tags, image, images, stock, isPublished } = body;
 
     if (!name || !description || price === undefined || !category) {
       return NextResponse.json({ error: "名前、説明、価格、カテゴリは必須です" }, { status: 400 });
@@ -61,13 +63,13 @@ export async function POST(req: NextRequest) {
     }
 
     // カテゴリの検証
-    if (!VALID_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
+    if (!VALID_PRODUCT_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: `カテゴリは${VALID_PRODUCT_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
     // 在庫状況の検証
-    if (stock && !VALID_STOCKS.includes(stock)) {
-      return NextResponse.json({ error: `在庫状況は${VALID_STOCKS.join(", ")}のいずれかを指定してください` }, { status: 400 });
+    if (stock && !VALID_STOCK_OPTIONS.includes(stock)) {
+      return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
     const product = await prisma.product.create({
@@ -78,6 +80,7 @@ export async function POST(req: NextRequest) {
         category,
         tags: Array.isArray(tags) ? tags.join(",") : tags || "",
         image: image || null,
+        images: Array.isArray(images) ? images : Prisma.JsonNull,
         stock: stock || "在庫あり",
         isPublished: isPublished !== false,
       },
@@ -98,14 +101,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
     const body = await req.json();
-    const { id, name, description, price, category, tags, image, stock, isPublished } = body;
+    const { id, name, description, price, category, tags, image, images, stock, isPublished } = body;
 
     if (!id) {
       return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
@@ -127,13 +130,13 @@ export async function PUT(req: NextRequest) {
     }
 
     // カテゴリの検証
-    if (category && !VALID_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
+    if (category && !VALID_PRODUCT_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: `カテゴリは${VALID_PRODUCT_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
     // 在庫状況の検証
-    if (stock && !VALID_STOCKS.includes(stock)) {
-      return NextResponse.json({ error: `在庫状況は${VALID_STOCKS.join(", ")}のいずれかを指定してください` }, { status: 400 });
+    if (stock && !VALID_STOCK_OPTIONS.includes(stock)) {
+      return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
     const product = await prisma.product.update({
@@ -145,6 +148,7 @@ export async function PUT(req: NextRequest) {
         category,
         tags: Array.isArray(tags) ? tags.join(",") : tags,
         image: image || null,
+        images: images !== undefined ? (Array.isArray(images) ? images : Prisma.JsonNull) : undefined,
         stock,
         isPublished,
       },
@@ -165,7 +169,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
     }

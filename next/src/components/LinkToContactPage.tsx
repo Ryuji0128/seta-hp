@@ -9,7 +9,7 @@ import BaseContainer from "@/components/BaseContainer";
 const LinkToContactPage = () => {
   const pathname = usePathname();
 
-  if (pathname === "/" || pathname === "/contact" || pathname === "/portal-login" || pathname.startsWith("/portal-admin")) {
+  if (pathname === "/" || pathname === "/contact" || pathname === "/login" || pathname.startsWith("/portal-admin")) {
     return null;
   }
 

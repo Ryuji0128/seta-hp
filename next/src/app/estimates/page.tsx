@@ -8,7 +8,7 @@ export default async function EstimatesPage() {
   const session = await auth();
 
   if (!session) {
-    redirect("/portal-login");
+    redirect("/login");
   }
 
   return (
