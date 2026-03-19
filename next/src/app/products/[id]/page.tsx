@@ -10,6 +10,8 @@ import { getPrismaClient } from "@/lib/db";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
 import ProductImageGallery from "./ProductImageGallery";
 
+export const dynamic = "force-dynamic";
+
 interface ProductPageProps {
   params: Promise<{ id: string }>;
 }
