@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import NewsManagement from "./NewsManagement";
+import GalleryManagement from "./GalleryManagement";
 import BaseContainer from "@/components/BaseContainer";
 import { Box, Typography } from "@mui/material";
 
-export default async function NewsPage() {
+export default async function GalleryManagePage() {
   const session = await auth();
 
   if (!session) {
@@ -19,9 +19,9 @@ export default async function NewsPage() {
           component="h1"
           sx={{ textAlign: "center", mb: 4, fontWeight: 600 }}
         >
-          お知らせ管理
+          ギャラリー管理
         </Typography>
-        <NewsManagement session={session} />
+        <GalleryManagement session={session} />
       </Box>
     </BaseContainer>
   );

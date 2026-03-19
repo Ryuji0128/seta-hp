@@ -1,101 +1,128 @@
 "use client";
 
-import { Box, Button, Container, Typography } from "@mui/material";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { Box, Container, Typography, Button } from "@mui/material";
 import Link from "next/link";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 const HeroSection = () => {
   return (
     <Box
       sx={{
-        background: "linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #00ACC1 100%)",
-        minHeight: "80vh",
+        position: "relative",
+        width: "100%",
+        minHeight: { xs: "400px", md: "480px" },
         display: "flex",
         alignItems: "center",
-        position: "relative",
-        overflow: "hidden",
+        bgcolor: "#FAFAFA",
       }}
     >
-      {/* Background Pattern */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0.1,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      />
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            textAlign: "center",
+            py: { xs: 6, md: 8 },
+          }}
+        >
+          {/* サブタイトル */}
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#FF5722",
+              fontWeight: 600,
+              fontSize: "14px",
+              letterSpacing: "0.1em",
+              mb: 2,
+            }}
+          >
+            ハンドメイド・オリジナル
+          </Typography>
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
-        <Box sx={{ maxWidth: 800 }}>
+          {/* メインタイトル */}
           <Typography
             variant="h1"
             sx={{
-              color: "white",
               fontWeight: 700,
-              fontSize: { xs: "2.5rem", md: "4rem" },
-              lineHeight: 1.2,
+              fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
+              color: "#333",
               mb: 3,
+              lineHeight: 1.4,
             }}
           >
-            つくりたいものを、
+            カード好きが作った
             <br />
-            つくる。
+            <Box component="span" sx={{ color: "#FF5722" }}>
+              こだわりのディスプレイ
+            </Box>
           </Typography>
+
+          {/* 説明文 */}
           <Typography
-            variant="h5"
+            variant="body1"
             sx={{
-              color: "rgba(255,255,255,0.9)",
-              fontWeight: 400,
-              mb: 4,
-              lineHeight: 1.8,
+              fontSize: { xs: "14px", md: "16px" },
+              color: "#666",
+              mb: 5,
+              maxWidth: 500,
+              mx: "auto",
+              lineHeight: 1.9,
             }}
           >
-            ソフトウェアからハードウェアまで。
+            大切なカードを美しく飾るスタンド・ケースを
             <br />
-            アイデアをカタチにする、ものづくり集団です。
+            一つ一つ丁寧に製作しています。
           </Typography>
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Link href="/contact" passHref>
+
+          {/* CTAボタン */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Link href="/products" passHref>
               <Button
                 variant="contained"
                 size="large"
+                endIcon={<ArrowForwardIcon />}
                 sx={{
-                  bgcolor: "white",
-                  color: "primary.main",
-                  px: 4,
-                  py: 1.5,
-                  fontSize: "1.1rem",
+                  bgcolor: "#FF5722",
+                  color: "white",
                   fontWeight: 600,
+                  px: 5,
+                  py: 1.5,
+                  fontSize: "15px",
+                  borderRadius: "50px",
+                  boxShadow: "none",
                   "&:hover": {
-                    bgcolor: "rgba(255,255,255,0.9)",
+                    bgcolor: "#E64A19",
+                    boxShadow: "0 4px 12px rgba(255, 87, 34, 0.3)",
                   },
                 }}
-                endIcon={<ArrowForwardIcon />}
               >
-                お問い合わせ
+                商品を見る
               </Button>
             </Link>
-            <Link href="/discription" passHref>
+            <Link href="/gallery" passHref>
               <Button
                 variant="outlined"
                 size="large"
                 sx={{
-                  color: "white",
-                  borderColor: "white",
-                  px: 4,
+                  color: "#333",
+                  borderColor: "#DDD",
+                  fontWeight: 500,
+                  px: 5,
                   py: 1.5,
-                  fontSize: "1.1rem",
+                  fontSize: "15px",
+                  borderRadius: "50px",
                   "&:hover": {
-                    borderColor: "white",
-                    bgcolor: "rgba(255,255,255,0.1)",
+                    borderColor: "#333",
+                    bgcolor: "transparent",
                   },
                 }}
               >
-                詳しく見る
+                ギャラリー
               </Button>
             </Link>
           </Box>

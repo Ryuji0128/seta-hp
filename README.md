@@ -1,8 +1,7 @@
-# 瀬田製作所 ホームページ
+# SETA Craft
 
-## 概要
-
-瀬田製作所のホームページプロジェクト。[Next.js 15](https://nextjs.org/)をベースに構築し、App Routerを採用。React、MUIを中心としたフロントエンド技術を使用。
+瀬田製作所が運営するハンドメイド製品の EC サイト「SETA Craft」のソースコードです。
+Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタック Web アプリケーション。
 
 ## 目次
 
@@ -10,22 +9,25 @@
 - [Docker環境の構成](#docker環境の構成)
 - [環境変数の設定](#環境変数の設定)
 - [開発コマンド](#開発コマンド)
-- [本番デプロイ](#本番デプロイ)
 - [主要技術スタック](#主要技術スタック)
+- [ページ一覧](#ページ一覧)
+- [API エンドポイント](#api-エンドポイント)
+- [データベースモデル](#データベースモデル)
 - [ディレクトリ構成](#ディレクトリ構成)
 - [開発ルール](#開発ルール)
 - [DB運用](#db運用)
 - [SEO設定](#seo設定)
 - [セキュリティ](#セキュリティ)
+- [本番デプロイ](#本番デプロイ)
 - [運用スクリプト](#運用スクリプト)
-- [その他設定](#その他設定)
 
 ## クイックスタート
 
 ### 必要条件
 
-- Docker
-- Docker Compose
+- Docker & Docker Compose
+- Node.js 20+（ローカル開発時）
+- Yarn
 
 ### セットアップ
 
@@ -43,6 +45,17 @@ docker compose -f docker-compose.dev.yml up
 
 # 4. ブラウザでアクセス
 # http://localhost:3000
+```
+
+### ローカル開発（Docker なし）
+
+```bash
+cd next
+yarn install
+npx prisma generate
+npx prisma db push
+npx prisma db seed    # シードデータ投入（任意）
+yarn dev              # http://localhost:3000
 ```
 
 ### 停止
@@ -64,10 +77,10 @@ docker compose -f docker-compose.dev.yml down
 
 | サービス | コンテナ名 | ポート | 説明 |
 |---------|-----------|--------|------|
-| next | next_app | 2999:3000 | Next.js（standalone / ghcr.ioからpull） |
+| next | next_app | 2999:3000 | Next.js（standalone / ghcr.io から pull） |
 | mysql | mysql_db | 3306 | MySQL 8.0 データベース |
-| nginx | nginx_proxy | 80, 443 | リバースプロキシ（SSL対応） |
-| certbot | certbot | - | SSL証明書管理 |
+| nginx | nginx_proxy | 80, 443 | リバースプロキシ（SSL 対応） |
+| certbot | certbot | - | SSL 証明書管理 |
 
 ### アーキテクチャ（本番）
 
@@ -79,139 +92,211 @@ docker compose -f docker-compose.dev.yml down
 
 ## 環境変数の設定
 
-`next/.env`ファイルに以下を設定：
+`next/.env.example` をコピーして `next/.env` を作成し、各値を設定：
 
-```env
-# 認証
-AUTH_SECRET=your-secret-key-here
-NEXTAUTH_URL=http://localhost:3000
-
-# データベース
-DATABASE_URL=mysql://app_user:app_pass@mysql:3306/app_db
-
-# Google OAuth（オプション）
-AUTH_GOOGLE_ID=your-google-client-id
-AUTH_GOOGLE_SECRET=your-google-client-secret
-```
+| 変数名 | 説明 |
+|--------|------|
+| `DATABASE_URL` | MySQL 接続文字列 |
+| `AUTH_SECRET` | NextAuth 暗号化キー |
+| `NEXTAUTH_URL` | 認証コールバック URL |
+| `NEXT_PUBLIC_SITE_URL` | サイト URL（フロントエンド参照） |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（任意） |
+| `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` | Google 認証の有効化フラグ（任意） |
+| `STRIPE_SECRET_KEY` | Stripe 秘密鍵 |
+| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 サイトキー（フロントエンド用） |
+| `RECAPTCHA_SECRET_KEY` | reCAPTCHA v3 検証用（サーバー用） |
+| `ALLOWED_RECAPTCHA_HOSTNAMES` | reCAPTCHA 許可ホスト名（カンマ区切り） |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | メール送信設定 |
+| `CONTACT_TO_EMAIL` | お問い合わせ受信メールアドレス |
+| `ADMIN_EMAIL` / `ADMIN_NAME` / `ADMIN_PASSWORD` | 管理者シードデータ（`prisma db seed` 用） |
 
 ## 開発コマンド
 
 ```bash
-# 開発環境の起動（yarn dev + ホットリロード）
-docker compose -f docker-compose.dev.yml up
+# Docker 経由
+docker compose -f docker-compose.dev.yml up        # 起動
+docker compose -f docker-compose.dev.yml down       # 停止
+docker compose -f docker-compose.dev.yml logs -f next  # ログ
+docker compose -f docker-compose.dev.yml exec next sh  # シェル
 
-# 停止
-docker compose -f docker-compose.dev.yml down
+# ローカル（next/ ディレクトリで実行）
+cd next
+yarn dev              # 開発サーバー (Turbopack)
+yarn build            # プロダクションビルド + sitemap 生成
+yarn lint             # ESLint
+npx tsc --noEmit      # 型チェック
 
-# ログ確認
-docker compose -f docker-compose.dev.yml logs -f next
-
-# コンテナ内でシェル実行
-docker compose -f docker-compose.dev.yml exec next sh
-
-# Lint実行
-cd next && yarn lint
-```
-
-エイリアスを設定すると便利です（`~/.bashrc`に追加）：
-
-```bash
-alias dc-dev='docker compose -f docker-compose.dev.yml'
-```
-
-## 本番デプロイ
-
-GitHub Actionsによる自動デプロイ：
-
-1. `develop` → `main` へのPRをマージ
-2. Lint実行
-3. マルチステージビルドでDockerイメージをビルド & ghcr.ioにpush
-4. 本番サーバーでイメージをpull & 起動
-5. SSL証明書の自動取得/更新
-
-### Dockerイメージ
-
-マルチステージビルドにより軽量イメージ（~500MB）を生成。本番サーバーではpullのみ行い、ビルドは行わない。
-
-### SSL証明書の自動管理
-
-デプロイ時に以下の処理が自動実行されます：
-
-- **初回デプロイ**: Let's Encrypt から SSL 証明書を自動取得
-- **2回目以降**: 証明書の有効期限をチェックし、必要に応じて更新
-
-nginx は証明書の有無を自動判定：
-- 証明書なし → HTTP のみで起動
-- 証明書あり → HTTPS 有効、HTTP→HTTPS リダイレクト
-
-### 手動デプロイ
-
-```bash
-ssh your-server
-cd ~/seta-hp
-git pull origin main
-docker compose pull
-docker compose up -d
+# Prisma
+npx prisma generate   # Client 再生成
+npx prisma db push    # スキーマを DB に反映
+npx prisma studio     # DB GUI ツール
+npx prisma db seed    # シードデータ投入
 ```
 
 ## 主要技術スタック
 
-### フロントエンド
-- TypeScript
-- React 19
-- Next.js 15 (App Router)
-- MUI (Material UI)
-- Tailwind CSS
-- Framer Motion
+| レイヤー | 技術 |
+|---------|------|
+| Frontend | Next.js 15, React 19, MUI v6, Tailwind CSS, Framer Motion |
+| Backend | Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth) |
+| Database | MySQL 8.0, Prisma ORM |
+| 決済 | Stripe |
+| セキュリティ | reCAPTCHA v3, Zod バリデーション, XSS サニタイズ, レート制限 |
+| インフラ | Docker, Nginx, GitHub Actions (CI/CD), Google App Engine |
+| メール | Nodemailer (SMTP) |
 
-### バックエンド
-- Next.js API Routes
-- Prisma ORM
-- Auth.js (NextAuth)
-- MySQL 8.0
+## ページ一覧
 
-### インフラ
-- Docker / Docker Compose
-- Nginx
-- GitHub Actions (CI/CD)
-- Google Cloud Platform (本番)
+### 公開ページ
+
+| パス | 説明 |
+|------|------|
+| `/` | トップページ (Hero, カテゴリ, 特集商品, 工房紹介, CTA) |
+| `/products` | 商品一覧 |
+| `/products/[id]` | 商品詳細 |
+| `/gallery` | ギャラリー |
+| `/works` | 実績・ポートフォリオ |
+| `/about` | SETA Craft について |
+| `/company` | 会社情報（瀬田製作所） |
+| `/contact` | お問い合わせフォーム |
+| `/shipping` | 配送について |
+| `/shop` | ショップ |
+| `/consultation` | ご相談 |
+| `/engineering` | エンジニアリング |
+| `/fabrication` | ファブリケーション |
+| `/discription` | 会社概要 |
+| `/legal` | 特定商取引法に基づく表記 |
+| `/privacy-policy` | プライバシーポリシー |
+| `/payment` | Stripe 決済フロー |
+
+### 認証ページ
+
+| パス | 説明 |
+|------|------|
+| `/login` | ログイン（Credentials / Google OAuth） |
+| `/register` | ユーザー登録 |
+
+### 管理ページ（要ログイン）
+
+| パス | 説明 |
+|------|------|
+| `/products-manage` | 商品管理 |
+| `/gallery-manage` | ギャラリー管理 |
+| `/works-manage` | 実績管理 |
+| `/news` | ニュース管理 |
+| `/estimates` | 見積管理 |
+
+> **Note**: 管理ページはログイン済みであればアクセス可能です。書込み・削除などの操作は API 側で ADMIN / EDITOR ロールを要求します。
+
+## API エンドポイント
+
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
+| POST | `/api/auth/[...nextauth]` | NextAuth 認証 | - |
+| GET/POST/PUT/DELETE | `/api/products` | 商品 CRUD | 読取: 公開のみ無認証 / 非公開取得・書込: ADMIN/EDITOR |
+| GET/POST/PUT/DELETE | `/api/works` | 実績 CRUD | 書込: ADMIN/EDITOR |
+| GET/POST/PUT/DELETE | `/api/news` | ニュース CRUD | 書込: ADMIN/EDITOR |
+| GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET: 要認証 / DELETE: ADMIN |
+| GET/POST/DELETE | `/api/estimates` | 見積管理 | 要認証 |
+| POST | `/api/recaptcha` | reCAPTCHA 検証 | - (レート制限あり) |
+| POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
+| POST | `/api/upload` | 画像アップロード | 要認証 |
+| POST | `/api/admin/upload` | 管理者画像アップロード | 要認証 |
+| POST | `/api/checkout/onetime` | Stripe 単発決済 | - |
+| POST | `/api/checkout/subscription` | Stripe サブスクリプション決済 | - |
+
+## データベースモデル
+
+| モデル | 説明 |
+|--------|------|
+| **User** | ユーザー (ADMIN / EDITOR / VIEWER ロール, Credentials / Google OAuth) |
+| **Product** | 商品（名前, 価格, カテゴリ, 複数画像, 在庫状況, 公開/非公開） |
+| **Work** | 実績・ポートフォリオ |
+| **News** | ニュース記事（JSON コンテンツ） |
+| **Inquiry** | お問い合わせ |
+| **Estimate** | 見積書（PDF, 金額, Stripe 決済状態） |
+| **Account / Session** | NextAuth 認証関連 |
+
+### 商品カテゴリ
+
+- カードディスプレイ (`card-display`)
+- アクリル製品 (`acrylic`)
+- 3Dプリント製品 (`3d-print`)
+
+### 在庫状況
+
+- 在庫あり / 残りわずか / 受注生産 / 売り切れ
 
 ## ディレクトリ構成
 
 ```
 seta-hp/
-├── docker-compose.yml      # 本番用Docker Compose
-├── docker-compose.dev.yml  # 開発用Docker Compose
-├── nginx/
-│   ├── default.conf.template  # Nginx設定テンプレート
-│   └── docker-entrypoint.sh   # SSL自動判定スクリプト
-├── mysql/
-│   └── data/               # MySQLデータ（gitignore）
-├── scripts/                # 運用スクリプト
-│   ├── renew-ssl.sh        # SSL証明書更新
-│   ├── backup-db.sh        # DBバックアップ
-│   ├── monitor.sh          # サービス監視
-│   └── setup-monitoring.sh # 監視セットアップ
-├── fail2ban/               # fail2ban設定
-│   ├── jail.local          # メイン設定
-│   └── filter.d/           # フィルター定義
-├── logwatch/               # logwatch設定
-│   └── logwatch.conf       # レポート設定
-├── certbot/                # SSL証明書（gitignore）
-│   ├── conf/               # Let's Encrypt設定
-│   └── www/                # チャレンジ用
-└── next/
-    ├── Dockerfile          # Next.jsコンテナ設定
-    ├── .env                # 環境変数（gitignore）
-    ├── .env.example        # 環境変数テンプレート
+├── docker-compose.yml          # 本番用 Docker Compose
+├── docker-compose.dev.yml      # 開発用 Docker Compose
+├── nginx/                      # Nginx 設定
+│   ├── default.conf.template
+│   └── docker-entrypoint.sh
+├── scripts/                    # 運用スクリプト
+│   ├── renew-ssl.sh
+│   ├── backup-db.sh
+│   ├── monitor.sh
+│   └── setup-monitoring.sh
+├── fail2ban/                   # fail2ban 設定
+├── logwatch/                   # logwatch 設定
+├── certbot/                    # SSL 証明書（gitignore）
+├── CLAUDE.md                   # Claude Code 設定
+└── next/                       # Next.js アプリケーション
+    ├── Dockerfile
+    ├── package.json
+    ├── next.config.ts
+    ├── auth.config.ts           # NextAuth 設定
     ├── prisma/
-    │   ├── schema.prisma   # DBスキーマ定義
-    │   └── migrations/     # マイグレーション履歴
+    │   ├── schema.prisma        # DB スキーマ定義
+    │   └── seed.ts              # シードデータ
+    ├── public/                  # 静的ファイル & アップロード画像
     └── src/
-        ├── app/            # ページ・APIルート
-        ├── components/     # 共通コンポーネント
-        ├── lib/            # ユーティリティ（rateLimit含む）
-        └── theme/          # MUIテーマ設定
+        ├── app/                 # App Router (ページ & API)
+        │   ├── _home/           # トップページセクション
+        │   ├── about/           # SETA Craft について
+        │   ├── api/             # API Routes
+        │   │   ├── admin/upload/ # 管理者画像アップロード
+        │   │   ├── auth/        # NextAuth
+        │   │   ├── checkout/    # Stripe 決済 (onetime, subscription)
+        │   │   ├── email/       # お問い合わせ (送信・一覧・削除)
+        │   │   ├── estimates/   # 見積管理
+        │   │   ├── news/        # ニュース CRUD
+        │   │   ├── products/    # 商品 CRUD
+        │   │   ├── recaptcha/   # reCAPTCHA 検証
+        │   │   ├── register/    # ユーザー登録
+        │   │   ├── upload/      # 画像アップロード
+        │   │   └── works/       # 実績 CRUD
+        │   ├── company/         # 会社情報
+        │   ├── consultation/    # ご相談
+        │   ├── contact/         # お問い合わせ
+        │   ├── discription/     # 会社概要
+        │   ├── engineering/     # エンジニアリング
+        │   ├── fabrication/     # ファブリケーション
+        │   ├── gallery/         # ギャラリー
+        │   ├── gallery-manage/  # ギャラリー管理
+        │   ├── legal/           # 特定商取引法
+        │   ├── login/           # ログイン
+        │   ├── products/        # 商品一覧 & 詳細
+        │   ├── products-manage/ # 商品管理
+        │   ├── register/        # ユーザー登録
+        │   ├── shipping/        # 配送について
+        │   ├── shop/            # ショップ
+        │   ├── works/           # 実績
+        │   └── works-manage/    # 実績管理
+        ├── components/          # 共有コンポーネント
+        ├── lib/                 # ユーティリティ
+        │   ├── constants/       # カテゴリ・在庫定義
+        │   ├── api-response.ts  # API レスポンスヘルパー
+        │   ├── rate-limit.ts    # インメモリレート制限
+        │   ├── validation.ts    # Zod バリデーションスキーマ
+        │   ├── auth.ts          # NextAuth 初期化
+        │   └── db.ts            # Prisma クライアント
+        ├── actions/             # Server Actions
+        └── theme/               # MUI テーマ設定
 ```
 
 ## 開発ルール
@@ -223,27 +308,20 @@ seta-hp/
 - `feature/*` - 新機能開発
 - `fix/*` - バグ修正
 
-### ブランチ命名規則
-
-```
-feature/0034_create-top-page
-fix/0035_login-error
-```
-
 ### プルリクエスト
 
-1. `develop`から作業ブランチを作成
+1. `develop` から作業ブランチを作成
 2. 実装・コミット
-3. `develop`へPR作成
+3. `develop` へ PR 作成
 4. レビュー後マージ
-5. `develop` → `main`へPRでリリース
+5. `develop` → `main` へ PR でリリース
 
 ## DB運用
 
 ### スキーマ変更時
 
 ```bash
-# 1. schema.prismaを編集
+# 1. schema.prisma を編集
 
 # 2. マイグレーション作成
 docker compose exec next npx prisma migrate dev --name your_migration_name
@@ -255,10 +333,10 @@ docker compose exec next npx prisma generate
 ### トラブルシューティング
 
 ```bash
-# Prismaキャッシュクリア
+# Prisma キャッシュクリア
 docker compose exec next sh -c "rm -rf node_modules/.prisma && npx prisma generate"
 
-# DB接続確認
+# DB 接続確認
 docker compose exec mysql mysql -u app_user -papp_pass app_db
 ```
 
@@ -266,161 +344,95 @@ docker compose exec mysql mysql -u app_user -papp_pass app_db
 
 ### メタデータ
 
-`next/src/app/layout.tsx`でサイト全体のSEO設定を管理：
+`next/src/app/layout.tsx` でサイト全体の SEO 設定を管理。
 
 | 項目 | 説明 |
 |-----|------|
-| OGP | Open Graph Protocol（SNS共有用） |
-| Twitter Card | Twitter向けカード表示 |
+| OGP | Open Graph Protocol（SNS 共有用） |
+| Twitter Card | Twitter 向けカード表示 |
 | robots | 検索エンジンクローラー設定 |
-| canonical | 正規URL指定 |
+| canonical | 正規 URL 指定 |
 | JSON-LD | 構造化データ（Organization） |
-
-### OG画像
-
-`next/public/og-image.png` - 1200x630px
-
-SNSでシェアされた際に表示されるサムネイル画像。
-
-### 各ページのメタデータ
-
-主要ページに個別のメタデータを設定済み：
-
-| ページ | ファイル |
-|-------|---------|
-| トップ | `src/app/page.tsx` |
-| お問い合わせ | `src/app/contact/page.tsx` |
-| 会社概要 | `src/app/discription/page.tsx` |
-| サービス | `src/app/consultation/page.tsx` |
-| お支払い | `src/app/payment/layout.tsx` |
-| プライバシーポリシー | `src/app/privacy-policy/page.tsx` |
 
 ### Sitemap
 
-`next-sitemap`で自動生成。設定ファイル: `next/next-sitemap.config.cjs`
+`next-sitemap` で自動生成。設定ファイル: `next/next-sitemap.config.cjs`
 
-**Google向け最適化済み:**
 - `changefreq` / `priority` は Google が無視するため不使用
 - `lastmod` のみを設定
 - 管理画面・API・決済完了ページは除外
 
-**除外されるパス:**
-- `/portal-admin*`, `/portal-login*`
-- `/payment/success`, `/payment/cancel`
-- `/api/*`
-
-Google Search Console に登録済み。
-
 ## セキュリティ
 
-### 実装済みセキュリティ機能
+### アプリケーション層
 
 | 機能 | 説明 |
 |-----|------|
-| NextAuth認証 | bcryptによるパスワードハッシュ |
-| ユーザーロール | ADMIN / EDITOR / VIEWER |
-| レート制限 | IP単位でのリクエスト制限 |
-| API保護 | ADMIN権限チェック（upload/delete） |
+| NextAuth 認証 | bcrypt によるパスワードハッシュ, JWT セッション |
+| ロールベース認可 | ADMIN / EDITOR / VIEWER の 3 段階 |
+| レート制限 | IP 単位のリクエスト制限（登録, ログイン, お問い合わせ, reCAPTCHA） |
+| バリデーション | Zod スキーマによるサーバーサイド検証 |
 | reCAPTCHA v3 | フォームスパム対策 |
-| XSSサニタイズ | xssパッケージによる入力サニタイズ |
+| XSS サニタイズ | `xss` パッケージによる入力サニタイズ |
 
-### Nginx セキュリティヘッダー
+### セキュリティヘッダー（Next.js + Nginx）
 
-`nginx/docker-entrypoint.sh`でHTTPS有効時に以下を設定：
+| ヘッダー | 効果 |
+|---------|------|
+| `Strict-Transport-Security` | HTTPS 強制（HSTS） |
+| `X-Frame-Options` | クリックジャッキング防止 |
+| `X-Content-Type-Options` | MIME スニッフィング防止 |
+| `X-XSS-Protection` | XSS 攻撃防止 |
+| `Referrer-Policy` | リファラー情報制限 |
+| `Permissions-Policy` | ブラウザ機能制限（カメラ, マイク, 位置情報） |
 
-| ヘッダー | 値 | 効果 |
-|---------|-----|------|
-| `X-Frame-Options` | SAMEORIGIN | クリックジャッキング防止 |
-| `X-Content-Type-Options` | nosniff | MIMEスニッフィング防止 |
-| `X-XSS-Protection` | 1; mode=block | XSS攻撃防止 |
-| `Referrer-Policy` | strict-origin-when-cross-origin | リファラー情報制限 |
-| `Strict-Transport-Security` | max-age=31536000 | HTTPS強制（HSTS） |
-| `Permissions-Policy` | camera=(), microphone=()... | ブラウザ機能制限 |
+### サーバーセキュリティ
 
-### fail2ban
+- **fail2ban**: SSH / Nginx への不正アクセス対策
+- **logwatch**: 日次ログレポート
 
-SSH/Nginxへの不正アクセス対策：
+## 本番デプロイ
 
-```bash
-# 設定ファイルをコピー
-sudo cp fail2ban/jail.local /etc/fail2ban/
-sudo cp fail2ban/filter.d/* /etc/fail2ban/filter.d/
+GitHub Actions による自動デプロイ：
 
-# 再起動
-sudo systemctl restart fail2ban
-```
+1. `develop` → `main` への PR をマージ
+2. Lint 実行
+3. マルチステージビルドで Docker イメージをビルド & ghcr.io に push
+4. 本番サーバーでイメージを pull & 起動
+5. SSL 証明書の自動取得/更新
 
-### logwatch
-
-日次ログレポート：
+### 手動デプロイ
 
 ```bash
-# 設定ファイルをコピー
-sudo cp logwatch/logwatch.conf /etc/logwatch/conf/
-
-# テスト実行
-sudo logwatch --output stdout
+ssh your-server
+cd ~/seta-hp
+git pull origin main
+docker compose pull
+docker compose up -d
 ```
 
 ## 運用スクリプト
 
-`scripts/`ディレクトリに運用スクリプトを配置：
-
 | スクリプト | 説明 |
 |-----------|------|
-| `renew-ssl.sh` | SSL証明書の更新 |
-| `backup-db.sh` | DBバックアップ（7日間保持） |
-| `monitor.sh` | サービス死活監視 |
-| `setup-monitoring.sh` | 監視環境セットアップ |
-
-### SSL証明書更新
+| `scripts/renew-ssl.sh` | SSL 証明書の更新 |
+| `scripts/backup-db.sh` | DB バックアップ（7日間保持） |
+| `scripts/monitor.sh` | サービス死活監視 |
+| `scripts/setup-monitoring.sh` | 監視環境セットアップ |
 
 ```bash
-# 手動実行
-./scripts/renew-ssl.sh
-
-# cron設定（毎日3時に実行）
+# cron 設定例
+0 2 * * * /root/seta-hp/scripts/backup-db.sh >> /var/log/backup.log 2>&1
 0 3 * * * /root/seta-hp/scripts/renew-ssl.sh >> /var/log/ssl-renew.log 2>&1
 ```
 
-### DBバックアップ
+## 会社情報
 
-```bash
-# 手動実行
-./scripts/backup-db.sh
-
-# cron設定（毎日2時に実行）
-0 2 * * * /root/seta-hp/scripts/backup-db.sh >> /var/log/backup.log 2>&1
-```
-
-### サービス監視
-
-```bash
-# 監視セットアップ
-./scripts/setup-monitoring.sh
-
-# 死活監視実行
-./scripts/monitor.sh
-```
-
-## その他設定
-
-### Azure MSAL（問い合わせメール）
-
-MS 365との連携設定は別途ドキュメント参照。
-
-### reCAPTCHA v3
-
-問い合わせフォームのスパム対策として導入。
-
-### ESLint
-
-`next/core-web-vitals`と`next/typescript`を使用。設定ファイル: `next/.eslintrc.json`
-
-```bash
-# Lint実行
-cd next && yarn lint
-```
+- **会社名**: 瀬田製作所
+- **ブランド名**: SETA Craft
+- **設立**: 2023年8月8日
+- **所在地**: 富山県高岡市
+- **Email**: info@setaseisakusyo.com
 
 ## ライセンス
 

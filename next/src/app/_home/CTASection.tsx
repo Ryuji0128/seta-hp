@@ -1,62 +1,92 @@
 "use client";
 
 import { Box, Button, Container, Typography } from "@mui/material";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import Link from "next/link";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 const CTASection = () => {
   return (
     <Box
       sx={{
-        py: 10,
-        background: "linear-gradient(135deg, #00ACC1 0%, #1565C0 100%)",
+        py: { xs: 6, md: 8 },
+        bgcolor: "white",
       }}
     >
-      <Container maxWidth="md">
-        <Box sx={{ textAlign: "center" }}>
+      <Container maxWidth="sm">
+        <Box
+          sx={{
+            textAlign: "center",
+          }}
+        >
           <Typography
-            variant="h3"
+            variant="h2"
             sx={{
               fontWeight: 700,
-              color: "white",
-              mb: 3,
-              fontSize: { xs: "1.8rem", md: "2.5rem" },
+              color: "#333",
+              mb: 2,
+              fontSize: { xs: "1.25rem", md: "1.5rem" },
+              lineHeight: 1.5,
             }}
           >
-            「こんなの作れる？」
+            お気軽にお問い合わせください
           </Typography>
           <Typography
             variant="body1"
             sx={{
-              color: "rgba(255,255,255,0.9)",
+              color: "#666",
               mb: 4,
               lineHeight: 1.8,
+              fontSize: "14px",
             }}
           >
-            まずは気軽にご相談ください。
+            商品に関するご質問など、
             <br />
-            アイデア段階からでも、一緒に考えます。
+            お気軽にご連絡ください。
           </Typography>
-          <Link href="/contact" passHref>
-            <Button
-              variant="contained"
-              size="large"
-              sx={{
-                bgcolor: "white",
-                color: "primary.main",
-                px: 5,
-                py: 1.5,
-                fontSize: "1.1rem",
-                fontWeight: 600,
-                "&:hover": {
-                  bgcolor: "rgba(255,255,255,0.9)",
-                },
-              }}
-              endIcon={<ArrowForwardIcon />}
-            >
-              無料相談を予約する
-            </Button>
-          </Link>
+
+          <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/contact" passHref>
+              <Button
+                variant="contained"
+                size="large"
+                endIcon={<ArrowForwardIcon />}
+                sx={{
+                  bgcolor: "#FF5722",
+                  color: "white",
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: "50px",
+                  boxShadow: "none",
+                  "&:hover": {
+                    bgcolor: "#E64A19",
+                    boxShadow: "0 4px 12px rgba(255, 87, 34, 0.3)",
+                  },
+                }}
+              >
+                お問い合わせ
+              </Button>
+            </Link>
+            <Link href="/gallery" passHref>
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{
+                  color: "#333",
+                  borderColor: "#DDD",
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: "50px",
+                  "&:hover": {
+                    borderColor: "#333",
+                    bgcolor: "transparent",
+                  },
+                }}
+              >
+                作品例を見る
+              </Button>
+            </Link>
+          </Box>
         </Box>
       </Container>
     </Box>

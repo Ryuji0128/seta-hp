@@ -1,18 +1,16 @@
 import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import HeroSection from "./_home/HeroSection";
-import NewsSection from "./_home/NewsSection";
-import EngineeringSection from "./_home/EngineeringSection";
-import FabricationSection from "./_home/FabricationSection";
-import AboutSection from "./_home/AboutSection";
-import TechStackSection from "./_home/TechStackSection";
+import CategoryNavSection from "./_home/CategoryNavSection";
+import FeaturedProductsSection from "./_home/FeaturedProductsSection";
+import FeaturesSection from "./_home/FeaturesSection";
 import CTASection from "./_home/CTASection";
 
 export const metadata: Metadata = {
-  title: "瀬田製作所 | Web・モバイルアプリ開発",
+  title: "SETA Craft | カード好きが作ったディスプレイ",
   description:
-    "瀬田製作所は、Webアプリケーションやモバイルアプリの開発を行うエンジニアチームです。React、Next.js、TypeScriptなどの先進技術で最適なソリューションを提供します。",
-  keywords: ["Web開発", "アプリ開発", "React", "Next.js", "TypeScript", "瀬田製作所"],
+    "カード好きが作った、こだわりのディスプレイ。トレカ、ポケカ、遊戯王などのカードを美しく飾るスタンド・ケースを販売しています。レーザーカット・3Dプリントで丁寧に製作。",
+  keywords: ["カードディスプレイ", "トレカスタンド", "ポケカ", "遊戯王", "アクリルスタンド", "3Dプリント"],
   alternates: {
     canonical: "/",
   },
@@ -20,13 +18,11 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <Box>
+    <Box sx={{ bgcolor: "white" }}>
       <HeroSection />
-      <NewsSection />
-      <EngineeringSection />
-      <FabricationSection />
-      <AboutSection />
-      <TechStackSection />
+      <CategoryNavSection />
+      <FeaturedProductsSection />
+      <FeaturesSection />
       <CTASection />
     </Box>
   );

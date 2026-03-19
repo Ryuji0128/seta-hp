@@ -44,24 +44,24 @@ declare module "@mui/material/styles" {
 export const themeConstants = {
   palette: {
     primary: {
-      pale: "#E3F2FD",
-      light: "#64B5F6",
-      main: "#1565C0",
-      dark: "#0D47A1",
+      pale: "#FFF5F0",      // 薄いオレンジ
+      light: "#FF8A65",     // ライトオレンジ
+      main: "#FF5722",      // メインオレンジ（アクセント）
+      dark: "#E64A19",      // ダークオレンジ
       contrastText: "#FFFFFF",
     },
     secondary: {
-      pale: "#E0F7FA",
-      light: "#4DD0E1",
-      main: "#00ACC1",
-      dark: "#006064",
+      pale: "#F5F5F5",      // ライトグレー
+      light: "#BDBDBD",     // グレー
+      main: "#424242",      // ダークグレー（テキスト）
+      dark: "#212121",      // ほぼ黒
       contrastText: "#FFFFFF",
     },
     info: {
       pale: "#FFFFFF",
-      light: "#90A4AE",
-      main: "#546E7A",
-      dark: "#263238",
+      light: "#E0E0E0",     // ボーダー用グレー
+      main: "#757575",      // サブテキスト
+      dark: "#333333",      // メインテキスト
     },
     warning: {
       pale: "#FFF8E1",
@@ -76,13 +76,13 @@ export const themeConstants = {
       dark: "#C62828",
     },
     background: {
-      default: "#FAFBFC",
+      default: "#FFFFFF",   // 白ベース
       paper: "#FFFFFF",
-      dark: "#102027",
+      dark: "#333333",      // フッター用ダーク
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Noto Sans JP", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontSize: "2.5rem",
       fontWeight: 700,

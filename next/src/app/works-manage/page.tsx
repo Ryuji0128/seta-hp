@@ -14,7 +14,7 @@ export default async function WorksManagePage() {
   const session = await auth();
 
   if (!session) {
-    redirect("/portal-login");
+    redirect("/login");
   }
 
   return (

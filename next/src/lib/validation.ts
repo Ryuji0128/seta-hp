@@ -1,63 +1,61 @@
 import * as z from "zod";
 
-// Todo: 今後、バリデーション関数ではなく、zodバリデーションスキーマの仕様に統一することも検討する
+// ValidationError型（後方互換性のため維持）
 export interface ValidationError {
-  [key: string]: string; // 各フィールドに対するエラーメッセージ
+  [key: string]: string;
 }
 
-// 共通バリデーションロジック
-const validateName = (name: string): string | null => {
-  if (!name) {
-    return "氏名を入力してください。";
-  } else if (name.length > 50) {
-    return "氏名は50文字以内で入力してください。";
-  }
-  return null;
-};
+// 日本の電話番号パターン（固定電話・携帯電話両対応）
+// 例: 03-1234-5678, 090-1234-5678, 0120-123-456, 0761234567
+const phoneRegex = /^(0[0-9]{1,4}[-]?[0-9]{1,4}[-]?[0-9]{3,4})?$/;
 
-const validateEmail = (email: string): string | null => {
-  const emailPattern =
-    /^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/;
-  if (!email) {
-    return "メールアドレスを入力してください。";
-  } else if (!emailPattern.test(email)) {
-    return "有効なメールアドレスを入力してください。";
-  }
-  return null;
-};
+// 問い合わせフォームのZodスキーマ
+export const InquirySchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: "氏名を入力してください。" })
+    .max(50, { message: "氏名は50文字以内で入力してください。" }),
+  company: z
+    .string()
+    .max(100, { message: "会社名は100文字以内で入力してください。" })
+    .optional()
+    .or(z.literal("")),
+  email: z
+    .string()
+    .min(1, { message: "メールアドレスを入力してください。" })
+    .email({ message: "有効なメールアドレスを入力してください。" }),
+  phone: z
+    .string()
+    .regex(phoneRegex, { message: "有効な電話番号を入力してください。" })
+    .optional()
+    .or(z.literal("")),
+  inquiry: z
+    .string()
+    .min(1, { message: "お問い合わせ内容を入力してください。" })
+    .max(500, { message: "お問い合わせ内容は500文字以内で入力してください。" }),
+});
 
-// 問い合わせフォームバリデーション
+export type InquiryData = z.infer<typeof InquirySchema>;
 
-export interface InquiryData {
-  name: string;
-  company?: string; // 任意フィールド
-  email: string;
-  phone?: string; // 任意フィールド
-  inquiry: string;
-}
-
+/**
+ * 問い合わせデータのバリデーション（Zod版）
+ * @param data バリデーション対象データ
+ * @returns ValidationError オブジェクト（エラーがない場合は空オブジェクト）
+ */
 export const validateInquiry = (data: InquiryData): ValidationError => {
-  const errors: ValidationError = {};
+  const result = InquirySchema.safeParse(data);
 
-  // 氏名: 必須, 最大50文字
-  const nameError = validateName(data.name);
-  if (nameError) errors.name = nameError;
-
-  // メールアドレス: 必須, 正しい形式
-  const emailError = validateEmail(data.email);
-  if (emailError) errors.email = emailError;
-
-  // 電話番号: 任意, 日本の電話番号形式
-  const phonePattern = /^(\d{2,4}-?\d{2,4}-?\d{4})?$/;
-  if (data.phone && !phonePattern.test(data.phone)) {
-    errors.phone = "有効な電話番号を入力してください。";
+  if (result.success) {
+    return {};
   }
 
-  // お問い合わせ内容: 必須, 最大500文字
-  if (!data.inquiry) {
-    errors.inquiry = "お問い合わせ内容を入力してください。";
-  } else if (data.inquiry.length > 500) {
-    errors.inquiry = "お問い合わせ内容は500文字以内で入力してください。";
+  // Zodエラーを ValidationError 形式に変換
+  const errors: ValidationError = {};
+  for (const error of result.error.errors) {
+    const fieldName = error.path[0];
+    if (typeof fieldName === "string" && !errors[fieldName]) {
+      errors[fieldName] = error.message;
+    }
   }
 
   return errors;

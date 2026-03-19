@@ -32,7 +32,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Session } from "next-auth";
 import { useCallback, useEffect, useState } from "react";
-import ImageUpload from "@/components/ImageUpload";
+import MultiImageUpload from "@/components/MultiImageUpload";
+import {
+  PRODUCT_CATEGORIES,
+  STOCK_OPTIONS,
+  getProductCategoryLabel,
+} from "@/lib/constants/categories";
 
 interface Product {
   id: number;
@@ -42,6 +47,7 @@ interface Product {
   category: string;
   tags: string;
   image: string | null;
+  images: string[] | null;
   stock: string;
   isPublished: boolean;
   createdAt: string;
@@ -50,12 +56,6 @@ interface Product {
 interface ProductManagementProps {
   session: Session;
 }
-
-const stockOptions = ["在庫あり", "残りわずか", "受注生産", "売り切れ"];
-const categoryOptions = [
-  { value: "3dprint", label: "3Dプリント" },
-  { value: "lasercut", label: "レーザーカット" },
-];
 
 const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -69,10 +69,10 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formPrice, setFormPrice] = useState("");
-  const [formCategory, setFormCategory] = useState("3dprint");
+  const [formCategory, setFormCategory] = useState<string>(PRODUCT_CATEGORIES[0].value);
   const [formTags, setFormTags] = useState("");
-  const [formImage, setFormImage] = useState("");
-  const [formStock, setFormStock] = useState("在庫あり");
+  const [formImages, setFormImages] = useState<string[]>([]);
+  const [formStock, setFormStock] = useState<string>(STOCK_OPTIONS[0].value);
   const [formIsPublished, setFormIsPublished] = useState(true);
 
   const theme = useTheme();
@@ -102,9 +102,9 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormName("");
     setFormDescription("");
     setFormPrice("");
-    setFormCategory("3dprint");
+    setFormCategory(PRODUCT_CATEGORIES[0].value);
     setFormTags("");
-    setFormImage("");
+    setFormImages([]);
     setFormStock("在庫あり");
     setFormIsPublished(true);
     setSelectedProduct(null);
@@ -122,7 +122,9 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormPrice(product.price.toString());
     setFormCategory(product.category);
     setFormTags(product.tags);
-    setFormImage(product.image || "");
+    // 後方互換性: imagesがあればそれを使い、なければimageから配列を作成
+    const existingImages = product.images || (product.image ? [product.image] : []);
+    setFormImages(existingImages);
     setFormStock(product.stock);
     setFormIsPublished(product.isPublished);
     setDialogOpen(true);
@@ -136,7 +138,8 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         price: Number(formPrice),
         category: formCategory,
         tags: formTags,
-        image: formImage || null,
+        image: formImages[0] || null, // 最初の画像をメイン画像として保存（後方互換性）
+        images: formImages.length > 0 ? formImages : null,
         stock: formStock,
         isPublished: formIsPublished,
       };
@@ -190,9 +193,6 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     }
   };
 
-  const getCategoryLabel = (category: string) => {
-    return categoryOptions.find((c) => c.value === category)?.label || category;
-  };
 
   if (loading) {
     return (
@@ -246,14 +246,14 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
                     </Typography>
                     {isMobile && (
                       <Typography variant="caption" color="text.secondary">
-                        {getCategoryLabel(product.category)}
+                        {getProductCategoryLabel(product.category)}
                       </Typography>
                     )}
                   </TableCell>
                   {!isMobile && (
                     <TableCell>
                       <Chip
-                        label={getCategoryLabel(product.category)}
+                        label={getProductCategoryLabel(product.category)}
                         size="small"
                         color={product.category === "3dprint" ? "success" : "warning"}
                       />
@@ -351,7 +351,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
                 label="カテゴリ"
                 onChange={(e) => setFormCategory(e.target.value)}
               >
-                {categoryOptions.map((option) => (
+                {PRODUCT_CATEGORIES.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -367,9 +367,9 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
             />
             <Box>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                商品画像
+                商品画像（最初の画像がメイン画像になります）
               </Typography>
-              <ImageUpload value={formImage} onChange={setFormImage} />
+              <MultiImageUpload value={formImages} onChange={setFormImages} maxImages={10} />
             </Box>
             <FormControl fullWidth>
               <InputLabel>在庫状況</InputLabel>
@@ -378,9 +378,9 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
                 label="在庫状況"
                 onChange={(e) => setFormStock(e.target.value)}
               >
-                {stockOptions.map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
+                {STOCK_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
                   </MenuItem>
                 ))}
               </Select>

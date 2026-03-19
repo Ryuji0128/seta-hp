@@ -1,7 +1,6 @@
 "use client";
 
-import ProfileConsoleModal from "@/components/ProfileConsoleModal";
-import { useSimpleBar } from "@/components/SimpleBarWrapper";
+import UserAuthButton from "@/components/UserAuthButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
   AppBar,
@@ -17,26 +16,14 @@ import {
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { SessionProvider } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
-  const { scrollContainerRef } = useSimpleBar();
-
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    const handleScroll = () => setScrolled(scrollContainer.scrollTop > 200);
-    scrollContainer.addEventListener("scroll", handleScroll);
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, [scrollContainerRef]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -46,178 +33,123 @@ export default function Header() {
   };
 
   const contentsList = [
-    { title: "ソフト＆ハード開発", href: "/engineering" },
-    { title: "3Dモデル＆試作", href: "/fabrication" },
-    { title: "制作事例", href: "/works" },
-    { title: "販売", href: "/shop" },
-    { title: "会社概要", href: "/discription" },
+    { title: "商品一覧", href: "/products" },
+    { title: "ギャラリー", href: "/gallery" },
+    { title: "工房について", href: "/about" },
     { title: "お問い合わせ", href: "/contact" },
   ];
-
-  const staffLogin = { title: "スタッフ\nログイン", href: "/portal-login" };
 
   return (
     <>
       <AppBar
         position="fixed"
         sx={{
-          backgroundColor: scrolled ? "primary.main" : "transparent",
-          transition: "background-color 0.5s ease",
-          boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
+          backgroundColor: "#FFFFFF",
+          borderBottom: "1px solid #EAEAEA",
+          boxShadow: "none",
         }}
       >
-        <Toolbar
-          disableGutters
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            minHeight: { xs: 56, md: 64 },
-            px: { xs: 1, md: 2 },
-          }}
-        >
-          {/* 左側ロゴ */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Container maxWidth="lg">
+          <Toolbar
+            disableGutters
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: { xs: 56, md: 64 },
+            }}
+          >
+            {/* ロゴ */}
             <Link
               href="/"
               passHref
               style={{ textDecoration: "none", color: "inherit" }}
             >
-              <Box display="flex" alignItems="center">
-                <Image
-                  src="/seta_logo.svg"
-                  alt="瀬田製作所ロゴ"
-                  width={isTablet ? 36 : 48}
-                  height={isTablet ? 36 : 48}
-                  priority
-                />
-                <Typography
-                  variant="h5"
-                  sx={{
-                    ml: 1.5,
-                    fontSize: { xs: "20px", md: "28px" },
-                    color: scrolled ? "info.pale" : "info.dark",
-                    fontWeight: 700,
-                    letterSpacing: "0.05em",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  瀬田製作所
-                </Typography>
-              </Box>
-            </Link>
-          </Box>
-
-          {/* 右側：PC⇔タブレット/モバイル切り替え */}
-          {isTablet ? (
-            <>
-              {/* ハンバーガーアイコン */}
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={handleMenuOpen}
-              >
-                <MenuIcon sx={{ color: scrolled ? "info.pale" : "info.dark" }} />
-              </IconButton>
-
-              {/* プロフィールモーダル */}
-              <SessionProvider>
-                <ProfileConsoleModal />
-              </SessionProvider>
-
-              {/* ドロップダウンメニュー */}
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
+              <Typography
+                variant="h5"
                 sx={{
-                  mt: 1,
+                  fontSize: { xs: "16px", md: "20px" },
+                  color: "#333",
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
                 }}
               >
-                {contentsList.map((content, index) => (
-                  <MenuItem key={index} onClick={handleMenuClose}>
-                    <Link
-                      href={content.href}
-                      passHref
-                      style={{
-                        textDecoration: "none",
-                        color: "inherit",
-                        width: "100%",
-                      }}
-                    >
-                      <Typography variant="body1">{content.title}</Typography>
-                    </Link>
-                  </MenuItem>
-                ))}
-                <MenuItem onClick={handleMenuClose}>
-                  <Link
-                    href={staffLogin.href}
-                    passHref
-                    style={{
-                      textDecoration: "none",
-                      color: "gray",
-                      width: "100%",
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ fontSize: "12px", whiteSpace: "pre-line" }}>
-                      {staffLogin.title}
-                    </Typography>
-                  </Link>
-                </MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <>
-              <Container
-                maxWidth="lg"
+                SETA Craft
+              </Typography>
+            </Link>
+
+            {/* ナビゲーション */}
+            {isTablet ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <SessionProvider>
+                  <UserAuthButton />
+                </SessionProvider>
+
+                <IconButton
+                  edge="start"
+                  aria-label="menu"
+                  onClick={handleMenuOpen}
+                >
+                  <MenuIcon sx={{ color: "#333" }} />
+                </IconButton>
+
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  sx={{ mt: 1 }}
+                >
+                  {contentsList.map((content, index) => (
+                    <MenuItem key={index} onClick={handleMenuClose}>
+                      <Link
+                        href={content.href}
+                        passHref
+                        style={{
+                          textDecoration: "none",
+                          color: "inherit",
+                          width: "100%",
+                        }}
+                      >
+                        <Typography variant="body1">{content.title}</Typography>
+                      </Link>
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </Box>
+            ) : (
+              <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "flex-end",
                   alignItems: "center",
-                  gap: 0.5,
+                  gap: 1,
                 }}
               >
                 {contentsList.map((content, index) => (
                   <Link key={index} href={content.href} passHref>
                     <Button
                       sx={{
-                        color: scrolled ? "info.pale" : "info.dark",
+                        color: "#333",
+                        fontWeight: 500,
                         "&:hover": {
-                          backgroundColor: "rgba(255,255,255,0.1)",
+                          color: "#FF5722",
+                          backgroundColor: "transparent",
                         },
-                        fontSize: { xs: "13px", md: "15px" },
-                        padding: { xs: "0.5rem 0.4rem", md: "0.5rem 0.8rem" },
+                        fontSize: "14px",
+                        px: 2,
                       }}
                     >
                       {content.title}
                     </Button>
                   </Link>
                 ))}
-                <Link href={staffLogin.href} passHref>
-                  <Button
-                    sx={{
-                      color: "gray",
-                      "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.1)",
-                      },
-                      fontSize: { xs: "10px", md: "11px" },
-                      padding: { xs: "0.3rem 0.4rem", md: "0.3rem 0.6rem" },
-                      whiteSpace: "pre-line",
-                      lineHeight: 1.2,
-                      textAlign: "center",
-                    }}
-                  >
-                    {staffLogin.title}
-                  </Button>
-                </Link>
+
                 <SessionProvider>
-                  <ProfileConsoleModal />
+                  <UserAuthButton />
                 </SessionProvider>
-              </Container>
-            </>
-          )}
-        </Toolbar>
+              </Box>
+            )}
+          </Toolbar>
+        </Container>
       </AppBar>
 
       {/* ヘッダー分の高さを確保 */}

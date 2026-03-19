@@ -50,6 +50,9 @@
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
+  "resolutions": {
+    "@auth/core": "0.37.4"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^22.13.4",
