@@ -1,6 +1,6 @@
 services:
   next:
-    image: ghcr.io/seta-seisakusyo/seta-hp:latest
+    image: ghcr.io/seta-seisakusyo/seta-hp:${IMAGE_TAG:-latest}
     container_name: next_app
     ports:
       - "127.0.0.1:2999:3000"

@@ -1,10 +1,9 @@
 name: Deploy_Production
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types: [closed]
   workflow_dispatch:
 
 concurrency:
@@ -16,12 +15,10 @@ env:
   IMAGE_NAME: seta-seisakusyo/seta-hp
 
 jobs:
-  build-and-push:
-    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
+  ci:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
@@ -46,6 +43,19 @@ jobs:
         working-directory: ./next
         run: yarn test
 
+  build-and-push:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ github.sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
@@ -62,14 +72,15 @@ jobs:
           context: ./next
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
       packages: read
@@ -78,6 +89,7 @@ jobs:
       - name: Deploy to Production Server
         uses: appleboy/ssh-action@v1
         env:
+          IMAGE_TAG: ${{ github.sha }}
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_USERNAME: ${{ secrets.GH_USERNAME }}
         with:
@@ -86,48 +98,86 @@ jobs:
           key: ${{ secrets.SSH_SECRET_KEY }}
           port: ${{ secrets.SSH_PORT }}
           command_timeout: 10m
-          envs: GH_PAT,GH_USERNAME
+          envs: IMAGE_TAG,GH_PAT,GH_USERNAME
           script: |
             set -e
 
-            echo "Deploying seta-hp..."
+            COMPOSE_DIR=~/seta-hp
+            REGISTRY=ghcr.io
+            IMAGE=seta-seisakusyo/seta-hp
+            FULL_IMAGE="${REGISTRY}/${IMAGE}:${IMAGE_TAG}"
 
-            cd ~/seta-hp
+            echo "=== Deploying ${FULL_IMAGE} ==="
 
-            echo "Pulling latest code..."
-            git fetch origin main
-            git checkout main
-            git pull origin main
+            cd "${COMPOSE_DIR}"
 
-            echo "Logging in to GitHub Container Registry..."
-            echo "${GH_PAT}" | docker login ghcr.io -u "${GH_USERNAME}" --password-stdin
+            # 現在のIMAGE_TAGを保持（ロールバック用）
+            PREV_TAG=$(grep '^IMAGE_TAG=' .env 2>/dev/null | cut -d= -f2 || echo "")
+            echo "Previous IMAGE_TAG: ${PREV_TAG:-none}"
 
-            echo "Pulling latest image..."
-            docker compose -f docker-compose.yml pull
+            # レジストリログイン
+            echo "${GH_PAT}" | docker login "${REGISTRY}" -u "${GH_USERNAME}" --password-stdin
 
-            echo "Starting containers..."
-            docker compose -f docker-compose.yml up -d
+            # 指定SHAのイメージをpull
+            docker pull "${FULL_IMAGE}"
 
-            echo "Waiting for containers to be ready..."
-            sleep 10
-
-            echo "Checking SSL certificate..."
-            CERT_PATH="./certbot/conf/live/${SERVER_NAME:-setaseisakusyo.com}/fullchain.pem"
-            if [ ! -f "$CERT_PATH" ]; then
-              echo "SSL certificate not found. Obtaining certificate..."
-              docker compose --profile certbot run --rm certbot
-              echo "Restarting nginx with SSL..."
-              docker compose restart nginx
-            else
-              echo "SSL certificate exists. Checking for renewal..."
-              docker compose --profile certbot run --rm certbot renew --quiet || true
-              docker compose restart nginx
+            # .envからDATABASE_URLを取得（Composeと同じ設定源）
+            DB_URL=$(grep '^DATABASE_URL=' next/.env 2>/dev/null | cut -d= -f2- || echo "")
+            if [ -z "${DB_URL}" ]; then
+              DB_URL="mysql://app_user:${MYSQL_PASSWORD:-app_pass}@mysql:3306/app_db"
             fi
 
+            # マイグレーションを先に実行（失敗時はデプロイ中止）
             echo "Running database migrations..."
-            docker compose exec -T next node node_modules/prisma/build/index.js migrate deploy
+            docker run --rm \
+              --network seta-hp_default \
+              -e DATABASE_URL="${DB_URL}" \
+              "${FULL_IMAGE}" \
+              node node_modules/prisma/build/index.js migrate deploy
 
+            # IMAGE_TAGを.envに書き出してcompose起動
+            echo "Updating IMAGE_TAG=${IMAGE_TAG}"
+            sed -i '/^IMAGE_TAG=/d' .env 2>/dev/null || true
+            echo "IMAGE_TAG=${IMAGE_TAG}" >> .env
+
+            # アプリ更新（nextのみ再作成、mysql/nginxは変更なければそのまま）
+            docker compose -f docker-compose.yml up -d --no-deps next
+
+            # ヘルスチェック待ち
+            echo "Waiting for health check..."
+            for i in $(seq 1 30); do
+              if docker compose -f docker-compose.yml exec -T next wget --spider -q http://localhost:3000/ 2>/dev/null; then
+                echo "Health check passed!"
+                break
+              fi
+              if [ "$i" -eq 30 ]; then
+                echo "ERROR: Health check failed after 150s."
+                echo "Current IMAGE_TAG: ${IMAGE_TAG}"
+                echo "Previous IMAGE_TAG: ${PREV_TAG:-none}"
+                echo "Manual rollback: sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=<sha>/' .env && docker compose -f docker-compose.yml up -d --no-deps next"
+                echo "WARNING: DB migration may have already been applied. Check schema compatibility before rollback."
+                exit 1
+              fi
+              sleep 5
+            done
+
+            # SSL証明書の確認・更新
+            CERT_PATH="./certbot/conf/live/${SERVER_NAME:-setaseisakusyo.com}/fullchain.pem"
+            if [ ! -f "$CERT_PATH" ]; then
+              echo "SSL certificate not found. Obtaining..."
+              docker compose --profile certbot run --rm certbot
+              docker compose -f docker-compose.yml restart nginx
+            else
+              echo "Checking SSL certificate renewal..."
+              docker compose --profile certbot run --rm certbot renew --quiet || true
+              docker compose -f docker-compose.yml exec -T nginx nginx -s reload || true
+            fi
+
+            # 古いイメージのクリーンアップ（直近3世代を保持）
             echo "Cleaning up old images..."
-            docker image prune -f
+            docker images "${REGISTRY}/${IMAGE}" --format '{{.Tag}} {{.ID}}' \
+              | grep -v '<none>' | grep -v 'latest' \
+              | sort -r | tail -n +4 \
+              | awk '{print $2}' | xargs -r docker rmi 2>/dev/null || true
 
-            echo "Deployment completed successfully!"
+            echo "=== Deployment complete: ${IMAGE_TAG} ==="
