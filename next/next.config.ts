@@ -29,6 +29,18 @@ const securityHeaders = [
         key: "Permissions-Policy",
         value: "camera=(), microphone=(), geolocation=()",
     },
+    {
+        key: "Content-Security-Policy",
+        value: [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.recaptcha.net https://js.stripe.com",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: blob: https://setaseisakusyo.com https://*.googleusercontent.com",
+            "frame-src https://www.google.com https://www.recaptcha.net https://js.stripe.com",
+            "connect-src 'self' https://www.google.com https://www.recaptcha.net https://api.stripe.com",
+        ].join("; "),
+    },
 ];
 
 const nextConfig: NextConfig = {
@@ -55,6 +67,15 @@ const nextConfig: NextConfig = {
             {
                 source: "/:path*",
                 headers: securityHeaders,
+            },
+        ];
+    },
+    async redirects() {
+        return [
+            {
+                source: "/discription",
+                destination: "/description",
+                permanent: true,
             },
         ];
     },
