@@ -5,6 +5,7 @@ import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 import { fetchSecret } from "@/lib/fetchSecrets";
 import axios from "axios";
+import { parsePagination } from "@/lib/pagination";
 
 const prisma = getPrismaClient();
 
@@ -138,6 +139,10 @@ export async function POST(req: NextRequest) {
       await writeFile(finalPath, buffer);
     }
 
+    // ログイン中ユーザーのIDを取得（監査証跡用、未ログインならnull）
+    const session = await auth();
+    const userId = session?.user?.id || null;
+
     // DB保存
     const estimate = await prisma.estimate.create({
       data: {
@@ -145,6 +150,7 @@ export async function POST(req: NextRequest) {
         filePath: filePath || "",
         amount: parseInt(amount, 10),
         status: "pending",
+        userId,
       },
     });
 
@@ -164,7 +170,7 @@ export async function POST(req: NextRequest) {
 /**
  * 見積書一覧取得（GET）- 認証必須
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     // 認証・権限チェック（ADMIN/EDITORのみ）
     const session = await auth();
@@ -175,11 +181,19 @@ export async function GET() {
       return NextResponse.json({ error: "権限がありません" }, { status: 403 });
     }
 
-    const estimates = await prisma.estimate.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
 
-    return NextResponse.json({ estimates });
+    const [estimates, total] = await Promise.all([
+      prisma.estimate.findMany({
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+      }),
+      prisma.estimate.count(),
+    ]);
+
+    return NextResponse.json({ estimates, total, page, limit });
   } catch (error) {
     console.error("見積書取得エラー:", error);
     return NextResponse.json(

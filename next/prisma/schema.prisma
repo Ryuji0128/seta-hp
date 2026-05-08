@@ -38,8 +38,11 @@ model Estimate {
   amount    Int
   paymentId String?
   status    String   @default("pending")
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([status])
+  @@index([userId])
 }
 
 model Inquiry {
@@ -50,8 +53,11 @@ model Inquiry {
   email     String
   phone     String
   inquiry   String
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+  @@index([userId])
 }
 
 model News {
@@ -109,6 +115,8 @@ model User {
   updatedAt     DateTime  @updatedAt
   Account       Account[]
   Session       Session[]
+  Estimate      Estimate[]
+  Inquiry       Inquiry[]
 }
 
 model Work {

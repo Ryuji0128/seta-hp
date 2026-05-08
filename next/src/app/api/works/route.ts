@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { parsePagination } from "@/lib/pagination";
 import xss from "xss";
 
 // 許可されたカテゴリ
@@ -25,12 +26,20 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const works = await prisma.work.findMany({
-      where: includeUnpublished ? {} : { isPublished: true },
-      orderBy: { createdAt: "desc" },
-    });
+    const { page, limit, skip } = parsePagination(searchParams);
 
-    return NextResponse.json({ works });
+    const where = includeUnpublished ? {} : { isPublished: true };
+    const [works, total] = await Promise.all([
+      prisma.work.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+      }),
+      prisma.work.count({ where }),
+    ]);
+
+    return NextResponse.json({ works, total, page, limit });
   } catch (error) {
     console.error("制作事例取得エラー:", error);
     return NextResponse.json({ error: "制作事例の取得に失敗しました" }, { status: 500 });

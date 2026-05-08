@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { parsePagination } from "@/lib/pagination";
 import xss from "xss";
 
 // お知らせ一覧取得
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const prisma = getPrismaClient();
-    const news = await prisma.news.findMany({
-      orderBy: { date: "desc" },
-    });
-    return NextResponse.json({ news });
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+
+    const [news, total] = await Promise.all([
+      prisma.news.findMany({
+        orderBy: { date: "desc" },
+        take: limit,
+        skip,
+      }),
+      prisma.news.count(),
+    ]);
+    return NextResponse.json({ news, total, page, limit });
   } catch (error) {
     console.error("お知らせ取得エラー:", error);
     return NextResponse.json({ error: "お知らせの取得に失敗しました" }, { status: 500 });
