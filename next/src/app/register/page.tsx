@@ -49,8 +49,13 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!/[a-zA-Z]/.test(password)) {
-      setError("パスワードには英字を含めてください");
+    if (!/[a-z]/.test(password)) {
+      setError("パスワードには小文字を含めてください");
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      setError("パスワードには大文字を含めてください");
       return;
     }
 
@@ -210,7 +215,7 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              helperText="8文字以上、英字と数字を含む"
+              helperText="8文字以上、大文字・小文字・数字をそれぞれ含む"
               sx={{ mb: 2 }}
               slotProps={{
                 input: {

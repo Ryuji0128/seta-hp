@@ -3,6 +3,7 @@ import { getPrismaClient } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { VALID_PRODUCT_CATEGORIES, VALID_STOCK_OPTIONS } from "@/lib/constants/categories";
+import xss from "xss";
 
 // 商品一覧取得（公開用）
 export async function GET(req: NextRequest) {
@@ -74,11 +75,11 @@ export async function POST(req: NextRequest) {
 
     const product = await prisma.product.create({
       data: {
-        name,
-        description,
+        name: xss(name),
+        description: xss(description),
         price: priceNum,
         category,
-        tags: Array.isArray(tags) ? tags.join(",") : tags || "",
+        tags: Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags || ""),
         image: image || null,
         images: Array.isArray(images) ? images : Prisma.JsonNull,
         stock: stock || "在庫あり",
@@ -142,11 +143,11 @@ export async function PUT(req: NextRequest) {
     const product = await prisma.product.update({
       where: { id },
       data: {
-        name,
-        description,
+        name: name ? xss(name) : undefined,
+        description: description ? xss(description) : undefined,
         price: priceNum,
         category,
-        tags: Array.isArray(tags) ? tags.join(",") : tags,
+        tags: tags !== undefined ? (Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags)) : undefined,
         image: image || null,
         images: images !== undefined ? (Array.isArray(images) ? images : Prisma.JsonNull) : undefined,
         stock,
