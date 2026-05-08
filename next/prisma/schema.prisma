@@ -29,22 +29,6 @@ model Account {
   @@index([userId])
 }
 
-model Estimate {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  fileName  String
-  filePath  String
-  amount    Int
-  paymentId String?
-  status    String   @default("pending")
-  userId    String?
-  User      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([status])
-  @@index([userId])
-}
-
 model Inquiry {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -115,7 +99,6 @@ model User {
   updatedAt     DateTime  @updatedAt
   Account       Account[]
   Session       Session[]
-  Estimate      Estimate[]
   Inquiry       Inquiry[]
 }
 

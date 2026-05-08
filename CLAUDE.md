@@ -86,7 +86,6 @@ npx prisma db seed    # シードデータ投入
 | `/gallery-manage` | ギャラリー管理 |
 | `/works-manage` | 実績管理 |
 | `/news` | ニュース管理 |
-| `/estimates` | 見積管理 |
 
 ## Database Models
 
@@ -95,7 +94,6 @@ npx prisma db seed    # シードデータ投入
 - **Work**: 実績・ポートフォリオ
 - **News**: ニュース記事 (日付, タイトル, JSON contents)
 - **Inquiry**: お問い合わせ
-- **Estimate**: 見積書 (PDF, 金額, Stripe決済状態)
 - **Account/Session**: NextAuth認証関連
 
 ## Environment Variables
