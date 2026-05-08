@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import xss from "xss";
 
 // お知らせ一覧取得
 export async function GET() {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     const news = await prisma.news.create({
       data: {
-        title,
+        title: xss(title),
         contents,
         date: new Date(date),
         url: url || null,
@@ -77,7 +78,7 @@ export async function PUT(req: NextRequest) {
     const news = await prisma.news.update({
       where: { id },
       data: {
-        title,
+        title: title ? xss(title) : undefined,
         contents,
         date: date ? new Date(date) : undefined,
         url: url || null,

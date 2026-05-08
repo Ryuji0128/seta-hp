@@ -3,24 +3,9 @@ import { getPrismaClient } from "@/lib/db";
 import bcryptjs from "bcryptjs";
 import { z } from "zod";
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
+import { RegistrationSchema } from "@/lib/validation";
 
 const prisma = getPrismaClient();
-
-// パスワード強度チェック
-const passwordSchema = z
-  .string()
-  .min(8, "パスワードは8文字以上で入力してください")
-  .regex(/[a-zA-Z]/, "パスワードには英字を含めてください")
-  .regex(/[0-9]/, "パスワードには数字を含めてください");
-
-const RegisterSchema = z.object({
-  name: z
-    .string()
-    .min(1, "名前を入力してください")
-    .max(50, "名前は50文字以内で入力してください"),
-  email: z.string().email("有効なメールアドレスを入力してください"),
-  password: passwordSchema,
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validatedData = RegisterSchema.parse(body);
+    const validatedData = RegistrationSchema.parse(body);
 
     // 既存ユーザーのチェック
     const existingUser = await prisma.user.findUnique({
@@ -60,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "このメールアドレスは既に登録されています" },
+        { error: "アカウントの作成に失敗しました" },
         { status: 400 }
       );
     }

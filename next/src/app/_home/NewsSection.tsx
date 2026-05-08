@@ -29,18 +29,23 @@ const NewsSection = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchNews = async () => {
       try {
-        const response = await axios.get<{ news: News[] }>("/api/news");
-        // 最新5件のみ表示
+        const response = await axios.get<{ news: News[] }>("/api/news", {
+          signal: controller.signal,
+        });
         setNewsList(response.data.news.slice(0, 5));
       } catch (error) {
-        console.error("お知らせの取得に失敗:", error);
+        if (!axios.isCancel(error)) {
+          console.error("お知らせの取得に失敗:", error);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchNews();
+    return () => controller.abort();
   }, []);
 
   if (loading || newsList.length === 0) {

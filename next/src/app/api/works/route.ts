@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import xss from "xss";
 
 // 許可されたカテゴリ
 const VALID_CATEGORIES = ["modeling", "print", "laser", "mockup"];
@@ -64,8 +65,8 @@ export async function POST(req: NextRequest) {
 
     const work = await prisma.work.create({
       data: {
-        title,
-        description,
+        title: xss(title),
+        description: xss(description),
         category,
         tags: Array.isArray(tags) ? tags.join(",") : tags || "",
         image: image || null,
@@ -115,10 +116,10 @@ export async function PUT(req: NextRequest) {
     const work = await prisma.work.update({
       where: { id },
       data: {
-        title,
-        description,
+        title: title ? xss(title) : undefined,
+        description: description ? xss(description) : undefined,
         category,
-        tags: Array.isArray(tags) ? tags.join(",") : tags,
+        tags: tags !== undefined ? (Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags)) : undefined,
         image: image || null,
         isPublished,
       },
