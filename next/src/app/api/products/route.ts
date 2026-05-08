@@ -3,6 +3,8 @@ import { getPrismaClient } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { VALID_PRODUCT_CATEGORIES, VALID_STOCK_OPTIONS } from "@/lib/constants/categories";
+import { parsePagination } from "@/lib/pagination";
+import xss from "xss";
 
 // 商品一覧取得（公開用）
 export async function GET(req: NextRequest) {
@@ -23,12 +25,20 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const products = await prisma.product.findMany({
-      where: includeUnpublished ? {} : { isPublished: true },
-      orderBy: { createdAt: "desc" },
-    });
+    const { page, limit, skip } = parsePagination(searchParams);
 
-    return NextResponse.json({ products });
+    const where = includeUnpublished ? {} : { isPublished: true };
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    return NextResponse.json({ products, total, page, limit });
   } catch (error) {
     console.error("商品取得エラー:", error);
     return NextResponse.json({ error: "商品の取得に失敗しました" }, { status: 500 });
@@ -74,11 +84,11 @@ export async function POST(req: NextRequest) {
 
     const product = await prisma.product.create({
       data: {
-        name,
-        description,
+        name: xss(name),
+        description: xss(description),
         price: priceNum,
         category,
-        tags: Array.isArray(tags) ? tags.join(",") : tags || "",
+        tags: Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags || ""),
         image: image || null,
         images: Array.isArray(images) ? images : Prisma.JsonNull,
         stock: stock || "在庫あり",
@@ -142,11 +152,11 @@ export async function PUT(req: NextRequest) {
     const product = await prisma.product.update({
       where: { id },
       data: {
-        name,
-        description,
+        name: name ? xss(name) : undefined,
+        description: description ? xss(description) : undefined,
         price: priceNum,
         category,
-        tags: Array.isArray(tags) ? tags.join(",") : tags,
+        tags: tags !== undefined ? (Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags)) : undefined,
         image: image || null,
         images: images !== undefined ? (Array.isArray(images) ? images : Prisma.JsonNull) : undefined,
         stock,

@@ -29,7 +29,6 @@ const ProfileConsoleModal = () => {
     { label: "問い合わせ管理", path: "/contact" },
     { label: "お知らせ管理", path: "/news" },
     { label: "制作事例管理", path: "/works-manage" },
-    { label: "見積書管理", path: "/estimates" },
   ];
 
   return (

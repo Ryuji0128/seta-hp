@@ -19,7 +19,7 @@ async function main() {
     throw new Error("ADMIN_PASSWORD は8文字以上で設定してください。");
   }
 
-  const hashedPassword = await bcryptjs.hash(password, 10);
+  const hashedPassword = await bcryptjs.hash(password, 12);
 
   const user = await prisma.user.upsert({
     where: { email },

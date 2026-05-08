@@ -29,17 +29,6 @@ model Account {
   @@index([userId])
 }
 
-model Estimate {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  fileName  String
-  filePath  String
-  amount    Int
-  paymentId String?
-  status    String   @default("pending")
-}
-
 model Inquiry {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -48,6 +37,11 @@ model Inquiry {
   email     String
   phone     String
   inquiry   String
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId])
 }
 
 model News {
@@ -58,6 +52,8 @@ model News {
   title     String
   contents  Json
   url       String?
+
+  @@index([date])
 }
 
 model Product {
@@ -73,6 +69,9 @@ model Product {
   images      Json?
   stock       String   @default("在庫あり")
   isPublished Boolean  @default(true)
+
+  @@index([category])
+  @@index([isPublished])
 }
 
 model Session {
@@ -82,7 +81,7 @@ model Session {
   expires      DateTime
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  User         User     @relation(fields: [userId], references: [id])
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -100,14 +99,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   Account       Account[]
   Session       Session[]
-}
-
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-
-  @@unique([identifier, token])
+  Inquiry       Inquiry[]
 }
 
 model Work {
@@ -120,6 +112,9 @@ model Work {
   tags        String
   image       String?
   isPublished Boolean  @default(true)
+
+  @@index([category])
+  @@index([isPublished])
 }
 
 enum User_role {

@@ -3,7 +3,7 @@ services:
     image: ghcr.io/ryuji0128/seta-hp:latest
     container_name: next_app
     ports:
-      - "2999:3000"
+      - "127.0.0.1:2999:3000"
     env_file:
       - ./next/.env
     environment:
@@ -17,10 +17,16 @@ services:
       mysql:
         condition: service_healthy
     restart: unless-stopped
-    mem_limit: 384m
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   mysql:
-    image: mysql:8.0
+    image: mysql:8.0.40
     container_name: mysql_db
     restart: unless-stopped
     environment:
@@ -30,7 +36,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-app_pass}
     command: >
       --innodb-buffer-pool-size=128M --key-buffer-size=16M --max-connections=30 --table-open-cache=200 --tmp-table-size=16M --max-heap-table-size=16M
-    mem_limit: 256m
+    mem_limit: 512m
     volumes:
       - ./mysql/data:/var/lib/mysql
     healthcheck:
@@ -41,7 +47,7 @@ services:
       start_period: 30s
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.27-alpine
     container_name: nginx_proxy
     ports:
       - "80:80"
@@ -59,6 +65,12 @@ services:
       - next
     restart: unless-stopped
     mem_limit: 64m
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # SSL証明書取得・更新用（本番環境で使用）
   certbot:

@@ -8,10 +8,17 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BACKUP_DIR="$PROJECT_DIR/backups"
 RETENTION_DAYS=7
+MIN_BACKUP_COUNT=3
 
-# 環境変数読み込み
-if [ -f "$PROJECT_DIR/.env" ]; then
-    export $(grep -v '^#' "$PROJECT_DIR/.env" | xargs)
+# 環境変数読み込み（docker-compose.ymlと同じnext/.envを使用）
+if [ -f "$PROJECT_DIR/next/.env" ]; then
+    set -a
+    . "$PROJECT_DIR/next/.env"
+    set +a
+elif [ -f "$PROJECT_DIR/.env" ]; then
+    set -a
+    . "$PROJECT_DIR/.env"
+    set +a
 fi
 
 # デフォルト値
@@ -38,17 +45,24 @@ docker compose exec -T mysql mysqldump \
     --lock-tables=false \
     "$MYSQL_DATABASE" | gzip > "$BACKUP_DIR/$BACKUP_FILE"
 
-if [ $? -eq 0 ]; then
-    echo "バックアップ成功: $BACKUP_FILE"
-    echo "ファイルサイズ: $(du -h "$BACKUP_DIR/$BACKUP_FILE" | cut -f1)"
-else
-    echo "エラー: バックアップに失敗しました"
+# バックアップ成功確認（ファイルサイズが0でないことを検証）
+if [ ! -s "$BACKUP_DIR/$BACKUP_FILE" ]; then
+    echo "エラー: バックアップファイルが空です。削除します。"
+    rm -f "$BACKUP_DIR/$BACKUP_FILE"
     exit 1
 fi
 
-# 古いバックアップの削除（RETENTION_DAYS日以上前）
-echo "古いバックアップを削除中（${RETENTION_DAYS}日以上前）..."
-find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$RETENTION_DAYS -delete
+echo "バックアップ成功: $BACKUP_FILE"
+echo "ファイルサイズ: $(du -h "$BACKUP_DIR/$BACKUP_FILE" | cut -f1)"
+
+# 古いバックアップの削除（最低MIN_BACKUP_COUNT件は保持）
+BACKUP_COUNT=$(find "$BACKUP_DIR" -name "*.sql.gz" | wc -l)
+if [ "$BACKUP_COUNT" -gt "$MIN_BACKUP_COUNT" ]; then
+    echo "古いバックアップを削除中（${RETENTION_DAYS}日以上前）..."
+    find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$RETENTION_DAYS -delete
+else
+    echo "バックアップ数が${MIN_BACKUP_COUNT}件以下のため、古いバックアップは削除しません。"
+fi
 
 # 残りのバックアップ一覧
 echo "現在のバックアップ一覧:"

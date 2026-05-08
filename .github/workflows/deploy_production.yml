@@ -42,6 +42,10 @@ jobs:
         working-directory: ./next
         run: yarn lint
 
+      - name: Run tests
+        working-directory: ./next
+        run: yarn test
+
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
@@ -92,7 +96,8 @@ jobs:
 
             echo "Pulling latest code..."
             git fetch origin main
-            git reset --hard origin/main
+            git checkout main
+            git pull origin main
 
             echo "Logging in to GitHub Container Registry..."
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_USERNAME}" --password-stdin
@@ -107,7 +112,7 @@ jobs:
             sleep 10
 
             echo "Checking SSL certificate..."
-            CERT_PATH="./certbot/conf/live/setaseisakusyo.com/fullchain.pem"
+            CERT_PATH="./certbot/conf/live/${SERVER_NAME:-setaseisakusyo.com}/fullchain.pem"
             if [ ! -f "$CERT_PATH" ]; then
               echo "SSL certificate not found. Obtaining certificate..."
               docker compose --profile certbot run --rm certbot
@@ -120,7 +125,7 @@ jobs:
             fi
 
             echo "Running database migrations..."
-            docker compose exec -T next node node_modules/prisma/build/index.js migrate deploy || echo "Migration skipped or no pending migrations"
+            docker compose exec -T next node node_modules/prisma/build/index.js migrate deploy
 
             echo "Cleaning up old images..."
             docker image prune -f

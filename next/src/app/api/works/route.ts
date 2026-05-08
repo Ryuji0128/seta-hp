@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { parsePagination } from "@/lib/pagination";
+import xss from "xss";
 
 // 許可されたカテゴリ
 const VALID_CATEGORIES = ["modeling", "print", "laser", "mockup"];
@@ -12,20 +14,32 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const includeUnpublished = searchParams.get("includeUnpublished") === "true";
 
-    // 認証チェック（非公開を含める場合）
+    // 認証・権限チェック（非公開を含める場合はADMIN/EDITORのみ）
     if (includeUnpublished) {
       const session = await auth();
       if (!session) {
         return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
       }
+      const userRole = (session?.user as { role?: string })?.role;
+      if (userRole !== "ADMIN" && userRole !== "EDITOR") {
+        return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
+      }
     }
 
-    const works = await prisma.work.findMany({
-      where: includeUnpublished ? {} : { isPublished: true },
-      orderBy: { createdAt: "desc" },
-    });
+    const { page, limit, skip } = parsePagination(searchParams);
 
-    return NextResponse.json({ works });
+    const where = includeUnpublished ? {} : { isPublished: true };
+    const [works, total] = await Promise.all([
+      prisma.work.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+      }),
+      prisma.work.count({ where }),
+    ]);
+
+    return NextResponse.json({ works, total, page, limit });
   } catch (error) {
     console.error("制作事例取得エラー:", error);
     return NextResponse.json({ error: "制作事例の取得に失敗しました" }, { status: 500 });
@@ -60,8 +74,8 @@ export async function POST(req: NextRequest) {
 
     const work = await prisma.work.create({
       data: {
-        title,
-        description,
+        title: xss(title),
+        description: xss(description),
         category,
         tags: Array.isArray(tags) ? tags.join(",") : tags || "",
         image: image || null,
@@ -111,10 +125,10 @@ export async function PUT(req: NextRequest) {
     const work = await prisma.work.update({
       where: { id },
       data: {
-        title,
-        description,
+        title: title ? xss(title) : undefined,
+        description: description ? xss(description) : undefined,
         category,
-        tags: Array.isArray(tags) ? tags.join(",") : tags,
+        tags: tags !== undefined ? (Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags)) : undefined,
         image: image || null,
         isPublished,
       },

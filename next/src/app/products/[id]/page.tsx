@@ -10,7 +10,7 @@ import { getPrismaClient } from "@/lib/db";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
 import ProductImageGallery from "./ProductImageGallery";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
@@ -81,7 +81,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const relatedProducts = await getRelatedProducts(product.category, product.id);
+  // 関連商品を並列取得（ウォーターフォール回避）
+  const [relatedProducts] = await Promise.all([
+    getRelatedProducts(product.category, product.id),
+  ]);
   const tags = product.tags ? product.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
 
   // 画像配列を取得（後方互換性対応）

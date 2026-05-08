@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import NewsManagement from "./NewsManagement";
 import BaseContainer from "@/components/BaseContainer";
 import { Box, Typography } from "@mui/material";
+
+export const metadata: Metadata = {
+  title: "お知らせ管理",
+  robots: { index: false },
+};
 
 export default async function NewsPage() {
   const session = await auth();

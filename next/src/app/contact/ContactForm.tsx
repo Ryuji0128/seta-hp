@@ -203,7 +203,7 @@ export default function ContactForm() {
           <Button
             type="submit"
             variant="contained"
-            disabled={!recaptchaLoaded}
+            disabled={!recaptchaLoaded || isModalOpen}
             sx={{
               backgroundColor: "primary.main",
               color: "primary.contrastText",
@@ -211,7 +211,7 @@ export default function ContactForm() {
               "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
-            {recaptchaLoaded ? "送信" : "準備中..."}
+            {!recaptchaLoaded ? "準備中..." : isModalOpen ? "送信中..." : "送信"}
           </Button>
         </Box>
       </Box>
