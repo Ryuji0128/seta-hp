@@ -34,7 +34,7 @@ export default async function ContactPage() {
         useRecaptchaNet={true}
       >
         <ContactPageMainTitle />
-        {session ? <InquiryManagement session={session} /> : <ContactForm />}
+        {session?.user?.role === "ADMIN" ? <InquiryManagement session={session} /> : <ContactForm />}
       </ReCaptchaProvider>
     </Box>
   );
