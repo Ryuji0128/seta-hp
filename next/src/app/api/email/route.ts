@@ -124,10 +124,13 @@ export async function POST(req: NextRequest) {
  */
 export async function GET() {
   try {
-    // 認証チェック
+    // 認証・権限チェック（ADMINのみ）
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    }
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "権限がありません" }, { status: 403 });
     }
 
     const inquiries = await prisma.inquiry.findMany({

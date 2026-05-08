@@ -12,11 +12,15 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const includeUnpublished = searchParams.get("includeUnpublished") === "true";
 
-    // 認証チェック（非公開を含める場合）
+    // 認証・権限チェック（非公開を含める場合はADMIN/EDITORのみ）
     if (includeUnpublished) {
       const session = await auth();
       if (!session) {
         return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+      }
+      const userRole = (session?.user as { role?: string })?.role;
+      if (userRole !== "ADMIN" && userRole !== "EDITOR") {
+        return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
       }
     }
 

@@ -81,29 +81,19 @@ const authConfig = {
       // Google認証の場合、DBにユーザーを作成または更新
       if (account?.provider === "google" && user.email) {
         try {
-          const existingUser = await prisma.user.findUnique({
+          // upsertでアトミックに作成/更新（TOCTOU競合状態を回避）
+          await prisma.user.upsert({
             where: { email: user.email },
+            update: {
+              image: user.image || undefined,
+            },
+            create: {
+              email: user.email,
+              name: user.name || "Google User",
+              image: user.image || null,
+              role: "VIEWER",
+            },
           });
-
-          if (!existingUser) {
-            // 新規ユーザーを作成
-            await prisma.user.create({
-              data: {
-                email: user.email,
-                name: user.name || "Google User",
-                image: user.image || null,
-                role: "VIEWER",
-              },
-            });
-          } else {
-            // 既存ユーザーの画像を更新
-            await prisma.user.update({
-              where: { email: user.email },
-              data: {
-                image: user.image || existingUser.image,
-              },
-            });
-          }
         } catch (error) {
           console.error("Google認証ユーザーの作成/更新に失敗:", error);
           return false; // ログイン失敗として扱う

@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 
-let prisma: PrismaClient | null = null;
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
 export const getPrismaClient = () => {
-  if (!prisma) {
-    prisma = new PrismaClient();
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = new PrismaClient();
   }
-  return prisma;
+  return globalForPrisma.prisma;
 };

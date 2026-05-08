@@ -13,6 +13,19 @@ const prisma = getPrismaClient();
  */
 export async function POST(req: NextRequest) {
   try {
+    // レート制限チェック（公開エンドポイントのため認証ではなくレート制限で保護）
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
+      || req.headers.get("x-real-ip")
+      || "unknown";
+    const { checkRateLimit, RATE_LIMITS } = await import("@/lib/rate-limit");
+    const rateLimitResult = checkRateLimit(`estimate:${clientIp}`, RATE_LIMITS.contact);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const amount = formData.get("amount") as string;
@@ -153,9 +166,13 @@ export async function POST(req: NextRequest) {
  */
 export async function GET() {
   try {
+    // 認証・権限チェック（ADMIN/EDITORのみ）
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    }
+    if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
+      return NextResponse.json({ error: "権限がありません" }, { status: 403 });
     }
 
     const estimates = await prisma.estimate.findMany({
@@ -213,11 +230,16 @@ export async function DELETE(req: NextRequest) {
       where: { id: Number(id) },
     });
 
-    // ファイルが存在する場合は削除
+    // ファイルが存在する場合は削除（パストラバーサル対策付き）
     if (estimate.filePath) {
       try {
         const fullPath = path.join(process.cwd(), "public", estimate.filePath);
-        await unlink(fullPath);
+        const expectedDir = path.join(process.cwd(), "public", "uploads", "estimates");
+        if (!fullPath.startsWith(expectedDir)) {
+          console.warn("不正なファイルパス検出:", estimate.filePath);
+        } else {
+          await unlink(fullPath);
+        }
       } catch (fileError) {
         // ファイルが既に存在しない場合などはエラーを無視
         console.warn("ファイル削除警告:", fileError);

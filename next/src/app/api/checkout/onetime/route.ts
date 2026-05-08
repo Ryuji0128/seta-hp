@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import Stripe from "stripe";
+
+const MAX_AMOUNT = 10_000_000; // 1,000万円
 
 function getStripe() {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -13,11 +16,21 @@ function getStripe() {
 
 export async function POST(request: NextRequest) {
   try {
+    // レート制限チェック（公開エンドポイント）
+    const clientIp = getClientIp(request);
+    const rateLimitResult = checkRateLimit(`checkout:${clientIp}`, RATE_LIMITS.api);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
+        { status: 429 }
+      );
+    }
+
     const { amount, productName } = await request.json();
 
-    if (!amount || amount < 100) {
+    if (!amount || amount < 100 || amount > MAX_AMOUNT) {
       return NextResponse.json(
-        { error: "100円以上を指定してください" },
+        { error: `100円以上${MAX_AMOUNT.toLocaleString()}円以下を指定してください` },
         { status: 400 }
       );
     }
