@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import EstimateManagement from "./EstimateManagement";
 import BaseContainer from "@/components/BaseContainer";
 import { Box, Typography } from "@mui/material";
+
+export const metadata: Metadata = {
+  title: "見積書管理",
+  robots: { index: false },
+};
 
 export default async function EstimatesPage() {
   const session = await auth();

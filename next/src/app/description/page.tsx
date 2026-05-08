@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "瀬田製作所の会社概要。2023年設立、ソフトウェア開発・ハードウェア開発・ものづくり試作を提供するエンジニアチームです。",
   alternates: {
-    canonical: "/discription",
+    canonical: "/description",
   },
 };
 

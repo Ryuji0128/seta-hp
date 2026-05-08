@@ -38,6 +38,8 @@ model Estimate {
   amount    Int
   paymentId String?
   status    String   @default("pending")
+
+  @@index([status])
 }
 
 model Inquiry {
@@ -48,6 +50,8 @@ model Inquiry {
   email     String
   phone     String
   inquiry   String
+
+  @@index([createdAt])
 }
 
 model News {
@@ -58,6 +62,8 @@ model News {
   title     String
   contents  Json
   url       String?
+
+  @@index([date])
 }
 
 model Product {
@@ -73,6 +79,9 @@ model Product {
   images      Json?
   stock       String   @default("在庫あり")
   isPublished Boolean  @default(true)
+
+  @@index([category])
+  @@index([isPublished])
 }
 
 model Session {
@@ -102,14 +111,6 @@ model User {
   Session       Session[]
 }
 
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 model Work {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
@@ -120,6 +121,9 @@ model Work {
   tags        String
   image       String?
   isPublished Boolean  @default(true)
+
+  @@index([category])
+  @@index([isPublished])
 }
 
 enum User_role {
