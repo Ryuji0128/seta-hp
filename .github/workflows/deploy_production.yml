@@ -113,10 +113,15 @@ jobs:
 
             # 設定ファイルをデプロイ対象SHAから同期（イメージに含まれないインフラ設定）
             echo "Syncing config files from ${IMAGE_TAG}..."
-            git fetch origin "${IMAGE_TAG}" --quiet
+            git fetch origin main --quiet
             if ! git cat-file -e "${IMAGE_TAG}^{commit}" 2>/dev/null; then
-              echo "ERROR: commit ${IMAGE_TAG} not found in repository"
-              exit 1
+              # mainに含まれないSHA（workflow_dispatch等）→ 全refをfetch
+              echo "SHA not found in main, fetching all refs..."
+              git fetch origin --quiet
+              if ! git cat-file -e "${IMAGE_TAG}^{commit}" 2>/dev/null; then
+                echo "ERROR: commit ${IMAGE_TAG} not found in repository"
+                exit 1
+              fi
             fi
             for dir in nginx scripts .github; do
               rm -rf "${dir}"
@@ -155,19 +160,18 @@ jobs:
             # アプリ更新（nextのみ再作成、mysql/nginxは変更なければそのまま）
             docker compose -f docker-compose.yml up -d --no-deps next
 
-            # ヘルスチェック待ち
+            # ヘルスチェック（ホスト側からcurlで確認）
             echo "Waiting for health check..."
-            for i in $(seq 1 30); do
-              if docker compose -f docker-compose.yml exec -T next node -e "require('http').get('http://localhost:3000/', r => { process.exit(r.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))" 2>/dev/null; then
+            for i in $(seq 1 20); do
+              if curl -sf http://localhost:2999/api/health > /dev/null 2>&1; then
                 echo "Health check passed!"
                 break
               fi
-              if [ "$i" -eq 30 ]; then
-                echo "ERROR: Health check failed after 150s."
+              if [ "$i" -eq 20 ]; then
+                echo "ERROR: Health check failed after 100s."
                 echo "Current IMAGE_TAG: ${IMAGE_TAG}"
                 echo "Previous IMAGE_TAG: ${PREV_TAG:-none}"
-                echo "Manual rollback: sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=<sha>/' .env && docker compose -f docker-compose.yml up -d --no-deps next"
-                echo "WARNING: DB migration may have already been applied. Check schema compatibility before rollback."
+                docker compose -f docker-compose.yml logs next --tail=20
                 exit 1
               fi
               sleep 5
@@ -185,11 +189,11 @@ jobs:
               docker compose -f docker-compose.yml exec -T nginx nginx -s reload || true
             fi
 
-            # 古いイメージのクリーンアップ（直近3世代を保持）
+            # 古いイメージのクリーンアップ（直近3世代を保持、CreatedAtで時系列ソート）
             echo "Cleaning up old images..."
-            docker images "${REGISTRY}/${IMAGE}" --format '{{.Tag}} {{.ID}}' \
+            docker images "${REGISTRY}/${IMAGE}" --format '{{.CreatedAt}}\t{{.Tag}}\t{{.ID}}' \
               | grep -v '<none>' | grep -v 'latest' \
               | sort -r | tail -n +4 \
-              | awk '{print $2}' | xargs -r docker rmi 2>/dev/null || true
+              | awk -F'\t' '{print $3}' | xargs -r docker rmi 2>/dev/null || true
 
             echo "=== Deployment complete: ${IMAGE_TAG} ==="
