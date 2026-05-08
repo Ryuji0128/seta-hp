@@ -6,7 +6,7 @@ import StyleIcon from "@mui/icons-material/Style";
 import { getPrismaClient } from "@/lib/db";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "商品一覧 | SETA Craft",
