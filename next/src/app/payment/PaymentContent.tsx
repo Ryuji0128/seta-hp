@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useReCaptcha } from "next-recaptcha-v3";
 import {
   Box,
@@ -13,7 +13,6 @@ import {
   CircularProgress,
   Tabs,
   Tab,
-  Chip,
 } from "@mui/material";
 import PageMainTitle from "@/components/PageMainTitle";
 import BaseContainer from "@/components/BaseContainer";
@@ -22,8 +21,6 @@ import AutorenewIcon from "@mui/icons-material/Autorenew";
 import WebIcon from "@mui/icons-material/Web";
 import BuildIcon from "@mui/icons-material/Build";
 import DesignServicesIcon from "@mui/icons-material/DesignServices";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import CloseIcon from "@mui/icons-material/Close";
 
 type MenuType = "create" | "maintenance" | "mockup";
 
@@ -32,8 +29,6 @@ export default function PaymentContent() {
   const [amount, setAmount] = useState<string>("5000");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [estimateFile, setEstimateFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { executeRecaptcha, loaded: recaptchaLoaded } = useReCaptcha();
 
   const getFinalAmount = (): number => {
@@ -65,36 +60,7 @@ export default function PaymentContent() {
 
   const isSubscription = menuType === "maintenance";
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // ファイルサイズチェック (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError("ファイルサイズは10MB以下にしてください");
-      return;
-    }
-
-    // ファイルタイプチェック
-    const allowedTypes = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
-    if (!allowedTypes.includes(file.type)) {
-      setError("PDF、PNG、JPG形式のファイルのみ許可されています");
-      return;
-    }
-
-    setEstimateFile(file);
-    setError(null);
-  };
-
-  const handleRemoveFile = () => {
-    setEstimateFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
   const handleCheckout = useCallback(async () => {
-    // amountをインラインで計算
     const parsed = parseInt(amount, 10);
     const finalAmount = isNaN(parsed) ? 0 : parsed;
 
@@ -103,7 +69,6 @@ export default function PaymentContent() {
       return;
     }
 
-    // productNameをインラインで計算
     const productName =
       menuType === "create"
         ? "HP新規作成サービス"
@@ -115,25 +80,17 @@ export default function PaymentContent() {
     setError(null);
 
     try {
-      // reCAPTCHAトークン取得
-      const recaptchaToken = await executeRecaptcha("estimate_upload");
-
-      // 見積書をアップロード
-      const formData = new FormData();
-      if (estimateFile) {
-        formData.append("file", estimateFile);
-      }
-      formData.append("amount", finalAmount.toString());
-      formData.append("recaptchaToken", recaptchaToken);
-
-      const uploadRes = await fetch("/api/estimates", {
+      // reCAPTCHA検証
+      const recaptchaToken = await executeRecaptcha("checkout");
+      const recaptchaRes = await fetch("/api/recaptcha", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: recaptchaToken, expectedAction: "checkout" }),
       });
+      const recaptchaData = await recaptchaRes.json();
 
-      if (!uploadRes.ok) {
-        const uploadData = await uploadRes.json();
-        setError(uploadData.error || "見積書のアップロードに失敗しました");
+      if (!recaptchaData.success) {
+        setError("reCAPTCHA検証に失敗しました");
         setLoading(false);
         return;
       }
@@ -161,7 +118,7 @@ export default function PaymentContent() {
     } finally {
       setLoading(false);
     }
-  }, [executeRecaptcha, estimateFile, isSubscription, amount, menuType]);
+  }, [executeRecaptcha, isSubscription, amount, menuType]);
 
   return (
     <Box>
@@ -176,7 +133,6 @@ export default function PaymentContent() {
             value={menuType}
             onChange={(_, value) => {
               setMenuType(value);
-              setEstimateFile(null);
               setError(null);
             }}
             variant="fullWidth"
@@ -223,61 +179,6 @@ export default function PaymentContent() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               {getDescription()}
             </Typography>
-
-            {/* 見積書アップロード */}
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                見積書（任意）
-              </Typography>
-              <Box
-                sx={{
-                  border: "2px dashed",
-                  borderColor: "grey.300",
-                  borderRadius: 2,
-                  p: 3,
-                  textAlign: "center",
-                  bgcolor: "grey.50",
-                  cursor: "pointer",
-                  "&:hover": {
-                    borderColor: "primary.main",
-                    bgcolor: "primary.pale",
-                  },
-                }}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={handleFileChange}
-                  style={{ display: "none" }}
-                />
-                {estimateFile ? (
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
-                    <Chip
-                      label={estimateFile.name}
-                      onDelete={handleRemoveFile}
-                      deleteIcon={<CloseIcon />}
-                      sx={{ maxWidth: "100%" }}
-                    />
-                  </Box>
-                ) : (
-                  <>
-                    <UploadFileIcon sx={{ fontSize: 40, color: "grey.400", mb: 1 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      クリックしてファイルを選択
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      PDF、PNG、JPG（10MB以下）
-                    </Typography>
-                  </>
-                )}
-              </Box>
-
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                ※見積書がなくても決済可能です。
-              </Typography>
-            </Box>
 
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>

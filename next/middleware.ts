@@ -6,6 +6,5 @@ export const config = {
     "/gallery-manage/:path*",
     "/works-manage/:path*",
     "/news/:path*",
-    "/estimates/:path*",
   ],
 };
