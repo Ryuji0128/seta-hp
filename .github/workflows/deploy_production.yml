@@ -111,6 +111,18 @@ jobs:
 
             cd "${COMPOSE_DIR}"
 
+            # 設定ファイルをデプロイ対象SHAから同期（イメージに含まれないインフラ設定）
+            echo "Syncing config files from ${IMAGE_TAG}..."
+            git fetch origin "${IMAGE_TAG}" --quiet
+            if ! git cat-file -e "${IMAGE_TAG}^{commit}" 2>/dev/null; then
+              echo "ERROR: commit ${IMAGE_TAG} not found in repository"
+              exit 1
+            fi
+            for dir in nginx scripts .github; do
+              rm -rf "${dir}"
+            done
+            git checkout "${IMAGE_TAG}" -- docker-compose.yml nginx/ scripts/ .github/
+
             # 現在のIMAGE_TAGを保持（ロールバック用）
             PREV_TAG=$(grep '^IMAGE_TAG=' .env 2>/dev/null | cut -d= -f2 || echo "")
             echo "Previous IMAGE_TAG: ${PREV_TAG:-none}"
