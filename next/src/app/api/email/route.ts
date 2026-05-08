@@ -5,6 +5,7 @@ import { validateInquiry } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import xss from "xss";
+import { parsePagination } from "@/lib/pagination";
 
 const prisma = getPrismaClient();
 
@@ -47,6 +48,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ errors: validateResult }, { status: 400 });
     }
 
+    // ログイン中ユーザーのIDを取得（監査証跡用、未ログインならnull）
+    const session = await auth();
+    const userId = session?.user?.id || null;
+
     // 🔹 DB登録
     const inquiryRecord = await prisma.inquiry.create({
       data: {
@@ -54,6 +59,7 @@ export async function POST(req: NextRequest) {
         email: sanitizedData.email,
         phone: sanitizedData.phone,
         inquiry: sanitizedData.inquiry,
+        userId,
       },
     });
 
@@ -130,7 +136,7 @@ export async function POST(req: NextRequest) {
 /**
  * ✅ 問い合わせ一覧取得（認証必須）
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     // 認証・権限チェック（ADMINのみ）
     const session = await auth();
@@ -141,10 +147,18 @@ export async function GET() {
       return NextResponse.json({ error: "権限がありません" }, { status: 403 });
     }
 
-    const inquiries = await prisma.inquiry.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json({ inquiries });
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+
+    const [inquiries, total] = await Promise.all([
+      prisma.inquiry.findMany({
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+      }),
+      prisma.inquiry.count(),
+    ]);
+    return NextResponse.json({ inquiries, total, page, limit });
   } catch (error) {
     console.error("問い合わせ取得エラー:", error);
     return NextResponse.json(

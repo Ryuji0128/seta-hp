@@ -90,7 +90,17 @@ export default function ProductImageGallery({ images, productName }: ProductImag
           {images.map((image, index) => (
             <Box
               key={index}
+              role="button"
+              tabIndex={0}
+              aria-label={`${productName} - 画像 ${index + 1} を表示`}
+              aria-pressed={selectedIndex === index}
               onClick={() => setSelectedIndex(index)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedIndex(index);
+                }
+              }}
               sx={{
                 position: "relative",
                 width: 72,
@@ -103,8 +113,11 @@ export default function ProductImageGallery({ images, productName }: ProductImag
                 borderColor: selectedIndex === index ? "primary.main" : "transparent",
                 opacity: selectedIndex === index ? 1 : 0.7,
                 transition: "all 0.2s ease",
-                "&:hover": {
+                "&:hover, &:focus-visible": {
                   opacity: 1,
+                  outline: "2px solid",
+                  outlineColor: "primary.main",
+                  outlineOffset: 2,
                 },
               }}
             >
