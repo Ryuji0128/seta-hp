@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth)
 - **Database**: MySQL 8.0, Prisma ORM
 - **Deployment**: Docker, Nginx, GitHub Actions, Google App Engine
-- **Other**: Stripe決済, reCAPTCHA v3, Nodemailer, Zod
+- **Other**: reCAPTCHA v3, Nodemailer, Zod
 
 ## Project Structure
 
@@ -103,7 +103,6 @@ npx prisma db seed    # シードデータ投入
 - `AUTH_SECRET` / `NEXTAUTH_SECRET`: NextAuth暗号化キー
 - `NEXTAUTH_URL`: 認証コールバックURL
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: Google OAuth（任意）
-- `STRIPE_SECRET_KEY`: Stripe秘密鍵
 - `RECAPTCHA_SECRET_KEY`: reCAPTCHA検証用
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`: メール送信
 

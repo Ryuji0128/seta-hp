@@ -15,8 +15,6 @@ module.exports = {
   // サイトマップから除外するパス
   exclude: [
     "/portal-admin*",
-    "/payment/success",
-    "/payment/cancel",
     "/api/*",
   ],
 
@@ -28,8 +26,6 @@ module.exports = {
         allow: "/",
         disallow: [
           "/portal-admin",
-          "/payment/success",
-          "/payment/cancel",
           "/api/",
         ],
       },
