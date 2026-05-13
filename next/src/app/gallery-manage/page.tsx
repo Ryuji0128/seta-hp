@@ -11,6 +11,10 @@ export default async function GalleryManagePage() {
     redirect("/login");
   }
 
+  if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
+    redirect("/");
+  }
+
   return (
     <BaseContainer>
       <Box sx={{ py: 4 }}>
