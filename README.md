@@ -102,7 +102,6 @@ docker compose -f docker-compose.dev.yml down
 | `NEXT_PUBLIC_SITE_URL` | サイト URL（フロントエンド参照） |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（任意） |
 | `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` | Google 認証の有効化フラグ（任意） |
-| `STRIPE_SECRET_KEY` | Stripe 秘密鍵 |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 サイトキー（フロントエンド用） |
 | `RECAPTCHA_SECRET_KEY` | reCAPTCHA v3 検証用（サーバー用） |
 | `ALLOWED_RECAPTCHA_HOSTNAMES` | reCAPTCHA 許可ホスト名（カンマ区切り） |
@@ -140,7 +139,6 @@ npx prisma db seed    # シードデータ投入
 | Frontend | Next.js 15, React 19, MUI v6, Tailwind CSS, Framer Motion |
 | Backend | Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth) |
 | Database | MySQL 8.0, Prisma ORM |
-| 決済 | Stripe |
 | セキュリティ | reCAPTCHA v3, Zod バリデーション, XSS サニタイズ, レート制限 |
 | インフラ | Docker, Nginx, GitHub Actions (CI/CD), Google App Engine |
 | メール | Nodemailer (SMTP) |
@@ -167,7 +165,6 @@ npx prisma db seed    # シードデータ投入
 | `/discription` | 会社概要 |
 | `/legal` | 特定商取引法に基づく表記 |
 | `/privacy-policy` | プライバシーポリシー |
-| `/payment` | Stripe 決済フロー |
 
 ### 認証ページ
 
@@ -202,8 +199,6 @@ npx prisma db seed    # シードデータ投入
 | POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
 | POST | `/api/upload` | 画像アップロード | 要認証 |
 | POST | `/api/admin/upload` | 管理者画像アップロード | 要認証 |
-| POST | `/api/checkout/onetime` | Stripe 単発決済 | - |
-| POST | `/api/checkout/subscription` | Stripe サブスクリプション決済 | - |
 
 ## データベースモデル
 
@@ -214,7 +209,7 @@ npx prisma db seed    # シードデータ投入
 | **Work** | 実績・ポートフォリオ |
 | **News** | ニュース記事（JSON コンテンツ） |
 | **Inquiry** | お問い合わせ |
-| **Estimate** | 見積書（PDF, 金額, Stripe 決済状態） |
+| **Estimate** | 見積書（PDF, 金額, 決済状態） |
 | **Account / Session** | NextAuth 認証関連 |
 
 ### 商品カテゴリ
@@ -261,7 +256,6 @@ seta-hp/
         │   ├── api/             # API Routes
         │   │   ├── admin/upload/ # 管理者画像アップロード
         │   │   ├── auth/        # NextAuth
-        │   │   ├── checkout/    # Stripe 決済 (onetime, subscription)
         │   │   ├── email/       # お問い合わせ (送信・一覧・削除)
         │   │   ├── estimates/   # 見積管理
         │   │   ├── news/        # ニュース CRUD
