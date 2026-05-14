@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LinkToContactPage from "@/components/LinkToContactPage";
+import ReviewOverlay from "@/components/ReviewOverlay";
 import { SimpleBarWrapper } from "@/components/SimpleBarWrapper";
 import theme from "@/theme/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
@@ -150,10 +151,15 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <SimpleBarWrapper>
-              <Header />
-              {children}
-              <LinkToContactPage />
-              <Footer />
+              {/* ReviewOverlay は SimpleBar 内部スクロールに連動させるためここに置く。
+                  position: relative を付けて、ピン (position: absolute) の基準にする */}
+              <div style={{ position: "relative", minHeight: "100vh" }}>
+                <Header />
+                {children}
+                <LinkToContactPage />
+                <Footer />
+                {process.env.NEXT_PUBLIC_ENABLE_COMMENTS === "true" && <ReviewOverlay />}
+              </div>
             </SimpleBarWrapper>
           </ThemeProvider>
         </AppRouterCacheProvider>

@@ -122,3 +122,31 @@ enum User_role {
   EDITOR
   VIEWER
 }
+
+// 社内レビュー用ページ内コメント (env: NEXT_PUBLIC_ENABLE_COMMENTS=true の時のみ有効)
+model ReviewComment {
+  id              Int                  @id @default(autoincrement())
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  pageUrl         String
+  xRatio          Float
+  yAbsolute       Float
+  elementSelector String?              @db.Text
+  authorName      String
+  content         String               @db.Text
+  status          String               @default("open") // "open" | "resolved"
+  replies         ReviewCommentReply[]
+
+  @@index([pageUrl])
+}
+
+model ReviewCommentReply {
+  id         Int           @id @default(autoincrement())
+  createdAt  DateTime      @default(now())
+  commentId  Int
+  comment    ReviewComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  authorName String
+  content    String        @db.Text
+
+  @@index([commentId])
+}
