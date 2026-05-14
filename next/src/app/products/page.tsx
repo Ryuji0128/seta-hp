@@ -8,9 +8,9 @@ import ProductsBespokeCta from "./_components/ProductsBespokeCta";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Catalogue / 商品一覧 | SETA Craft",
+  title: "Catalogue / 商品一覧 | 飾Love",
   description:
-    "SETA Craft の商品一覧。MLBカード・トレカコレクター向けのアクリルディスプレイ、特注品など、富山県高岡市の工房から一つずつお届け。",
+    "飾Love の商品一覧。MLBカード・トレカコレクター向けのアクリルディスプレイ、特注品など、富山県高岡市の工房から一つずつお届け。",
   alternates: { canonical: "/products" },
 };
 

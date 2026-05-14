@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "商品が見つかりません" };
 
   return {
-    title: `${product.name} | SETA Craft`,
+    title: `${product.name} | 飾Love`,
     description: product.description,
     openGraph: {
       title: product.name,

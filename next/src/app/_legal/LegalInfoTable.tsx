@@ -14,7 +14,7 @@ interface Props {
 
 /**
  * label / value の縦並びテーブル(規約・会社情報用)
- * SETA Craft デザインの細罫線スタイル
+ * 細罫線スタイルの label / value テーブル
  */
 const LegalInfoTable: React.FC<Props> = ({ rows }) => {
   const theme = useTheme();

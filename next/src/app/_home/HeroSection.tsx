@@ -198,7 +198,7 @@ const HeroSection = () => {
           >
             <Image
               src="/images/placeholders/hero-award-history.svg"
-              alt="AWARD HISTORY 壁 — SETA Craft 試作品"
+              alt="AWARD HISTORY 壁 — 飾Love 試作品"
               fill
               sizes="(max-width: 960px) 100vw, 50vw"
               priority

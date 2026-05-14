@@ -35,7 +35,7 @@ const AboutFeatures = () => {
         >
           <Box sx={{ color: "#B45309" }}>— 03</Box>
           <Box sx={{ color: "#0A0A0A" }}>Features</Box>
-          <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　SETA Craft の特徴</Box>
+          <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　飾Love の特徴</Box>
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1.4fr" }, gap: { xs: 0, md: 10 } }}>

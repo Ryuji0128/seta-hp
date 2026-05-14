@@ -89,7 +89,7 @@ export default function Footer() {
                   transform: "rotate(45deg)",
                 }}
               />
-              SETA CRAFT
+              瀬田製作所
             </Box>
             <Typography
               sx={{
@@ -152,7 +152,7 @@ export default function Footer() {
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          <span>© {new Date().getFullYear()} SETA Craft · 瀬田製作所</span>
+          <span>© {new Date().getFullYear()} 瀬田製作所</span>
           <span>富山県高岡市</span>
         </Box>
       </Container>

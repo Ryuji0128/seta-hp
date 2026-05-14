@@ -62,7 +62,7 @@ const FeaturesSection = () => {
           <Box sx={{ fontSize: "16px", color: "#2A2A2A", lineHeight: 1.7, maxWidth: 540 }}>
             飾るカードの方が長持ちするくらい、ディスプレイ側もしっかり作る。
             <br />
-            手を抜かないことが、SETA Craft のスタンダードです。
+            手を抜かないことが、飾Love のスタンダードです。
           </Box>
         </Box>
 

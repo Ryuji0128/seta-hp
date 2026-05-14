@@ -58,7 +58,7 @@ const AboutLocation = () => {
             </Box>
             <Box sx={{ color: "rgba(255,255,255,0.75)", fontSize: "15px", lineHeight: 1.9, mb: 3 }}>
               高岡市は400年以上にわたって金工・漆器・木工を育ててきた、ものづくりの街です。
-              SETA Craft は、その土地でレーザーと3Dプリンタという現代の道具を使って、
+              飾Love は、その土地でレーザーと3Dプリンタという現代の道具を使って、
               「ただ飾る」ためのコレクター道具を作っています。
             </Box>
             <Link href="/contact" passHref style={{ textDecoration: "none" }}>

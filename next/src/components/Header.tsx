@@ -88,7 +88,7 @@ export default function Header() {
                     transform: "rotate(45deg)",
                   }}
                 />
-                SETA CRAFT
+                瀬田製作所
               </Box>
             </Link>
 

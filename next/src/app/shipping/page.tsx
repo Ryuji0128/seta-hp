@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import LegalPageLayout from "../_legal/LegalPageLayout";
 
 export const metadata: Metadata = {
-  title: "配送・返品について | SETA Craft",
+  title: "配送・返品について | 飾Love",
   description:
-    "SETA Craft の配送方法・送料・返品ポリシーをご案内します。全国送料無料、緩衝材入りの梱包と配送保険付き。",
+    "飾Love の配送方法・送料・返品ポリシーをご案内します。全国送料無料、緩衝材入りの梱包と配送保険付き。",
   alternates: { canonical: "/shipping" },
 };
 
