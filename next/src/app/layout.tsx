@@ -41,29 +41,30 @@ const notoJp = Noto_Sans_JP({
 });
 
 const siteUrl = "https://setaseisakusyo.com";
-const siteName = "瀬田製作所";
+const siteName = "飾Love";
 const siteDescription =
-  "瀬田製作所は富山県高岡市の個人事業所です。SaaS / Web アプリ開発(Django・Next.js)、組み込みシステム(Raspberry Pi・Jetson・PLC)、回路・基板設計、AI データ解析、3Dプリント試作を承っています。";
+  "飾Love(かざらぶ)は、富山県高岡市の小さな工房から、MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランドです。レーザー加工・3Dプリントで、ひとつずつ丁寧に。";
 
 export const metadata: Metadata = {
   title: {
-    default: `${siteName} | ソフトウェア受託開発・組み込み・試作`,
+    default: `${siteName} | MLBカード・トレカを美しく飾る`,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
   keywords: [
-    "瀬田製作所",
-    "ソフトウェア受託開発",
-    "Web アプリ開発",
-    "Next.js",
-    "Django",
-    "組み込み開発",
-    "Raspberry Pi",
-    "Jetson",
-    "PLC",
-    "AI データ解析",
-    "3D プリント",
-    "試作",
+    "飾Love",
+    "かざらぶ",
+    "MLBカード",
+    "野球カード",
+    "トレカ",
+    "Topps",
+    "大谷翔平",
+    "ドジャース",
+    "トレカディスプレイ",
+    "アクリルディスプレイ",
+    "壁面ディスプレイ",
+    "カードコレクション",
+    "ハンドメイド",
     "富山",
     "高岡",
   ],
@@ -83,7 +84,7 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     url: siteUrl,
     siteName: siteName,
-    title: `${siteName} | ソフトウェア受託開発・組み込み・試作`,
+    title: `${siteName} | MLBカード・トレカを美しく飾る`,
     description: siteDescription,
     images: [
       {
@@ -97,7 +98,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: `${siteName} | ソフトウェア受託開発・組み込み・試作`,
+    title: `${siteName} | MLBカード・トレカを美しく飾る`,
     description: siteDescription,
     images: ["/og-image.png"],
   },

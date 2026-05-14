@@ -88,7 +88,7 @@ export default function Header() {
                     transform: "rotate(45deg)",
                   }}
                 />
-                瀬田製作所
+                飾Love
               </Box>
             </Link>
 

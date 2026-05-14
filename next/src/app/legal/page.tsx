@@ -3,17 +3,18 @@ import LegalPageLayout from "../_legal/LegalPageLayout";
 import LegalInfoTable, { LegalInfoRow } from "../_legal/LegalInfoTable";
 
 export const metadata: Metadata = {
-  title: "特定商取引法に基づく表記 | 瀬田製作所",
-  description: "瀬田製作所の特定商取引法に基づく表記です。",
+  title: "特定商取引法に基づく表記 | 飾Love",
+  description: "飾Love(運営: 瀬田製作所)の特定商取引法に基づく表記です。",
   alternates: { canonical: "/legal" },
 };
 
 const ROWS: LegalInfoRow[] = [
-  { label: "販売業者", value: "瀬田製作所" },
+  { label: "サイト名", value: "飾Love(かざらぶ)" },
+  { label: "販売業者", value: "瀬田製作所(個人事業所)" },
   { label: "運営責任者", value: "木村竜次" },
   { label: "所在地", value: "※ご請求いただいた方にお知らせいたします" },
   { label: "電話番号", value: "※ご請求いただいた方にお知らせいたします" },
-  { label: "メールアドレス", value: "info@setaseisakusyo.com" },
+  { label: "メールアドレス", value: "info@kaza-love.com" },
   { label: "販売価格", value: "各商品ページに記載" },
   { label: "商品代金以外の必要料金", value: "送料(商品ページに記載、3,980円以上で無料)" },
   { label: "支払方法", value: "クレジットカード、コンビニ決済、銀行振込" },

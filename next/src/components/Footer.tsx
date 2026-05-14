@@ -89,7 +89,7 @@ export default function Footer() {
                   transform: "rotate(45deg)",
                 }}
               />
-              瀬田製作所
+              飾Love
             </Box>
             <Typography
               sx={{
@@ -99,9 +99,9 @@ export default function Footer() {
                 color: "rgba(255,255,255,0.55)",
               }}
             >
-              富山県高岡市の個人事業所。SaaS / Web アプリ / 組み込みシステム /
-              AI データ解析を本業に、サブブランド <strong style={{ color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>飾Love(かざらぶ)</strong>{" "}
-              でハンドメイドアクリルディスプレイを製作しています。
+              飾Love(かざらぶ)は、富山県高岡市の小さな工房から、
+              MLBカード・トレカコレクターのためのハンドメイドアクリルディスプレイをお届けします。
+              レーザー加工と3Dプリントで、ひとつずつ丁寧に。
             </Typography>
           </Box>
 
@@ -152,7 +152,7 @@ export default function Footer() {
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          <span>© {new Date().getFullYear()} 瀬田製作所</span>
+          <span>© {new Date().getFullYear()} 飾Love</span>
           <span>富山県高岡市</span>
         </Box>
       </Container>

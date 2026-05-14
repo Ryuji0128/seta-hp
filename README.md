@@ -1,11 +1,11 @@
-# 瀬田製作所 コーポレートサイト
+# 飾Love (かざらぶ) サイト
 
-**瀬田製作所**(`setaseisakusyo.com`)のコーポレートサイトのソースコードです。
+**飾Love(かざらぶ)** は、富山県高岡市の小さな工房から MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランドです。
+本リポジトリ(`setaseisakusyo.com`)はそのEC兼ブランドサイトのソースコード。
 Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタック Web アプリケーション。
 
-> ハンドメイドアクリルディスプレイ事業 **飾Love(かざらぶ)** は別ドメイン `kaza-love.com` で展開予定の別ブランドです。
-> 本リポジトリにある /products, /gallery 等のカードディスプレイ関連コンテンツは過渡的なもので、最終的に飾Love 側に移行する見込み。
-> 詳細は [`docs/file/branding_kaza-love.md`](docs/file/branding_kaza-love.md) を参照。
+> 運営事業者は富山県高岡市の個人事業所「**瀬田製作所**」(屋号)。
+> 飾Love のブランド表記ルール・タグライン・歴史は [`docs/file/branding_kaza-love.md`](docs/file/branding_kaza-love.md) を参照。
 
 ## 目次
 
@@ -48,7 +48,7 @@ cp next/.env.example next/.env
 docker compose -f docker-compose.dev.yml up
 
 # 4. ブラウザでアクセス
-# http://localhost:3000
+# http://localhost:3001
 ```
 
 ### ローカル開発（Docker なし）
@@ -59,7 +59,7 @@ yarn install
 npx prisma generate
 npx prisma db push
 npx prisma db seed    # シードデータ投入（任意）
-yarn dev              # http://localhost:3000
+yarn dev              # http://localhost:3000 (Docker 経由は 3001)
 ```
 
 ### 停止
@@ -74,7 +74,7 @@ docker compose -f docker-compose.dev.yml down
 
 | サービス | コンテナ名 | ポート | 説明 |
 |---------|-----------|--------|------|
-| next | next_app | 3000:3000 | Next.js（yarn dev / ホットリロード） |
+| next | next_app | 3001:3000 | Next.js（yarn dev / ホットリロード） |
 | mysql | mysql_db | 3306 | MySQL 8.0 データベース |
 
 ### 本番環境（docker-compose.yml）
@@ -157,8 +157,8 @@ npx prisma db seed    # シードデータ投入
 | `/products` | 商品一覧 |
 | `/products/[id]` | 商品詳細 |
 | `/gallery` | ギャラリー |
-| `/about` | 飾Love について(過渡的) |
-| `/company` | 会社情報（瀬田製作所） |
+| `/about` | 飾Love について(工房紹介) |
+| `/company` | 会社情報(飾Love / 運営: 瀬田製作所) |
 | `/contact` | お問い合わせフォーム |
 | `/shipping` | 配送について |
 | `/legal` | 特定商取引法に基づく表記 |
@@ -412,14 +412,14 @@ docker compose up -d
 0 3 * * * /root/seta-hp/scripts/renew-ssl.sh >> /var/log/ssl-renew.log 2>&1
 ```
 
-## 会社情報
+## 事業者情報
 
-- **会社名**: 瀬田製作所
+- **ブランド名**: 飾Love(かざらぶ)
+- **運営事業者(屋号)**: 瀬田製作所(個人事業所)
 - **設立**: 2023年8月8日
 - **所在地**: 富山県高岡市
-- **Email**: info@setaseisakusyo.com
-- **サブブランド**: 飾Love(かざらぶ) — トレカディスプレイ事業 / `kaza-love.com` で展開予定
+- **Email**: info@kaza-love.com
 
 ## ライセンス
 
-このプロジェクトは瀬田製作所に帰属します。
+このプロジェクトの著作権は運営事業者(瀬田製作所)に帰属します。
