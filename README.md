@@ -157,16 +157,10 @@ npx prisma db seed    # シードデータ投入
 | `/products` | 商品一覧 |
 | `/products/[id]` | 商品詳細 |
 | `/gallery` | ギャラリー |
-| `/works` | 実績・ポートフォリオ |
 | `/about` | 飾Love について(過渡的) |
 | `/company` | 会社情報（瀬田製作所） |
 | `/contact` | お問い合わせフォーム |
 | `/shipping` | 配送について |
-| `/shop` | ショップ |
-| `/consultation` | ご相談 |
-| `/engineering` | エンジニアリング |
-| `/fabrication` | ファブリケーション |
-| `/discription` | 会社概要 |
 | `/legal` | 特定商取引法に基づく表記 |
 | `/privacy-policy` | プライバシーポリシー |
 
@@ -269,11 +263,7 @@ seta-hp/
         │   │   ├── upload/      # 画像アップロード
         │   │   └── works/       # 実績 CRUD
         │   ├── company/         # 会社情報
-        │   ├── consultation/    # ご相談
         │   ├── contact/         # お問い合わせ
-        │   ├── discription/     # 会社概要
-        │   ├── engineering/     # エンジニアリング
-        │   ├── fabrication/     # ファブリケーション
         │   ├── gallery/         # ギャラリー
         │   ├── gallery-manage/  # ギャラリー管理
         │   ├── legal/           # 特定商取引法
@@ -282,8 +272,6 @@ seta-hp/
         │   ├── products-manage/ # 商品管理
         │   ├── register/        # ユーザー登録
         │   ├── shipping/        # 配送について
-        │   ├── shop/            # ショップ
-        │   ├── works/           # 実績
         │   └── works-manage/    # 実績管理
         ├── components/          # 共有コンポーネント
         ├── lib/                 # ユーティリティ
