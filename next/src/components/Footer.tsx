@@ -99,9 +99,9 @@ export default function Footer() {
                 color: "rgba(255,255,255,0.55)",
               }}
             >
-              MLB Card Display, Handcrafted in Toyama.
-              <br />
-              富山県高岡市の小さな工房から、コレクター品質のディスプレイを一つずつ。
+              富山県高岡市の個人事業所。SaaS / Web アプリ / 組み込みシステム /
+              AI データ解析を本業に、サブブランド <strong style={{ color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>飾Love(かざらぶ)</strong>{" "}
+              でハンドメイドアクリルディスプレイを製作しています。
             </Typography>
           </Box>
 
