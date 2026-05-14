@@ -11,6 +11,7 @@
  * - 名前は localStorage に保存(初回入力 / 後から変更可)
  */
 
+import { useSimpleBar } from "@/components/SimpleBarWrapper";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -123,6 +124,17 @@ function formatDate(iso: string): string {
 
 export default function ReviewOverlay() {
   const pathname = usePathname();
+  // 実スクロールコンテナ (SimpleBarの内部要素)。
+  // 取れない場合は document.scrollingElement にフォールバック。
+  const { scrollContainerRef } = useSimpleBar();
+  const getScrollEl = useCallback((): HTMLElement => {
+    return (
+      scrollContainerRef.current ??
+      (document.scrollingElement as HTMLElement | null) ??
+      document.documentElement
+    );
+  }, [scrollContainerRef]);
+
   const [comments, setComments] = useState<ReviewComment[]>([]);
   const [pinning, setPinning] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -176,9 +188,20 @@ export default function ReviewOverlay() {
       e.preventDefault();
       e.stopPropagation();
 
-      const docWidth = document.documentElement.clientWidth || 1;
-      const xRatio = Math.max(0, Math.min(1, e.pageX / docWidth));
-      const yAbsolute = Math.max(0, e.pageY);
+      // クリック位置を「スクロールコンテナ内の絶対座標」に変換する。
+      // SimpleBar 内スクロールの場合、window/document はスクロールしないので
+      // e.pageY ではなく clientY + container.scrollTop で計算する。
+      const scrollEl = getScrollEl();
+      const rect = scrollEl.getBoundingClientRect();
+      const containerWidth = rect.width || 1;
+      const xRatio = Math.max(
+        0,
+        Math.min(1, (e.clientX - rect.left) / containerWidth)
+      );
+      const yAbsolute = Math.max(
+        0,
+        e.clientY - rect.top + scrollEl.scrollTop
+      );
       const selector = describeElement(target);
 
       if (!authorName) {
@@ -196,7 +219,7 @@ export default function ReviewOverlay() {
 
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
-  }, [pinning, authorName]);
+  }, [pinning, authorName, getScrollEl]);
 
   useEffect(() => {
     if (!pinning) return;
@@ -668,7 +691,9 @@ export default function ReviewOverlay() {
                     variant="outlined"
                     sx={{ p: 1.5, cursor: "pointer" }}
                     onClick={() => {
-                      window.scrollTo({
+                      // SimpleBar の内部スクロールコンテナを使う。
+                      // window.scrollTo は document が固定 100vh なので効かない。
+                      getScrollEl().scrollTo({
                         top: Math.max(0, c.yAbsolute - 120),
                         behavior: "smooth",
                       });

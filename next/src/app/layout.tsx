@@ -151,12 +151,16 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <SimpleBarWrapper>
-              <Header />
-              {children}
-              <LinkToContactPage />
-              <Footer />
+              {/* ReviewOverlay は SimpleBar 内部スクロールに連動させるためここに置く。
+                  position: relative を付けて、ピン (position: absolute) の基準にする */}
+              <div style={{ position: "relative", minHeight: "100vh" }}>
+                <Header />
+                {children}
+                <LinkToContactPage />
+                <Footer />
+                {process.env.NEXT_PUBLIC_ENABLE_COMMENTS === "true" && <ReviewOverlay />}
+              </div>
             </SimpleBarWrapper>
-            {process.env.NEXT_PUBLIC_ENABLE_COMMENTS === "true" && <ReviewOverlay />}
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
