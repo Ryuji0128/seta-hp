@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
         title: xss(title),
         description: xss(description),
         category,
-        tags: Array.isArray(tags) ? tags.join(",") : tags || "",
+        tags: Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags || ""),
         image: image || null,
         isPublished: isPublished !== false,
       },
