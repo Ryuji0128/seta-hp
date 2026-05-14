@@ -65,7 +65,7 @@ interface ReviewComment {
   replies: Reply[];
 }
 
-const NAME_STORAGE_KEY = "seta-craft-review-overlay-name";
+const NAME_STORAGE_KEY = "seta-hp-review-overlay-name";
 const Z_OVERLAY = 1400;
 const Z_PIN = 1399;
 
