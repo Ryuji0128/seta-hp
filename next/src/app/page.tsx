@@ -12,7 +12,7 @@ import CTASection from "./_home/CTASection";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "SETA Craft | カードは、飾るためにある。",
+  title: "瀬田製作所 | ソフトウェア受託開発・組み込み・試作",
   description:
     "MLBカード・トレカを美しく飾るための、富山県高岡市の小さな工房から。レーザー加工と3Dプリントで一つずつ手作りのアクリルディスプレイ。全国送料無料。",
   alternates: {

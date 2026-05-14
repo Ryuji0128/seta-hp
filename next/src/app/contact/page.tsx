@@ -8,9 +8,9 @@ import { auth } from "@/lib/auth";
 import InquiryManagement from "./InquiryManagement";
 
 export const metadata: Metadata = {
-  title: "お問い合わせ | SETA Craft",
+  title: "お問い合わせ | 飾Love",
   description:
-    "SETA Craftへのお問い合わせはこちらから。商品に関するご質問など、お気軽にご相談ください。",
+    "飾Loveへのお問い合わせはこちらから。商品に関するご質問など、お気軽にご相談ください。",
   alternates: {
     canonical: "/contact",
   },

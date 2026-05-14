@@ -41,25 +41,29 @@ const notoJp = Noto_Sans_JP({
 });
 
 const siteUrl = "https://setaseisakusyo.com";
-const siteName = "SETA Craft";
+const siteName = "瀬田製作所";
 const siteDescription =
-  "MLBカード・トレカを美しく飾るための、富山県高岡市の小さな工房から。レーザー加工と3Dプリントで一つずつ手作りのアクリルディスプレイ。全国送料無料。";
+  "瀬田製作所は富山県高岡市の個人事業所です。SaaS / Web アプリ開発(Django・Next.js)、組み込みシステム(Raspberry Pi・Jetson・PLC)、回路・基板設計、AI データ解析、3Dプリント試作を承っています。";
 
 export const metadata: Metadata = {
   title: {
-    default: `${siteName} | カードは、飾るためにある。`,
+    default: `${siteName} | ソフトウェア受託開発・組み込み・試作`,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
   keywords: [
-    "MLBカード",
-    "野球カード",
-    "Topps",
-    "大谷翔平",
-    "トレカディスプレイ",
-    "アクリルディスプレイ",
-    "壁面ディスプレイ",
-    "ハンドメイド",
+    "瀬田製作所",
+    "ソフトウェア受託開発",
+    "Web アプリ開発",
+    "Next.js",
+    "Django",
+    "組み込み開発",
+    "Raspberry Pi",
+    "Jetson",
+    "PLC",
+    "AI データ解析",
+    "3D プリント",
+    "試作",
     "富山",
     "高岡",
   ],
@@ -79,7 +83,7 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     url: siteUrl,
     siteName: siteName,
-    title: `${siteName} | カードは、飾るためにある。`,
+    title: `${siteName} | ソフトウェア受託開発・組み込み・試作`,
     description: siteDescription,
     images: [
       {
@@ -93,7 +97,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: `${siteName} | カードは、飾るためにある。`,
+    title: `${siteName} | ソフトウェア受託開発・組み込み・試作`,
     description: siteDescription,
     images: ["/og-image.png"],
   },

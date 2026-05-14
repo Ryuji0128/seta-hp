@@ -85,7 +85,7 @@ const WorkshopSection = () => {
             <Box sx={{ color: "rgba(255,255,255,0.7)", fontSize: "15px", lineHeight: 1.8, mb: 2.5 }}>
               昼はソフトウェアエンジニア、夜はカードディスプレイを作っています。
               10年以上のMLBカードコレクターであり、400年の金工伝統がある富山県高岡市の小さな工房で、
-              SETA Craft を運営しています。
+              飾Love を運営しています。
             </Box>
             <Box sx={{ color: "rgba(255,255,255,0.7)", fontSize: "15px", lineHeight: 1.8, mb: 2.5 }}>
               カタログにある全てのモデルは、私が設計・切削・造形・仕上げ・梱包まで一貫して行っています。

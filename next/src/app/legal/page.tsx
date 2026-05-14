@@ -3,13 +3,13 @@ import LegalPageLayout from "../_legal/LegalPageLayout";
 import LegalInfoTable, { LegalInfoRow } from "../_legal/LegalInfoTable";
 
 export const metadata: Metadata = {
-  title: "特定商取引法に基づく表記 | SETA Craft",
-  description: "SETA Craft の特定商取引法に基づく表記です。",
+  title: "特定商取引法に基づく表記 | 瀬田製作所",
+  description: "瀬田製作所の特定商取引法に基づく表記です。",
   alternates: { canonical: "/legal" },
 };
 
 const ROWS: LegalInfoRow[] = [
-  { label: "販売業者", value: "SETA Craft" },
+  { label: "販売業者", value: "瀬田製作所" },
   { label: "運営責任者", value: "木村竜次" },
   { label: "所在地", value: "※ご請求いただいた方にお知らせいたします" },
   { label: "電話番号", value: "※ご請求いただいた方にお知らせいたします" },

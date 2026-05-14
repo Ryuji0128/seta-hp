@@ -1,7 +1,11 @@
-# SETA Craft
+# 瀬田製作所 コーポレートサイト
 
-瀬田製作所が運営するハンドメイド製品の EC サイト「SETA Craft」のソースコードです。
+**瀬田製作所**(`setaseisakusyo.com`)のコーポレートサイトのソースコードです。
 Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタック Web アプリケーション。
+
+> ハンドメイドアクリルディスプレイ事業 **飾Love(かざらぶ)** は別ドメイン `kaza-love.com` で展開予定の別ブランドです。
+> 本リポジトリにある /products, /gallery 等のカードディスプレイ関連コンテンツは過渡的なもので、最終的に飾Love 側に移行する見込み。
+> 詳細は [`docs/file/branding_kaza-love.md`](docs/file/branding_kaza-love.md) を参照。
 
 ## 目次
 
@@ -154,7 +158,7 @@ npx prisma db seed    # シードデータ投入
 | `/products/[id]` | 商品詳細 |
 | `/gallery` | ギャラリー |
 | `/works` | 実績・ポートフォリオ |
-| `/about` | SETA Craft について |
+| `/about` | 飾Love について(過渡的) |
 | `/company` | 会社情報（瀬田製作所） |
 | `/contact` | お問い合わせフォーム |
 | `/shipping` | 配送について |
@@ -252,7 +256,7 @@ seta-hp/
     └── src/
         ├── app/                 # App Router (ページ & API)
         │   ├── _home/           # トップページセクション
-        │   ├── about/           # SETA Craft について
+        │   ├── about/           # 飾Love について
         │   ├── api/             # API Routes
         │   │   ├── admin/upload/ # 管理者画像アップロード
         │   │   ├── auth/        # NextAuth
@@ -423,10 +427,10 @@ docker compose up -d
 ## 会社情報
 
 - **会社名**: 瀬田製作所
-- **ブランド名**: SETA Craft
 - **設立**: 2023年8月8日
 - **所在地**: 富山県高岡市
 - **Email**: info@setaseisakusyo.com
+- **サブブランド**: 飾Love(かざらぶ) — トレカディスプレイ事業 / `kaza-love.com` で展開予定
 
 ## ライセンス
 
