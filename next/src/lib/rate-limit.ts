@@ -92,6 +92,26 @@ export function getClientIp(request: Request): string {
   return "unknown";
 }
 
+/**
+ * 簡易レートリミット判定 (boolean を返す薄いラッパー)
+ *
+ * 既存の checkRateLimit() を IP + パスでキー化して呼ぶショートカット。
+ * Request を受け取って IP を自動抽出するので、API ルートの先頭で
+ *   if (isRateLimited(req, { max: 30, windowMs: 60_000 })) return 429;
+ * のように使える。
+ */
+export function isRateLimited(
+  request: Request,
+  options: { max?: number; windowMs?: number } = {}
+): boolean {
+  const { max = 60, windowMs = 60_000 } = options;
+  const ip = getClientIp(request);
+  const url = new URL(request.url);
+  const key = `${ip}:${url.pathname}`;
+  const result = checkRateLimit(key, { limit: max, windowMs });
+  return !result.success;
+}
+
 // プリセット設定
 export const RATE_LIMITS = {
   // 登録: 1時間に5回まで

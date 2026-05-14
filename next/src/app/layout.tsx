@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LinkToContactPage from "@/components/LinkToContactPage";
+import ReviewOverlay from "@/components/ReviewOverlay";
 import { SimpleBarWrapper } from "@/components/SimpleBarWrapper";
 import theme from "@/theme/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
@@ -155,6 +156,7 @@ export default function RootLayout({
               <LinkToContactPage />
               <Footer />
             </SimpleBarWrapper>
+            {process.env.NEXT_PUBLIC_ENABLE_COMMENTS === "true" && <ReviewOverlay />}
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
