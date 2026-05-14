@@ -70,6 +70,19 @@ const HeroSection = () => {
 
             <Box
               sx={{
+                fontFamily: fontItalic,
+                fontStyle: "italic",
+                fontSize: "20px",
+                color: "#B45309",
+                mb: 2.5,
+                letterSpacing: "0.02em",
+              }}
+            >
+              飾る愛、というのもある。
+            </Box>
+
+            <Box
+              sx={{
                 fontSize: "18px",
                 lineHeight: 1.6,
                 color: "#2A2A2A",

@@ -53,7 +53,7 @@ declare module "@mui/material/styles" {
   }
 }
 
-// 瀬田製作所 / 飾Love 共通デザインシステム (2026-05-13 策定)
+// 飾Love デザインシステム (2026-05-13 策定)
 // Phantom-inspired Western premium × Japanese-led × copper accent
 
 // next/font の自動生成フォント名を CSS 変数経由で参照

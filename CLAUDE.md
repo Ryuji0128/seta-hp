@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-**瀬田製作所** のコーポレートサイト(`setaseisakusyo.com`)。Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタックWebアプリケーション。
+**飾Love(かざらぶ)** ブランドの EC兼ブランドサイト(`setaseisakusyo.com`)。Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタックWebアプリケーション。
 
-瀬田製作所は富山県高岡市の個人事業所で、ソフトウェア受託開発(SaaS / 組み込み / AI データ解析)を本業とする。
-ハンドメイドアクリルディスプレイ事業の **飾Love(かざらぶ)** は別ドメイン `kaza-love.com` で展開予定の別ブランド([`docs/file/branding_kaza-love.md`](docs/file/branding_kaza-love.md))。
-本リポジトリのカードディスプレイ関連コンテンツ(/products, /gallery 等)は過渡的に残しているもので、最終的に飾Love 側に移行する見込み。
+飾Love は、富山県高岡市の小さな工房から MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランド。
+運営事業者は個人事業所「**瀬田製作所**」(屋号)— 法的表記(特商法・プライバシーポリシー)では「販売業者: 瀬田製作所」と記載するが、サイト表示・SNS・OG情報・サブジェクト等のブランド面はすべて「飾Love」で統一する。
+ブランド表記ルール・タグライン「飾る愛、というのもある。」・歴史は [`docs/file/branding_kaza-love.md`](docs/file/branding_kaza-love.md) を参照。
 
 ## Tech Stack
 
@@ -73,8 +73,8 @@ npx prisma db seed    # シードデータ投入
 | `/products` | 商品一覧 |
 | `/products/[id]` | 商品詳細 |
 | `/gallery` | ギャラリー |
-| `/about` | 飾Love について(過渡的にこのリポに残っている) |
-| `/company` | 会社情報（瀬田製作所） |
+| `/about` | 飾Love について(工房紹介) |
+| `/company` | 会社情報(飾Love / 運営: 瀬田製作所) |
 | `/contact` | お問い合わせフォーム |
 | `/shipping` | 配送について |
 | `/legal` | 特定商取引法に基づく表記 |
