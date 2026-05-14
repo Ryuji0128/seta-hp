@@ -11,7 +11,6 @@ import {
   Menu,
   MenuItem,
   Toolbar,
-  Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -19,9 +18,15 @@ import { SessionProvider } from "next-auth/react";
 import Link from "next/link";
 import React, { useState } from "react";
 
+const NAV_LINKS = [
+  { title: "カタログ", href: "/products" },
+  { title: "ギャラリー", href: "/gallery" },
+  { title: "工房について", href: "/about" },
+  { title: "お問い合わせ", href: "/contact" },
+];
+
 export default function Header() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -32,77 +37,84 @@ export default function Header() {
     setAnchorEl(null);
   };
 
-  const contentsList = [
-    { title: "商品一覧", href: "/products" },
-    { title: "ギャラリー", href: "/gallery" },
-    { title: "工房について", href: "/about" },
-    { title: "お問い合わせ", href: "/contact" },
-  ];
-
   return (
     <>
       <AppBar
         position="fixed"
         sx={{
-          backgroundColor: "#FFFFFF",
-          borderBottom: "1px solid #EAEAEA",
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          borderBottom: "1px solid #EFEFEA",
           boxShadow: "none",
+          color: "#0A0A0A",
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
           <Toolbar
             disableGutters
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              minHeight: { xs: 56, md: 64 },
+              minHeight: { xs: 60, md: 72 },
             }}
           >
-            {/* ロゴ */}
+            {/* Brand */}
             <Link
               href="/"
               passHref
               style={{ textDecoration: "none", color: "inherit" }}
             >
-              <Typography
-                variant="h5"
+              <Box
                 sx={{
-                  fontSize: { xs: "16px", md: "20px" },
-                  color: "#333",
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "10px",
+                  fontFamily: theme.custom.fonts.display,
+                  fontSize: { xs: "16px", md: "19px" },
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                  color: "#0A0A0A",
                 }}
               >
-                SETA Craft
-              </Typography>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-block",
+                    width: 8,
+                    height: 8,
+                    bgcolor: "#B45309",
+                    transform: "rotate(45deg)",
+                  }}
+                />
+                SETA CRAFT
+              </Box>
             </Link>
 
-            {/* ナビゲーション */}
+            {/* Nav */}
             {isTablet ? (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <SessionProvider>
                   <UserAuthButton />
                 </SessionProvider>
-
                 <IconButton
-                  edge="start"
+                  edge="end"
                   aria-label="menu"
                   onClick={handleMenuOpen}
                 >
-                  <MenuIcon sx={{ color: "#333" }} />
+                  <MenuIcon sx={{ color: "#0A0A0A" }} />
                 </IconButton>
-
                 <Menu
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={handleMenuClose}
                   sx={{ mt: 1 }}
                 >
-                  {contentsList.map((content, index) => (
-                    <MenuItem key={index} onClick={handleMenuClose}>
+                  {NAV_LINKS.map((item) => (
+                    <MenuItem key={item.href} onClick={handleMenuClose}>
                       <Link
-                        href={content.href}
+                        href={item.href}
                         passHref
                         style={{
                           textDecoration: "none",
@@ -110,39 +122,51 @@ export default function Header() {
                           width: "100%",
                         }}
                       >
-                        <Typography variant="body1">{content.title}</Typography>
+                        {item.title}
                       </Link>
                     </MenuItem>
                   ))}
                 </Menu>
               </Box>
             ) : (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                {contentsList.map((content, index) => (
-                  <Link key={index} href={content.href} passHref>
-                    <Button
+              <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>
+                {NAV_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    passHref
+                    style={{ textDecoration: "none" }}
+                  >
+                    <Box
                       sx={{
-                        color: "#333",
-                        fontWeight: 500,
-                        "&:hover": {
-                          color: "#FF5722",
-                          backgroundColor: "transparent",
-                        },
+                        color: "#0A0A0A",
                         fontSize: "14px",
-                        px: 2,
+                        fontWeight: 500,
+                        transition: "color 0.2s",
+                        cursor: "pointer",
+                        "&:hover": { color: "#B45309" },
                       }}
                     >
-                      {content.title}
-                    </Button>
+                      {item.title}
+                    </Box>
                   </Link>
                 ))}
-
+                <Link href="/products" passHref style={{ textDecoration: "none" }}>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      bgcolor: "#0A0A0A",
+                      color: "#FFFFFF",
+                      px: 2.5,
+                      py: 1.1,
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      "&:hover": { bgcolor: "#B45309" },
+                    }}
+                  >
+                    購入する →
+                  </Button>
+                </Link>
                 <SessionProvider>
                   <UserAuthButton />
                 </SessionProvider>
@@ -151,9 +175,7 @@ export default function Header() {
           </Toolbar>
         </Container>
       </AppBar>
-
-      {/* ヘッダー分の高さを確保 */}
-      <Box sx={{ ...theme.mixins.toolbar }} />
+      <Box sx={{ height: { xs: 60, md: 72 } }} />
     </>
   );
 }

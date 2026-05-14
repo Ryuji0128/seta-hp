@@ -1,18 +1,20 @@
 import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import HeroSection from "./_home/HeroSection";
-import CategoryNavSection from "./_home/CategoryNavSection";
-import FeaturedProductsSection from "./_home/FeaturedProductsSection";
+import MarqueeSection from "./_home/MarqueeSection";
+import CatalogueSection from "./_home/CatalogueSection";
 import FeaturesSection from "./_home/FeaturesSection";
+import CraftSection from "./_home/CraftSection";
+import WorkshopSection from "./_home/WorkshopSection";
+import QuizTeaserSection from "./_home/QuizTeaserSection";
 import CTASection from "./_home/CTASection";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "SETA Craft | カード好きが作ったディスプレイ",
+  title: "SETA Craft | カードは、飾るためにある。",
   description:
-    "カード好きが作った、こだわりのディスプレイ。トレカ、ポケカ、遊戯王などのカードを美しく飾るスタンド・ケースを販売しています。レーザーカット・3Dプリントで丁寧に製作。",
-  keywords: ["カードディスプレイ", "トレカスタンド", "ポケカ", "遊戯王", "アクリルスタンド", "3Dプリント"],
+    "MLBカード・トレカを美しく飾るための、富山県高岡市の小さな工房から。レーザー加工と3Dプリントで一つずつ手作りのアクリルディスプレイ。全国送料無料。",
   alternates: {
     canonical: "/",
   },
@@ -20,11 +22,14 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <Box sx={{ bgcolor: "white" }}>
+    <Box sx={{ bgcolor: "#FFFFFF" }}>
       <HeroSection />
-      <CategoryNavSection />
-      <FeaturedProductsSection />
+      <MarqueeSection />
+      <CatalogueSection />
       <FeaturesSection />
+      <CraftSection />
+      <WorkshopSection />
+      <QuizTeaserSection />
       <CTASection />
     </Box>
   );
