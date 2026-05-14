@@ -42,11 +42,11 @@ const PrivacyPolicy: React.FC = () => {
   return (
     <>
       {data.map((section, sectionIndex) => (
-        <div key={sectionIndex} className="mb-20">
-          <h2 className="text-xl font-bold mb-2">{`第${sectionIndex + 1}条（${section.title}）`}</h2>
-          {section.description && <p className="mb-2">{section.description}</p>}
+        <section key={sectionIndex}>
+          <h2>{`第${sectionIndex + 1}条 (${section.title})`}</h2>
+          {section.description && <p>{section.description}</p>}
           {renderItems(section.listItems as ListItem[], `section-${sectionIndex}`)}
-        </div>
+        </section>
       ))}
     </>
   );
