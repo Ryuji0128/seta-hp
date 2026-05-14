@@ -7,40 +7,78 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import type { Metadata } from "next";
+import { Cormorant_Garamond, Inter, Inter_Tight, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-inter-tight",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["italic"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const notoJp = Noto_Sans_JP({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-noto-jp",
+  display: "swap",
+});
+
 const siteUrl = "https://setaseisakusyo.com";
-const siteName = "瀬田製作所";
+const siteName = "SETA Craft";
 const siteDescription =
-  "瀬田製作所は、Webアプリケーションやモバイルアプリの開発を中心に、多様なプロジェクトで信頼を得ているエンジニアチームです。先進技術を用いた、最適なソリューションを提供します。";
+  "MLBカード・トレカを美しく飾るための、富山県高岡市の小さな工房から。レーザー加工と3Dプリントで一つずつ手作りのアクリルディスプレイ。全国送料無料。";
 
 export const metadata: Metadata = {
-  // 基本情報
   title: {
-    default: siteName,
+    default: `${siteName} | カードは、飾るためにある。`,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
+  keywords: [
+    "MLBカード",
+    "野球カード",
+    "Topps",
+    "大谷翔平",
+    "トレカディスプレイ",
+    "アクリルディスプレイ",
+    "壁面ディスプレイ",
+    "ハンドメイド",
+    "富山",
+    "高岡",
+  ],
 
-  // canonical URL
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/",
   },
 
-  // アイコン
   icons: {
     icon: "/seta_logo.svg",
     apple: "/seta_logo.svg",
   },
 
-  // OGP (Open Graph Protocol)
   openGraph: {
     type: "website",
     locale: "ja_JP",
     url: siteUrl,
     siteName: siteName,
-    title: siteName,
+    title: `${siteName} | カードは、飾るためにある。`,
     description: siteDescription,
     images: [
       {
@@ -52,15 +90,13 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: siteName,
+    title: `${siteName} | カードは、飾るためにある。`,
     description: siteDescription,
     images: ["/og-image.png"],
   },
 
-  // robots
   robots: {
     index: true,
     follow: true,
@@ -73,14 +109,11 @@ export const metadata: Metadata = {
     },
   },
 
-  // 検証用（Google Search Console）
   verification: {
     // Google Search Console の確認コードをここに追加
-    // google: "your-google-verification-code",
   },
 };
 
-// 構造化データ (JSON-LD)
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -91,6 +124,8 @@ const jsonLd = {
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",
+    addressLocality: "Takaoka",
+    addressRegion: "Toyama",
   },
 };
 
@@ -100,7 +135,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html
+      lang="ja"
+      className={`${inter.variable} ${interTight.variable} ${cormorant.variable} ${notoJp.variable}`}
+    >
       <head>
         <script
           type="application/ld+json"
