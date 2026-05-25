@@ -36,7 +36,7 @@ export async function POST(
   const disabled = reviewCommentsDisabledResponse();
   if (disabled) return disabled;
 
-  if (isRateLimited(req, { windowMs: 60_000, max: 30 })) {
+  if (await isRateLimited(req, { windowMs: 60_000, max: 30 })) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
@@ -74,7 +74,7 @@ export async function DELETE(
   const disabled = reviewCommentsDisabledResponse();
   if (disabled) return disabled;
 
-  if (isRateLimited(req, { windowMs: 60_000, max: 30 })) {
+  if (await isRateLimited(req, { windowMs: 60_000, max: 30 })) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 

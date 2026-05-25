@@ -1,5 +1,4 @@
-// シンプルなインメモリレートリミット
-// 本番環境ではRedisを使用することを推奨
+import { getPrismaClient } from "@/lib/db";
 
 interface RateLimitEntry {
   count: number;
@@ -7,21 +6,33 @@ interface RateLimitEntry {
 }
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
+let storeFallbackWarned = false;
 
-// 古いエントリをクリーンアップ（メモリリーク防止）
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetAt < now) {
-      rateLimitStore.delete(key);
+declare global {
+  // eslint-disable-next-line no-var
+  var __setaRateLimitCleanupStarted: boolean | undefined;
+}
+
+function ensureMemoryCleanupStarted() {
+  if (globalThis.__setaRateLimitCleanupStarted) return;
+
+  const interval = setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of rateLimitStore.entries()) {
+      if (entry.resetAt < now) {
+        rateLimitStore.delete(key);
+      }
     }
-  }
-}, 60000); // 1分ごとにクリーンアップ
+  }, 60_000);
+
+  interval.unref?.();
+  globalThis.__setaRateLimitCleanupStarted = true;
+}
+
+ensureMemoryCleanupStarted();
 
 export interface RateLimitConfig {
-  // ウィンドウ内で許可するリクエスト数
   limit: number;
-  // ウィンドウの長さ（ミリ秒）
   windowMs: number;
 }
 
@@ -31,20 +42,18 @@ export interface RateLimitResult {
   resetAt: number;
 }
 
-/**
- * レートリミットをチェック
- * @param key 識別子（IPアドレスやユーザーIDなど）
- * @param config レートリミット設定
- * @returns レートリミット結果
- */
-export function checkRateLimit(
-  key: string,
-  config: RateLimitConfig
-): RateLimitResult {
+function resolveRateLimitStore(): "memory" | "database" {
+  const configuredStore = process.env.RATE_LIMIT_STORE;
+  if (configuredStore === "memory") return "memory";
+  if (configuredStore === "database") return "database";
+  if (process.env.NODE_ENV === "test") return "memory";
+  return process.env.DATABASE_URL ? "database" : "memory";
+}
+
+function checkMemoryRateLimit(key: string, config: RateLimitConfig): RateLimitResult {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
 
-  // 新規または期限切れの場合
   if (!entry || entry.resetAt < now) {
     const resetAt = now + config.windowMs;
     rateLimitStore.set(key, { count: 1, resetAt });
@@ -55,7 +64,6 @@ export function checkRateLimit(
     };
   }
 
-  // 制限内の場合
   if (entry.count < config.limit) {
     entry.count++;
     return {
@@ -65,7 +73,7 @@ export function checkRateLimit(
     };
   }
 
-  // 制限超過
+  entry.count++;
   return {
     success: false,
     remaining: 0,
@@ -73,17 +81,88 @@ export function checkRateLimit(
   };
 }
 
-/**
- * IPアドレスを取得
- */
+async function maybeCleanupExpiredRateLimits(now: Date) {
+  if (Math.random() >= 0.01) return;
+
+  try {
+    const prisma = getPrismaClient();
+    await prisma.$executeRaw`DELETE FROM ApiRateLimit WHERE resetAt < ${now}`;
+  } catch {
+    // ベストエフォートの掃除なので失敗は握りつぶす
+  }
+}
+
+async function checkDatabaseRateLimit(
+  key: string,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
+  const prisma = getPrismaClient();
+  const now = new Date();
+  const resetAt = new Date(now.getTime() + config.windowMs);
+
+  await maybeCleanupExpiredRateLimits(now);
+
+  await prisma.$executeRaw`
+    INSERT INTO ApiRateLimit (identifier, count, resetAt, createdAt, updatedAt)
+    VALUES (${key}, 1, ${resetAt}, NOW(), NOW())
+    ON DUPLICATE KEY UPDATE
+      count = IF(resetAt < NOW(), 1, count + 1),
+      resetAt = IF(resetAt < NOW(), ${resetAt}, resetAt),
+      updatedAt = NOW()
+  `;
+
+  const rows = await prisma.$queryRaw<Array<{ count: number; resetAt: Date }>>`
+    SELECT count, resetAt
+    FROM ApiRateLimit
+    WHERE identifier = ${key}
+    LIMIT 1
+  `;
+  const entry = rows[0];
+
+  if (!entry) {
+    throw new Error("Rate limit entry was not created");
+  }
+
+  const success = entry.count <= config.limit;
+  const remaining = success ? Math.max(config.limit - entry.count, 0) : 0;
+
+  return {
+    success,
+    remaining,
+    resetAt: new Date(entry.resetAt).getTime(),
+  };
+}
+
+function logStoreFallback(error: unknown) {
+  if (storeFallbackWarned) return;
+  storeFallbackWarned = true;
+  console.warn("DBレート制限が利用できないため、インメモリ方式へフォールバックします", error);
+}
+
+export async function checkRateLimit(
+  key: string,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
+  const store = resolveRateLimitStore();
+
+  if (store === "memory") {
+    return checkMemoryRateLimit(key, config);
+  }
+
+  try {
+    return await checkDatabaseRateLimit(key, config);
+  } catch (error) {
+    logStoreFallback(error);
+    return checkMemoryRateLimit(key, config);
+  }
+}
+
 export function getClientIp(request: Request): string {
-  // プロキシ経由の場合
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
 
-  // 直接接続の場合
   const realIp = request.headers.get("x-real-ip");
   if (realIp) {
     return realIp;
@@ -92,51 +171,37 @@ export function getClientIp(request: Request): string {
   return "unknown";
 }
 
-/**
- * 簡易レートリミット判定 (boolean を返す薄いラッパー)
- *
- * 既存の checkRateLimit() を IP + パスでキー化して呼ぶショートカット。
- * Request を受け取って IP を自動抽出するので、API ルートの先頭で
- *   if (isRateLimited(req, { max: 30, windowMs: 60_000 })) return 429;
- * のように使える。
- */
-export function isRateLimited(
+export async function isRateLimited(
   request: Request,
   options: { max?: number; windowMs?: number } = {}
-): boolean {
+): Promise<boolean> {
   const { max = 60, windowMs = 60_000 } = options;
   const ip = getClientIp(request);
   const url = new URL(request.url);
   const key = `${ip}:${url.pathname}`;
-  const result = checkRateLimit(key, { limit: max, windowMs });
+  const result = await checkRateLimit(key, { limit: max, windowMs });
   return !result.success;
 }
 
-// プリセット設定
 export const RATE_LIMITS = {
-  // 登録: 1時間に5回まで
   register: {
     limit: 5,
-    windowMs: 60 * 60 * 1000, // 1時間
+    windowMs: 60 * 60 * 1000,
   },
-  // ログイン: 15分に10回まで
   login: {
     limit: 10,
-    windowMs: 15 * 60 * 1000, // 15分
+    windowMs: 15 * 60 * 1000,
   },
-  // お問い合わせ: 1分に3回まで
   contact: {
     limit: 3,
-    windowMs: 60 * 1000, // 1分
+    windowMs: 60 * 1000,
   },
-  // reCAPTCHA検証: 1分に5回まで
   recaptcha: {
     limit: 5,
-    windowMs: 60 * 1000, // 1分
+    windowMs: 60 * 1000,
   },
-  // API一般: 1分に60回まで
   api: {
     limit: 60,
-    windowMs: 60 * 1000, // 1分
+    windowMs: 60 * 1000,
   },
 } as const;

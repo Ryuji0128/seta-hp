@@ -101,6 +101,7 @@ docker compose -f docker-compose.dev.yml down
 | 変数名 | 説明 |
 |--------|------|
 | `DATABASE_URL` | MySQL 接続文字列 |
+| `RATE_LIMIT_STORE` | `database` / `memory`。省略時は環境に応じて自動選択 |
 | `AUTH_SECRET` | NextAuth 暗号化キー |
 | `NEXTAUTH_URL` | 認証コールバック URL |
 | `NEXT_PUBLIC_SITE_URL` | サイト URL（フロントエンド参照） |
@@ -144,7 +145,7 @@ npx prisma db seed    # シードデータ投入
 | Backend | Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth) |
 | Database | MySQL 8.0, Prisma ORM |
 | セキュリティ | reCAPTCHA v3, Zod バリデーション, XSS サニタイズ, レート制限 |
-| インフラ | Docker, Nginx, GitHub Actions (CI/CD), Google App Engine |
+| インフラ | Docker, Nginx, GitHub Container Registry, GitHub Actions (CI/CD) |
 | メール | Nodemailer (SMTP) |
 
 ## ページ一覧
@@ -159,7 +160,7 @@ npx prisma db seed    # シードデータ投入
 | `/gallery` | ギャラリー |
 | `/about` | 飾Love について(工房紹介) |
 | `/company` | 会社情報(飾Love / 運営: 瀬田製作所) |
-| `/contact` | お問い合わせフォーム |
+| `/contact` | お問い合わせフォーム（ADMIN は問い合わせ管理画面を表示） |
 | `/shipping` | 配送について |
 | `/legal` | 特定商取引法に基づく表記 |
 | `/privacy-policy` | プライバシーポリシー |
@@ -179,9 +180,8 @@ npx prisma db seed    # シードデータ投入
 | `/gallery-manage` | ギャラリー管理 |
 | `/works-manage` | 実績管理 |
 | `/news` | ニュース管理 |
-| `/estimates` | 見積管理 |
 
-> **Note**: 管理ページはログイン済みであればアクセス可能です。書込み・削除などの操作は API 側で ADMIN / EDITOR ロールを要求します。
+> **Note**: 管理ページは基本的に `ADMIN` / `EDITOR` が利用対象です。削除操作など一部 API は `ADMIN` 専用です。
 
 ## API エンドポイント
 
@@ -192,11 +192,14 @@ npx prisma db seed    # シードデータ投入
 | GET/POST/PUT/DELETE | `/api/works` | 実績 CRUD | 書込: ADMIN/EDITOR |
 | GET/POST/PUT/DELETE | `/api/news` | ニュース CRUD | 書込: ADMIN/EDITOR |
 | GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET: 要認証 / DELETE: ADMIN |
-| GET/POST/DELETE | `/api/estimates` | 見積管理 | 要認証 |
 | POST | `/api/recaptcha` | reCAPTCHA 検証 | - (レート制限あり) |
 | POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
 | POST | `/api/upload` | 画像アップロード | 要認証 |
 | POST | `/api/admin/upload` | 管理者画像アップロード | 要認証 |
+| GET/POST | `/api/review-comments` | 社内レビューコメント一覧・作成 | 開発環境のみ有効 / レート制限あり |
+| PATCH/DELETE | `/api/review-comments/[id]` | 社内レビューコメントの状態変更・削除 | 開発環境のみ有効 / レート制限あり |
+| POST/DELETE | `/api/review-comments/[id]/replies` | 社内レビュー返信の作成・削除 | 開発環境のみ有効 / レート制限あり |
+| GET | `/api/health` | ヘルスチェック | - |
 
 ## データベースモデル
 
@@ -207,8 +210,8 @@ npx prisma db seed    # シードデータ投入
 | **Work** | 実績・ポートフォリオ |
 | **News** | ニュース記事（JSON コンテンツ） |
 | **Inquiry** | お問い合わせ |
-| **Estimate** | 見積書（PDF, 金額, 決済状態） |
 | **Account / Session** | NextAuth 認証関連 |
+| **ReviewComment / ReviewCommentReply** | 社内レビュー用ページコメントと返信 |
 
 ### 商品カテゴリ
 
@@ -255,11 +258,12 @@ seta-hp/
         │   │   ├── admin/upload/ # 管理者画像アップロード
         │   │   ├── auth/        # NextAuth
         │   │   ├── email/       # お問い合わせ (送信・一覧・削除)
-        │   │   ├── estimates/   # 見積管理
+        │   │   ├── health/      # ヘルスチェック
         │   │   ├── news/        # ニュース CRUD
         │   │   ├── products/    # 商品 CRUD
         │   │   ├── recaptcha/   # reCAPTCHA 検証
         │   │   ├── register/    # ユーザー登録
+        │   │   ├── review-comments/ # 社内レビューコメント
         │   │   ├── upload/      # 画像アップロード
         │   │   └── works/       # 実績 CRUD
         │   ├── company/         # 会社情報
@@ -268,20 +272,26 @@ seta-hp/
         │   ├── gallery-manage/  # ギャラリー管理
         │   ├── legal/           # 特定商取引法
         │   ├── login/           # ログイン
+        │   ├── news/            # ニュース管理
+        │   ├── privacy-policy/  # プライバシーポリシー
         │   ├── products/        # 商品一覧 & 詳細
         │   ├── products-manage/ # 商品管理
         │   ├── register/        # ユーザー登録
         │   ├── shipping/        # 配送について
         │   └── works-manage/    # 実績管理
+        ├── __tests__/           # Vitest
         ├── components/          # 共有コンポーネント
         ├── lib/                 # ユーティリティ
         │   ├── constants/       # カテゴリ・在庫定義
         │   ├── api-response.ts  # API レスポンスヘルパー
-        │   ├── rate-limit.ts    # インメモリレート制限
-        │   ├── validation.ts    # Zod バリデーションスキーマ
         │   ├── auth.ts          # NextAuth 初期化
-        │   └── db.ts            # Prisma クライアント
-        ├── actions/             # Server Actions
+        │   ├── db.ts            # Prisma クライアント
+        │   ├── fetchSecrets.ts  # 環境変数/Secret取得
+        │   ├── pagination.ts    # ページネーション共通処理
+        │   ├── rate-limit.ts    # DB共有対応のレート制限
+        │   ├── reviewCommentsGuard.ts # レビューAPI有効化ガード
+        │   ├── upload-validation.ts # 画像アップロード検証
+        │   └── validation.ts    # Zod バリデーションスキーマ
         └── theme/               # MUI テーマ設定
 ```
 
@@ -356,7 +366,7 @@ docker compose exec mysql mysql -u app_user -papp_pass app_db
 |-----|------|
 | NextAuth 認証 | bcrypt によるパスワードハッシュ, JWT セッション |
 | ロールベース認可 | ADMIN / EDITOR / VIEWER の 3 段階 |
-| レート制限 | IP 単位のリクエスト制限（登録, ログイン, お問い合わせ, reCAPTCHA） |
+| レート制限 | IP 単位のリクエスト制限（既定はDB共有ストア、必要に応じて memory に切替可） |
 | バリデーション | Zod スキーマによるサーバーサイド検証 |
 | reCAPTCHA v3 | フォームスパム対策 |
 | XSS サニタイズ | `xss` パッケージによる入力サニタイズ |

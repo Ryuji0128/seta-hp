@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   try {
     // レート制限チェック
     const clientIp = getClientIp(req);
-    const rateLimitResult = checkRateLimit(`contact:${clientIp}`, RATE_LIMITS.contact);
+    const rateLimitResult = await checkRateLimit(`contact:${clientIp}`, RATE_LIMITS.contact);
     if (!rateLimitResult.success) {
       const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
       return NextResponse.json(

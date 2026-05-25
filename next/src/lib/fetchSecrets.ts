@@ -1,8 +1,8 @@
 type SecretValues = Record<string, string>;
 
 /**
- * 環境変数からシークレットを取得する
- * ※Google Secret Managerを使用する場合はGCP認証を有効化してください
+ * 現在は環境変数からシークレット値を取得する薄いラッパー。
+ * 将来的に外部シークレットストアへ差し替える場合も、呼び出し側はこのAPIを使い続けられる。
  */
 async function getSecretValues(secretNames: string[]): Promise<SecretValues> {
   return secretNames.reduce((acc, secretName) => {

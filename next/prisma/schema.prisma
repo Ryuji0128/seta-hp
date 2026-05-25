@@ -150,3 +150,14 @@ model ReviewCommentReply {
 
   @@index([commentId])
 }
+
+model ApiRateLimit {
+  id         Int      @id @default(autoincrement())
+  identifier String   @unique @db.VarChar(191)
+  count      Int
+  resetAt    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([resetAt])
+}

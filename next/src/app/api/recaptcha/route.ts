@@ -6,7 +6,7 @@ import axios from "axios";
 export async function POST(req: NextRequest) {
   // レート制限チェック
   const clientIp = getClientIp(req);
-  const rateLimitResult = checkRateLimit(`recaptcha:${clientIp}`, RATE_LIMITS.recaptcha);
+  const rateLimitResult = await checkRateLimit(`recaptcha:${clientIp}`, RATE_LIMITS.recaptcha);
   if (!rateLimitResult.success) {
     const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
     return NextResponse.json(
