@@ -389,9 +389,7 @@ export default function ReviewOverlay() {
               onClose={() => setOpenCommentId(null)}
               anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
               transformOrigin={{ vertical: "top", horizontal: "center" }}
-              slotProps={{
-              paper: { "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } },
-            }}
+              PaperProps={{ "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } } as Record<string, unknown>}
             >
               <Box sx={{ width: 340, p: 2 }}>
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
@@ -504,9 +502,7 @@ export default function ReviewOverlay() {
             }}
             anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             transformOrigin={{ vertical: "top", horizontal: "center" }}
-            slotProps={{
-                paper: { "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } },
-              }}
+            PaperProps={{ "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } } as Record<string, unknown>}
           >
             <Box sx={{ width: 320, p: 2 }}>
               <Typography variant="caption" color="text.secondary">
@@ -656,7 +652,7 @@ export default function ReviewOverlay() {
         anchor="right"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        slotProps={{ paper: { "data-review-ui": "true", sx: { width: { xs: "90vw", sm: 400 } } } }}
+        PaperProps={{ "data-review-ui": "true", sx: { width: { xs: "90vw", sm: 400 } } } as Record<string, unknown>}
       >
         <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
           <Stack direction="row" alignItems="center" sx={{ mb: 1 }}>
@@ -751,7 +747,7 @@ export default function ReviewOverlay() {
       <Dialog
         open={nameDialogOpen}
         onClose={() => setNameDialogOpen(false)}
-        slotProps={{ paper: { "data-review-ui": "true" } }}
+        PaperProps={{ "data-review-ui": "true" } as Record<string, unknown>}
       >
         <DialogTitle>お名前を入力してください</DialogTitle>
         <DialogContent>
