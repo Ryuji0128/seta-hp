@@ -128,7 +128,7 @@ cd next
 yarn dev              # 開発サーバー (Turbopack)
 yarn build            # プロダクションビルド + sitemap 生成
 yarn lint             # ESLint
-npx tsc --noEmit      # 型チェック
+yarn typecheck        # 型チェック (.next を再生成してから実行)
 
 # Prisma
 npx prisma generate   # Client 再生成

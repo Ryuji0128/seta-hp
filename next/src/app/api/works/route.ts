@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { VALID_GALLERY_CATEGORIES } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
 import xss from "xss";
-
-// 許可されたカテゴリ
-const VALID_CATEGORIES = ["modeling", "print", "laser", "mockup"];
 
 // 制作事例一覧取得（公開用）
 export async function GET(req: NextRequest) {
@@ -68,8 +66,8 @@ export async function POST(req: NextRequest) {
     }
 
     // カテゴリの検証
-    if (!VALID_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
+    if (!VALID_GALLERY_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: `カテゴリは${VALID_GALLERY_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
     const work = await prisma.work.create({
@@ -118,8 +116,8 @@ export async function PUT(req: NextRequest) {
     }
 
     // カテゴリの検証
-    if (category && !VALID_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
+    if (category && !VALID_GALLERY_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: `カテゴリは${VALID_GALLERY_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
     const work = await prisma.work.update({

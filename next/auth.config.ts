@@ -1,6 +1,7 @@
 // src/auth.config.ts
 import { getPrismaClient } from "@/lib/db";
 import bcryptjs from "bcryptjs";
+import { isGoogleAuthEnabled } from "@/lib/runtime-config";
 import { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -8,7 +9,7 @@ import Google from "next-auth/providers/google";
 const prisma = getPrismaClient();
 
 // Google認証が設定されているかチェック
-const googleProviderEnabled = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
+const googleProviderEnabled = isGoogleAuthEnabled();
 
 const authConfig = {
   trustHost: true,

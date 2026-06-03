@@ -1,4 +1,4 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import { getPrismaClient } from "@/lib/db";
 import GalleryHero from "./_components/GalleryHero";

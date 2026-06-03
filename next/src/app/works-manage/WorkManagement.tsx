@@ -36,8 +36,12 @@ import ContentCutIcon from "@mui/icons-material/ContentCut";
 import BuildIcon from "@mui/icons-material/Build";
 import { Session } from "next-auth";
 import ImageUpload from "@/components/ImageUpload";
-
-type WorkCategory = "modeling" | "print" | "laser" | "mockup";
+import {
+  GALLERY_CATEGORIES,
+  type GalleryCategoryValue,
+  getGalleryCategoryColor,
+  getGalleryCategoryLabel,
+} from "@/lib/constants/categories";
 
 interface Work {
   id: number;
@@ -49,18 +53,11 @@ interface Work {
   isPublished: boolean;
 }
 
-const categoryOptions: { value: WorkCategory; label: string; icon: React.ReactNode }[] = [
-  { value: "modeling", label: "3Dモデリング", icon: <ViewInArIcon /> },
-  { value: "print", label: "3Dプリント", icon: <PrintIcon /> },
-  { value: "laser", label: "レーザーカット", icon: <ContentCutIcon /> },
-  { value: "mockup", label: "モックアップ", icon: <BuildIcon /> },
-];
-
-const categoryInfo: Record<string, { label: string; color: string }> = {
-  modeling: { label: "3Dモデリング", color: "#1976d2" },
-  print: { label: "3Dプリント", color: "#388e3c" },
-  laser: { label: "レーザーカット", color: "#f57c00" },
-  mockup: { label: "モックアップ", color: "#7b1fa2" },
+const categoryIconMap: Record<GalleryCategoryValue, React.ReactNode> = {
+  modeling: <ViewInArIcon />,
+  print: <PrintIcon />,
+  laser: <ContentCutIcon />,
+  mockup: <BuildIcon />,
 };
 
 interface Props {
@@ -76,7 +73,7 @@ export default function WorkManagement({ session }: Props) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "modeling" as WorkCategory,
+    category: GALLERY_CATEGORIES[0].value as GalleryCategoryValue,
     tags: "",
     image: "",
     isPublished: true,
@@ -109,7 +106,7 @@ export default function WorkManagement({ session }: Props) {
       setFormData({
         title: work.title,
         description: work.description,
-        category: work.category as WorkCategory,
+        category: work.category as GalleryCategoryValue,
         tags: work.tags,
         image: work.image || "",
         isPublished: work.isPublished,
@@ -119,7 +116,7 @@ export default function WorkManagement({ session }: Props) {
       setFormData({
         title: "",
         description: "",
-        category: "modeling",
+        category: GALLERY_CATEGORIES[0].value,
         tags: "",
         image: "",
         isPublished: true,
@@ -229,9 +226,9 @@ export default function WorkManagement({ session }: Props) {
               </TableRow>
             ) : (
               works.map((work) => {
-                const catInfo = categoryInfo[work.category] || {
-                  label: work.category,
-                  color: "#666",
+                const catInfo = {
+                  label: getGalleryCategoryLabel(work.category),
+                  color: getGalleryCategoryColor(work.category),
                 };
                 return (
                   <TableRow key={work.id}>
@@ -322,13 +319,13 @@ export default function WorkManagement({ session }: Props) {
                 value={formData.category}
                 label="カテゴリ"
                 onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value as WorkCategory })
+                  setFormData({ ...formData, category: e.target.value as GalleryCategoryValue })
                 }
               >
-                {categoryOptions.map((opt) => (
+                {GALLERY_CATEGORIES.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      {opt.icon}
+                      {categoryIconMap[opt.value]}
                       {opt.label}
                     </Box>
                   </MenuItem>

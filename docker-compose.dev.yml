@@ -35,7 +35,7 @@ services:
       - ./mysql/data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 60s
