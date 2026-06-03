@@ -1,4 +1,4 @@
-# www → non-www リダイレクト (HTTP)
+# www.kaza-love.com → kaza-love.com リダイレクト (HTTP)
 server {
     listen 80;
     server_name www.${SERVER_NAME};
@@ -12,7 +12,21 @@ server {
     }
 }
 
-# HTTP
+# 旧ドメイン setaseisakusyo.com → kaza-love.com リダイレクト (HTTP)
+server {
+    listen 80;
+    server_name ${OLD_SERVER_NAME} www.${OLD_SERVER_NAME};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://${SERVER_NAME}$request_uri;
+    }
+}
+
+# kaza-love.com HTTP → HTTPS リダイレクト
 server {
     listen 80;
     server_name ${SERVER_NAME};
