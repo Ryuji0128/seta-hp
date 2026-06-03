@@ -33,6 +33,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { Session } from "next-auth";
 import { useCallback, useEffect, useState } from "react";
 import ImageUpload from "@/components/ImageUpload";
+import { GALLERY_CATEGORIES, getGalleryCategoryLabel } from "@/lib/constants/categories";
 
 interface Work {
   id: number;
@@ -49,12 +50,7 @@ interface GalleryManagementProps {
   session: Session;
 }
 
-const categoryOptions = [
-  { value: "modeling", label: "3Dモデリング" },
-  { value: "print", label: "3Dプリント製品" },
-  { value: "laser", label: "レーザーカット" },
-  { value: "mockup", label: "試作品" },
-];
+const categoryOptions = GALLERY_CATEGORIES;
 
 const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
   const [works, setWorks] = useState<Work[]>([]);
@@ -67,7 +63,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
   // フォーム用
   const [formTitle, setFormTitle] = useState("");
   const [formDescription, setFormDescription] = useState("");
-  const [formCategory, setFormCategory] = useState("print");
+  const [formCategory, setFormCategory] = useState<string>(GALLERY_CATEGORIES[0].value);
   const [formTags, setFormTags] = useState("");
   const [formImage, setFormImage] = useState("");
   const [formIsPublished, setFormIsPublished] = useState(true);
@@ -98,7 +94,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
   const resetForm = () => {
     setFormTitle("");
     setFormDescription("");
-    setFormCategory("print");
+    setFormCategory(GALLERY_CATEGORIES[0].value);
     setFormTags("");
     setFormImage("");
     setFormIsPublished(true);
@@ -181,10 +177,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
     }
   };
 
-  const getCategoryLabel = (category: string) => {
-    return categoryOptions.find((c) => c.value === category)?.label || category;
-  };
-
   if (loading) {
     return (
       <Box sx={{ textAlign: "center", py: 4 }}>
@@ -235,14 +227,14 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
                     </Typography>
                     {isMobile && (
                       <Typography variant="caption" color="text.secondary">
-                        {getCategoryLabel(work.category)}
+                        {getGalleryCategoryLabel(work.category)}
                       </Typography>
                     )}
                   </TableCell>
                   {!isMobile && (
                     <TableCell>
                       <Chip
-                        label={getCategoryLabel(work.category)}
+                        label={getGalleryCategoryLabel(work.category)}
                         size="small"
                         color="info"
                       />

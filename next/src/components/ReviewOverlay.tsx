@@ -389,7 +389,9 @@ export default function ReviewOverlay() {
               onClose={() => setOpenCommentId(null)}
               anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
               transformOrigin={{ vertical: "top", horizontal: "center" }}
-              slotProps={{ paper: { "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } } }}
+              slotProps={{
+              paper: { "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } },
+            }}
             >
               <Box sx={{ width: 340, p: 2 }}>
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
@@ -502,7 +504,9 @@ export default function ReviewOverlay() {
             }}
             anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             transformOrigin={{ vertical: "top", horizontal: "center" }}
-            slotProps={{ paper: { "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } } }}
+            slotProps={{
+                paper: { "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } },
+              }}
           >
             <Box sx={{ width: 320, p: 2 }}>
               <Typography variant="caption" color="text.secondary">

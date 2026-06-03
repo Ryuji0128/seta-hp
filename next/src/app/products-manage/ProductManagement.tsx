@@ -255,7 +255,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
                       <Chip
                         label={getProductCategoryLabel(product.category)}
                         size="small"
-                        color={product.category === "3dprint" ? "success" : "warning"}
+                        color={product.category === "3d-print" ? "success" : "warning"}
                       />
                     </TableCell>
                   )}

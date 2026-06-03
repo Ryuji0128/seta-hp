@@ -22,7 +22,6 @@ interface FormErrors {
   email?: string;
   phone?: string;
   inquiry?: string;
-  company?: string;
 }
 
 const FIELD_SX = {
@@ -71,12 +70,15 @@ const Field: React.FC<FieldProps> = ({ label, labelEn, required, children }) => 
   </Box>
 );
 
-export default function ContactForm() {
+interface ContactFormProps {
+  recaptchaEnabled: boolean;
+}
+
+export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
   const theme = useTheme();
   const fontDisplay = theme.custom.fonts.display;
 
   const nameRef = useRef<HTMLInputElement>(null);
-  const companyRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const inquiryRef = useRef<HTMLTextAreaElement>(null);
@@ -113,7 +115,6 @@ export default function ContactForm() {
 
     const formData = {
       name: nameRef.current?.value || "",
-      company: companyRef.current?.value || "",
       email: emailRef.current?.value || "",
       phone: phoneRef.current?.value || "",
       inquiry: inquiryRef.current?.value || "",
@@ -127,12 +128,14 @@ export default function ContactForm() {
     setModalContent("loading");
 
     try {
-      const token = await executeRecaptcha("contact_form");
-      const recaptchaRes = await axios.post("/api/recaptcha", { token, expectedAction: "contact_form" });
+      if (recaptchaEnabled) {
+        const token = await executeRecaptcha("contact_form");
+        const recaptchaRes = await axios.post("/api/recaptcha", { token, expectedAction: "contact_form" });
 
-      if (!recaptchaRes.data.success) {
-        setModalContent("error");
-        return;
+        if (!recaptchaRes.data.success) {
+          setModalContent("error");
+          return;
+        }
       }
 
       const emailRes = await axios.post("/api/email", formData);
@@ -140,7 +143,6 @@ export default function ContactForm() {
       if (emailRes.data.success) {
         setModalContent("success");
         if (nameRef.current) nameRef.current.value = "";
-        if (companyRef.current) companyRef.current.value = "";
         if (emailRef.current) emailRef.current.value = "";
         if (phoneRef.current) phoneRef.current.value = "";
         if (inquiryRef.current) inquiryRef.current.value = "";
@@ -151,7 +153,7 @@ export default function ContactForm() {
       console.error("送信エラー:", error);
       setModalContent("error");
     }
-  }, [executeRecaptcha]);
+  }, [executeRecaptcha, recaptchaEnabled]);
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF", py: { xs: 6, md: 10 } }}>
@@ -229,14 +231,14 @@ export default function ContactForm() {
               }}
             >
               <Box sx={{ fontSize: "12px", color: "#9A9A9A", lineHeight: 1.6 }}>
-                送信前に reCAPTCHA による自動判定を行います。
+                {recaptchaEnabled ? "送信前に reCAPTCHA による自動判定を行います。" : "現在は reCAPTCHA 無効で送信されます。"}
                 <br />
                 内容によっては数日以内にメールでご返信します。
               </Box>
               <Button
                 type="submit"
                 variant="contained"
-                disabled={!recaptchaLoaded || isModalOpen}
+                disabled={(recaptchaEnabled && !recaptchaLoaded) || isModalOpen}
                 sx={{
                   bgcolor: "#0A0A0A",
                   color: "#FFFFFF",
@@ -253,7 +255,7 @@ export default function ContactForm() {
                   transition: "background-color 0.2s, transform 0.2s",
                 }}
               >
-                {!recaptchaLoaded ? "準備中…" : isModalOpen ? "送信中…" : "送信する →"}
+                {recaptchaEnabled && !recaptchaLoaded ? "準備中…" : isModalOpen ? "送信中…" : "送信する →"}
               </Button>
             </Box>
           </Box>
