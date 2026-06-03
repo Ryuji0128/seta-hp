@@ -82,4 +82,4 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    command: certonly --webroot --webroot-path=/var/www/certbot --email k_ryuji@setaseisakusyo.com --agree-tos --no-eff-email --cert-name kaza-love.com -d kaza-love.com -d www.kaza-love.com -d setaseisakusyo.com -d www.setaseisakusyo.com
+    command: certonly --webroot --webroot-path=/var/www/certbot --email k_ryuji@setaseisakusyo.com --agree-tos --no-eff-email --cert-name kaza-love.com --keep-until-expiring -d kaza-love.com -d www.kaza-love.com -d setaseisakusyo.com -d www.setaseisakusyo.com
