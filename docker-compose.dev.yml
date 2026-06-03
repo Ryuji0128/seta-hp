@@ -4,13 +4,16 @@ services:
     container_name: next_app
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "3001:3000"
     env_file:
       - ./next/.env
     environment:
       - DATABASE_URL=mysql://app_user:${MYSQL_PASSWORD:-app_pass}@mysql:3306/app_db
-      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:3001
       - NEXTAUTH_TRUST_HOST=true
+      # 社内レビュー用ページ内コメント機能を有効化 (dev環境のみ)
+      # docker-compose.yml (本番) には絶対に追加しないこと
+      - NEXT_PUBLIC_ENABLE_COMMENTS=true
     volumes:
       - ./next:/app
       - /app/node_modules
@@ -32,7 +35,7 @@ services:
       - ./mysql/data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 60s

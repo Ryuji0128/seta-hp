@@ -55,6 +55,8 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
   const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.sm}px)`);
 
   const userRole = (session?.user as { role?: string })?.role;
+  const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
+  const canDelete = userRole === "ADMIN";
 
   const ITEMS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
@@ -161,11 +163,13 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
   return (
     <Box sx={{ maxWidth: "1000px", margin: "0 auto", padding: 2 }}>
       {/* 新規作成ボタン */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-        <Button variant="contained" onClick={openCreateModal}>
-          新規作成
-        </Button>
-      </Box>
+      {canEdit && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button variant="contained" onClick={openCreateModal}>
+            新規作成
+          </Button>
+        </Box>
+      )}
 
       {/* ページネーション */}
       <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
@@ -235,15 +239,17 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
                     </TableCell>
                   )}
                   <TableCell sx={{ textAlign: "center" }}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => openEditModal(news)}
-                      sx={{ m: "2px" }}
-                    >
-                      編集
-                    </Button>
-                    {userRole === "ADMIN" && (
+                    {canEdit && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => openEditModal(news)}
+                        sx={{ m: "2px" }}
+                      >
+                        編集
+                      </Button>
+                    )}
+                    {canDelete && (
                       <Button
                         variant="outlined"
                         color="error"

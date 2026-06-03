@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     // レートリミットチェック
     const clientIp = getClientIp(request);
-    const rateLimitResult = checkRateLimit(
+    const rateLimitResult = await checkRateLimit(
       `register:${clientIp}`,
       RATE_LIMITS.register
     );

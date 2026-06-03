@@ -4,15 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-瀬田製作所が運営するハンドメイド製品ECサイト「SETA Craft」。Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタックWebアプリケーション。
+**飾Love(かざらぶ)** ブランドの EC兼ブランドサイト(`setaseisakusyo.com`)。Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタックWebアプリケーション。
+
+飾Love は、富山県高岡市の小さな工房から MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランド。
+運営事業者は個人事業所「**瀬田製作所**」(屋号)— 法的表記(特商法・プライバシーポリシー)では「販売業者: 瀬田製作所」と記載するが、サイト表示・SNS・OG情報・サブジェクト等のブランド面はすべて「飾Love」で統一する。
+ブランド表記ルール・タグライン「飾る愛、というのもある。」・歴史は [`docs/file/branding_kaza-love.md`](docs/file/branding_kaza-love.md) を参照。
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React 19, MUI v6, Tailwind CSS, Framer Motion
 - **Backend**: Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth)
 - **Database**: MySQL 8.0, Prisma ORM
-- **Deployment**: Docker, Nginx, GitHub Actions, Google App Engine
-- **Other**: Stripe決済, reCAPTCHA v3, Nodemailer, Zod
+- **Deployment**: Docker, Nginx, GitHub Container Registry, GitHub Actions
+- **Other**: reCAPTCHA v3, Nodemailer, Zod
 
 ## Project Structure
 
@@ -25,11 +29,13 @@ seta-hp/
 │   │   ├── lib/             # ユーティリティ
 │   │   │   ├── constants/   # カテゴリ・在庫定義
 │   │   │   ├── api-response.ts  # APIレスポンスヘルパー
-│   │   │   ├── rate-limit.ts    # レート制限（統一済み）
+│   │   │   ├── rate-limit.ts    # レート制限（DB共有対応）
+│   │   │   ├── reviewCommentsGuard.ts # レビューAPIガード
+│   │   │   ├── upload-validation.ts # 画像アップロード検証
 │   │   │   ├── validation.ts    # Zodバリデーション（統一済み）
 │   │   │   ├── auth.ts          # NextAuth初期化
 │   │   │   └── db.ts            # Prismaクライアント
-│   │   ├── actions/         # Server Actions
+│   │   ├── __tests__/       # Vitest
 │   │   └── theme/           # MUIテーマ設定
 │   ├── auth.config.ts       # NextAuth設定（providers, callbacks）
 │   ├── prisma/              # Prismaスキーマ & シード
@@ -50,7 +56,7 @@ cd next
 yarn dev              # 開発サーバー (Turbopack)
 yarn build            # ビルド + sitemap生成
 yarn lint             # ESLint
-npx tsc --noEmit      # 型チェック
+yarn typecheck        # 型チェック (.next を再生成してから実行)
 
 # Prisma
 npx prisma generate   # Clientの生成
@@ -69,9 +75,9 @@ npx prisma db seed    # シードデータ投入
 | `/products` | 商品一覧 |
 | `/products/[id]` | 商品詳細 |
 | `/gallery` | ギャラリー |
-| `/about` | SETA Craftについて |
-| `/company` | 会社情報（瀬田製作所） |
-| `/contact` | お問い合わせフォーム |
+| `/about` | 飾Love について(工房紹介) |
+| `/company` | 会社情報(飾Love / 運営: 瀬田製作所) |
+| `/contact` | お問い合わせフォーム（ADMIN は問い合わせ管理を表示） |
 | `/shipping` | 配送について |
 | `/legal` | 特定商取引法に基づく表記 |
 | `/privacy-policy` | プライバシーポリシー |
@@ -103,7 +109,6 @@ npx prisma db seed    # シードデータ投入
 - `AUTH_SECRET` / `NEXTAUTH_SECRET`: NextAuth暗号化キー
 - `NEXTAUTH_URL`: 認証コールバックURL
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: Google OAuth（任意）
-- `STRIPE_SECRET_KEY`: Stripe秘密鍵
 - `RECAPTCHA_SECRET_KEY`: reCAPTCHA検証用
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`: メール送信
 
@@ -124,7 +129,7 @@ npx prisma db seed    # シードデータ投入
 - XSSサニタイズ対応（xssパッケージ）
 
 ### Rate Limiting
-- 統一されたレート制限 (`src/lib/rate-limit.ts`)
+- 統一されたレート制限 (`src/lib/rate-limit.ts`, 既定はDB共有ストア)
 - プリセット: register, login, contact, recaptcha, api
 
 ### Session Types

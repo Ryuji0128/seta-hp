@@ -1,92 +1,103 @@
 "use client";
 
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Box, Container } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 const CTASection = () => {
+  const theme = useTheme();
+  const fontDisplay = theme.custom.fonts.display;
+
   return (
     <Box
+      component="section"
       sx={{
-        py: { xs: 6, md: 8 },
-        bgcolor: "white",
+        bgcolor: "#0A0A0A",
+        color: "#FFFFFF",
+        py: { xs: 10, md: 15 },
+        textAlign: "center",
       }}
     >
-      <Container maxWidth="sm">
+      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
         <Box
+          component="h2"
           sx={{
-            textAlign: "center",
+            fontFamily: fontDisplay,
+            fontSize: "clamp(48px, 6vw, 96px)",
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            lineHeight: 1.05,
+            mt: 0,
+            mb: 3,
+            "& em": { fontStyle: "normal", color: "#E5AC60" },
           }}
         >
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 700,
-              color: "#333",
-              mb: 2,
-              fontSize: { xs: "1.25rem", md: "1.5rem" },
-              lineHeight: 1.5,
-            }}
-          >
-            お気軽にお問い合わせください
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: "#666",
-              mb: 4,
-              lineHeight: 1.8,
-              fontSize: "14px",
-            }}
-          >
-            商品に関するご質問など、
-            <br />
-            お気軽にご連絡ください。
-          </Typography>
-
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/contact" passHref>
-              <Button
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForwardIcon />}
-                sx={{
-                  bgcolor: "#FF5722",
-                  color: "white",
-                  fontWeight: 600,
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: "50px",
-                  boxShadow: "none",
-                  "&:hover": {
-                    bgcolor: "#E64A19",
-                    boxShadow: "0 4px 12px rgba(255, 87, 34, 0.3)",
-                  },
-                }}
-              >
-                お問い合わせ
-              </Button>
-            </Link>
-            <Link href="/gallery" passHref>
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  color: "#333",
-                  borderColor: "#DDD",
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: "50px",
-                  "&:hover": {
-                    borderColor: "#333",
-                    bgcolor: "transparent",
-                  },
-                }}
-              >
-                作品例を見る
-              </Button>
-            </Link>
-          </Box>
+          あなたのカードに、
+          <br />
+          <em>居場所を。</em>
+        </Box>
+        <Box
+          sx={{
+            fontSize: "16px",
+            color: "rgba(255,255,255,0.7)",
+            maxWidth: 480,
+            mx: "auto",
+            mb: 5,
+            lineHeight: 1.7,
+          }}
+        >
+          一つずつ手作り、全国送料無料。壁に、机に、あなたのそばに。
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1.75,
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <Link href="/products" passHref style={{ textDecoration: "none" }}>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1.25,
+                bgcolor: "#FFFFFF",
+                color: "#0A0A0A",
+                px: 4,
+                py: 2,
+                borderRadius: "999px",
+                fontSize: "14px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "background-color 0.2s, transform 0.2s",
+                "&:hover": { bgcolor: "#E5AC60", transform: "translateY(-1px)" },
+              }}
+            >
+              BASEで購入する <span>→</span>
+            </Box>
+          </Link>
+          <Link href="/contact" passHref style={{ textDecoration: "none" }}>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1.25,
+                color: "#FFFFFF",
+                px: 3.5,
+                py: 2,
+                borderRadius: "999px",
+                fontSize: "14px",
+                fontWeight: 500,
+                border: "1px solid rgba(255,255,255,0.25)",
+                cursor: "pointer",
+                transition: "border-color 0.2s",
+                "&:hover": { borderColor: "#FFFFFF" },
+              }}
+            >
+              特注品のご相談
+            </Box>
+          </Link>
         </Box>
       </Container>
     </Box>

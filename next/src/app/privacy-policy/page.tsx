@@ -1,24 +1,25 @@
-import React from "react";
 import type { Metadata } from "next";
-import PrivacyPolicyMainTitle from "./PrivacyPolicyMainTitle";
-import PrivacyPolicyDetails from "./PrivacyPolicyDetails";
-import { Box } from "@mui/material";
+import LegalPageLayout from "../_legal/LegalPageLayout";
+import PrivacyPolicy from "./PrivacyPolicy";
 
 export const metadata: Metadata = {
-  title: "プライバシーポリシー",
+  title: "プライバシーポリシー | 飾Love",
   description:
-    "瀬田製作所のプライバシーポリシー。個人情報の取り扱い、利用目的、第三者提供について説明しています。",
-  alternates: {
-    canonical: "/privacy-policy",
-  },
+    "飾Love(運営: 瀬田製作所)のプライバシーポリシー。個人情報の取り扱い、利用目的、第三者提供についてご説明します。",
+  alternates: { canonical: "/privacy-policy" },
 };
 
-export default function PrivacyPolicy() {
+export default function PrivacyPolicyPage() {
   return (
-    <>
-      <PrivacyPolicyMainTitle />
-      <PrivacyPolicyDetails />
-      <Box mb={10}></Box>
-    </>
+    <LegalPageLayout
+      titleJa="プライバシーポリシー"
+      titleEn="Privacy Policy"
+      eyebrow="Privacy · 個人情報の取り扱い"
+    >
+      <p>
+        飾Love(運営: 瀬田製作所、以下「当サイト」) は、お客様の個人情報を以下のとおり取り扱います。
+      </p>
+      <PrivacyPolicy />
+    </LegalPageLayout>
   );
 }

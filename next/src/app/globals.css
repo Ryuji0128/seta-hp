@@ -3,35 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --background: #FAFBFC;
-  --foreground: #263238;
-  --primary: #1565C0;
-  --primary-light: #64B5F6;
-  --secondary: #00ACC1;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #FAFBFC;
-    --foreground: #263238;
-    --primary: #1565C0;
-    --primary-light: #64B5F6;
-    --secondary: #00ACC1;
-  }
+  --bg: #FFFFFF;
+  --bg-alt: #F6F6F4;
+  --bg-deep: #EDEDE8;
+  --ink: #0A0A0A;
+  --ink-soft: #2A2A2A;
+  --gray: #6B6B6B;
+  --gray-soft: #9A9A9A;
+  --rule: #E5E5E0;
+  --rule-thin: #EFEFEA;
+  --accent: #B45309;
+  --accent-soft: #FEF3E2;
+  --accent-deep: #8C3E07;
+  --background: var(--bg);
+  --foreground: var(--ink);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .grecaptcha-badge { visibility: hidden; }
 
-@font-face {
-  font-family: 'Yuji Syuku';
-  src: url('./fonts/YujiSyuku-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap; /* フォントの読み込みが完了するまで代替フォントを表示 */
+/* Marquee animation for site-wide use */
+@keyframes seta-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }

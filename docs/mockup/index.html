@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SETA Craft — MLB Card Display, Handcrafted in Japan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Inter:wght@300;400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFFFFF;
+  --bg-alt: #F6F6F4;
+  --bg-deep: #EDEDE8;
+  --ink: #0A0A0A;
+  --ink-soft: #2A2A2A;
+  --gray: #6B6B6B;
+  --gray-soft: #9A9A9A;
+  --rule: #E5E5E0;
+  --rule-thin: #EFEFEA;
+  --accent: #B45309;        /* warm umber — premium, distinct from Phantom's lime */
+  --accent-soft: #FEF3E2;
+  --accent-deep: #8C3E07;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img { max-width: 100%; display: block; }
+
+.display {
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.italic-en {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.eyebrow {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.label-sm {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray);
+  font-weight: 500;
+}
+
+/* ───── Container ───── */
+.container { max-width: 1320px; margin: 0 auto; padding: 0 40px; }
+
+/* ───── Header ───── */
+header.site-header {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--rule-thin);
+  z-index: 100;
+  padding: 18px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.brand {
+  font-family: "Inter Tight", sans-serif;
+  font-weight: 800; font-size: 19px; letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.brand .mark {
+  display: inline-block; width: 8px; height: 8px;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+.site-nav { display: flex; gap: 40px; align-items: center; }
+.site-nav a {
+  color: var(--ink); text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  transition: color 0.2s;
+}
+.site-nav a:hover { color: var(--accent); }
+.btn-shop {
+  background: var(--ink); color: var(--bg) !important;
+  padding: 10px 20px; border-radius: 999px;
+  font-size: 13px !important; font-weight: 600 !important;
+  transition: background 0.2s;
+}
+.btn-shop:hover { background: var(--accent) !important; color: var(--bg) !important; }
+
+/* ───── Hero ───── */
+.hero {
+  padding: 140px 0 100px;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 80% 20%, rgba(180, 83, 9, 0.04), transparent 50%),
+    var(--bg);
+}
+.hero-inner {
+  display: grid; grid-template-columns: 1.05fr 1fr; gap: 80px; align-items: center;
+}
+.hero-text { max-width: 640px; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 12px;
+  margin-bottom: 32px;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--accent);
+}
+.hero-tag::before {
+  content: ""; width: 28px; height: 1px; background: var(--accent);
+}
+.hero-headline {
+  font-family: "Inter Tight", sans-serif;
+  font-weight: 800;
+  font-size: clamp(56px, 7.2vw, 108px);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  margin-bottom: 32px;
+  color: var(--ink);
+}
+.hero-headline em {
+  font-style: normal;
+  color: var(--accent);
+}
+.hero-sub {
+  font-size: 18px; line-height: 1.6;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+  max-width: 480px;
+  font-weight: 400;
+}
+.hero-sub-ja {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 13.5px; color: var(--gray);
+  letter-spacing: 0.04em; line-height: 1.85;
+  max-width: 460px;
+  margin-bottom: 40px;
+}
+.hero-cta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--ink); color: var(--bg);
+  padding: 16px 28px; border-radius: 999px;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+.btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+.btn-primary::after { content: "→"; font-size: 16px; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 10px;
+  color: var(--ink);
+  padding: 16px 22px; border-radius: 999px;
+  font-size: 14px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid var(--rule);
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-secondary:hover { border-color: var(--ink); }
+
+.hero-stats {
+  display: flex; gap: 36px; margin-top: 56px;
+  padding-top: 28px; border-top: 1px solid var(--rule-thin);
+}
+.hero-stats > div { flex: 1; max-width: 140px; }
+.hero-stats .v {
+  font-family: "Inter Tight", sans-serif;
+  font-size: 26px; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--ink); margin-bottom: 4px;
+}
+.hero-stats .l {
+  font-size: 11px; color: var(--gray);
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+
+.hero-visual {
+  position: relative;
+  aspect-ratio: 5/6;
+  background: linear-gradient(140deg, #1A1A1A 0%, #2E2E2E 60%, #404040 100%);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px -20px rgba(10, 10, 10, 0.3),
+    0 18px 36px -18px rgba(180, 83, 9, 0.15);
+}
+.hero-visual::before {
+  content: "AWARD HISTORY  /  Featured Build";
+  position: absolute; top: 24px; left: 24px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.hero-visual::after {
+  content: "[ AWARD HISTORY 壁 ]";
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic; font-size: 16px;
+  letter-spacing: 0.06em;
+}
+.hero-visual .corner {
+  position: absolute; bottom: 24px; right: 24px;
+  font-family: "Cormorant Garamond", serif; font-style: italic;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 14px;
+}
+.hero-visual .build-no {
+  position: absolute; top: 24px; right: 24px;
+  color: var(--accent); font-size: 11px;
+  font-weight: 600; letter-spacing: 0.15em;
+}
+
+/* ───── Marquee ───── */
+.marquee {
+  background: var(--ink); color: var(--bg);
+  padding: 18px 0; overflow: hidden;
+  border-top: 1px solid var(--rule-thin);
+}
+.marquee-inner {
+  display: flex; gap: 80px; white-space: nowrap;
+  animation: marquee 30s linear infinite;
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.marquee-inner span { display: flex; align-items: center; gap: 80px; }
+.marquee-inner span::after {
+  content: "✦"; color: var(--accent); margin-left: 80px;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ───── Section ───── */
+section { padding: 120px 0; }
+.section-head {
+  display: grid; grid-template-columns: 1fr 1.4fr;
+  gap: 80px; margin-bottom: 64px; align-items: end;
+}
+.section-head .heading {
+  font-family: "Inter Tight", sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4.6vw, 64px);
+  line-height: 1; letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.section-head .heading em {
+  font-style: normal; color: var(--accent);
+}
+.section-head .lead {
+  font-size: 16px; color: var(--ink-soft); line-height: 1.7;
+  max-width: 540px;
+}
+
+/* ───── Products ───── */
+.products-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+}
+.product {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.4s, border-color 0.3s, box-shadow 0.3s;
+}
+.product:hover {
+  transform: translateY(-4px);
+  border-color: var(--ink);
+  box-shadow: 0 22px 40px -22px rgba(10, 10, 10, 0.2);
+}
+.product .img {
+  aspect-ratio: 4/5;
+  background: linear-gradient(150deg, var(--bg-alt) 0%, var(--bg-deep) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.product .img::after {
+  content: attr(data-label);
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray-soft);
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic; font-size: 15px;
+  letter-spacing: 0.04em;
+}
+.product .img .badge {
+  position: absolute; top: 16px; left: 16px;
+  background: var(--bg); color: var(--ink);
+  padding: 5px 10px; border-radius: 999px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+}
+.product .info { padding: 24px 24px 28px; }
+.product .meta-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 14px;
+}
+.product .ref {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic; color: var(--accent);
+  font-size: 14px; letter-spacing: 0.05em;
+}
+.product .cap {
+  font-size: 11px; color: var(--gray);
+  letter-spacing: 0.15em; text-transform: uppercase;
+  font-weight: 500;
+}
+.product .name {
+  font-family: "Inter Tight", sans-serif;
+  font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.product .name-jp {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 12px; color: var(--gray);
+  letter-spacing: 0.08em; margin-bottom: 20px;
+}
+.product .price-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-top: 18px; border-top: 1px solid var(--rule-thin);
+}
+.product .price {
+  font-family: "Inter Tight", sans-serif;
+  font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.product .ship {
+  font-size: 11px; color: var(--gray);
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+
+/* ───── Features (4-column) ───── */
+.features {
+  background: var(--bg-alt);
+}
+.features-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.feature {
+  background: var(--bg);
+  padding: 40px 32px;
+}
+.feature .num {
+  font-family: "Inter Tight", sans-serif;
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  margin-bottom: 24px;
+  letter-spacing: 0.1em;
+}
+.feature h3 {
+  font-family: "Inter Tight", sans-serif;
+  font-size: 19px; font-weight: 700; letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.feature .jp {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 12px; color: var(--gray);
+  margin-bottom: 14px;
+}
+.feature p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; }
+
+/* ───── Craft strip ───── */
+.craft-strip {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px;
+}
+.craft-card {
+  position: relative;
+}
+.craft-card .img {
+  aspect-ratio: 1/1; background: var(--bg-alt);
+  border-radius: 4px; position: relative; margin-bottom: 20px;
+  overflow: hidden;
+}
+.craft-card .img::before {
+  content: attr(data-num);
+  position: absolute; top: 18px; left: 20px;
+  font-family: "Inter Tight", sans-serif;
+  font-size: 60px; font-weight: 700; letter-spacing: -0.04em;
+  color: var(--rule);
+  line-height: 1;
+}
+.craft-card .img::after {
+  content: attr(data-label);
+  position: absolute; bottom: 18px; right: 20px;
+  color: var(--gray-soft);
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic; font-size: 13px;
+}
+.craft-card h3 {
+  font-family: "Inter Tight", sans-serif;
+  font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.craft-card .label-sm { margin-bottom: 12px; }
+.craft-card p { color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
+
+/* ───── Workshop ───── */
+.workshop {
+  background: var(--ink); color: var(--bg);
+}
+.workshop .container { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.workshop .img {
+  aspect-ratio: 4/5;
+  background: linear-gradient(150deg, #1F1F1F 0%, #2A2A2A 100%);
+  border-radius: 4px; position: relative;
+}
+.workshop .img::after {
+  content: "Workshop / Toyama, Takaoka";
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic; font-size: 14px;
+  letter-spacing: 0.08em;
+}
+.workshop-text .eyebrow { color: #E5AC60; }
+.workshop-text h2 {
+  font-family: "Inter Tight", sans-serif;
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 700; letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 20px 0 28px;
+}
+.workshop-text h2 em { font-style: normal; color: #E5AC60; }
+.workshop-text p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px; line-height: 1.8; margin-bottom: 18px;
+}
+.workshop-meta {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 32px;
+  margin-top: 40px; padding-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+.workshop-meta > div {
+  font-size: 13px; color: rgba(255, 255, 255, 0.55);
+}
+.workshop-meta strong {
+  display: block;
+  color: var(--bg); font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+  font-family: "Inter Tight", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* ───── Quiz teaser (Phantom-style "Find your display") ───── */
+.quiz {
+  background: var(--bg);
+}
+.quiz-card {
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--bg) 100%);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 80px 64px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+}
+.quiz-card h2 {
+  font-family: "Inter Tight", sans-serif;
+  font-size: clamp(32px, 3.4vw, 48px);
+  font-weight: 700; letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+.quiz-card h2 em { font-style: normal; color: var(--accent); }
+.quiz-card .right p {
+  color: var(--ink-soft);
+  font-size: 15px; line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+/* ───── CTA Footer ───── */
+.cta-final {
+  background: var(--ink); color: var(--bg);
+  padding: 120px 0;
+  text-align: center;
+}
+.cta-final h2 {
+  font-family: "Inter Tight", sans-serif;
+  font-size: clamp(48px, 6vw, 96px);
+  font-weight: 800; letter-spacing: -0.04em;
+  line-height: 1.05; margin-bottom: 24px;
+}
+.cta-final h2 em { font-style: normal; color: #E5AC60; }
+.cta-final p {
+  font-size: 16px; color: rgba(255, 255, 255, 0.7);
+  max-width: 480px; margin: 0 auto 40px; line-height: 1.7;
+}
+.cta-final .buttons {
+  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+}
+.cta-final .btn-light {
+  background: var(--bg); color: var(--ink);
+  padding: 16px 32px; border-radius: 999px;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 10px;
+  transition: transform 0.2s, background 0.2s;
+}
+.cta-final .btn-light:hover { background: #E5AC60; transform: translateY(-1px); }
+.cta-final .btn-light::after { content: "→"; }
+.cta-final .btn-outline {
+  color: var(--bg);
+  padding: 16px 28px; border-radius: 999px;
+  font-size: 14px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: border-color 0.2s;
+}
+.cta-final .btn-outline:hover { border-color: var(--bg); }
+
+/* ───── Footer ───── */
+footer.site-footer {
+  background: var(--ink);
+  color: rgba(255, 255, 255, 0.55);
+  padding: 80px 0 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px;
+  padding-bottom: 56px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.footer-brand .name {
+  font-family: "Inter Tight", sans-serif;
+  font-weight: 800; font-size: 24px; letter-spacing: -0.02em;
+  color: var(--bg); margin-bottom: 14px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.footer-brand .name .mark {
+  display: inline-block; width: 10px; height: 10px;
+  background: var(--accent); transform: rotate(45deg);
+}
+.footer-brand p { font-size: 13px; line-height: 1.8; max-width: 320px; }
+.footer-col h4 {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #E5AC60;
+  margin-bottom: 20px;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { margin-bottom: 10px; font-size: 13px; }
+.footer-col a { color: rgba(255, 255, 255, 0.75); text-decoration: none; }
+.footer-col a:hover { color: var(--bg); }
+.footer-bottom {
+  margin-top: 32px;
+  display: flex; justify-content: space-between;
+  font-size: 12px; letter-spacing: 0.05em;
+}
+
+/* ───── Responsive ───── */
+@media (max-width: 960px) {
+  .container { padding: 0 24px; }
+  header.site-header { padding: 14px 24px; }
+  .site-nav { gap: 18px; }
+  .site-nav a:not(.btn-shop) { display: none; }
+  .hero { padding: 110px 0 60px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+  .hero-stats { flex-wrap: wrap; gap: 20px; }
+  .hero-stats > div { max-width: 45%; }
+  section { padding: 80px 0; }
+  .section-head { grid-template-columns: 1fr; gap: 24px; }
+  .products-grid { grid-template-columns: 1fr; gap: 24px; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .craft-strip { grid-template-columns: 1fr; gap: 40px; }
+  .workshop .container { grid-template-columns: 1fr; gap: 48px; }
+  .quiz-card { grid-template-columns: 1fr; padding: 48px 32px; gap: 28px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+}
+@media (max-width: 600px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .workshop-meta { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="#" class="brand"><span class="mark"></span> SETA CRAFT</a>
+  <nav class="site-nav">
+    <a href="#products">カタログ</a>
+    <a href="#craft">作り方</a>
+    <a href="#workshop">工房</a>
+    <a href="#" class="btn-shop">購入する →</a>
+  </nav>
+</header>
+
+<!-- ─────── Hero ─────── -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <p class="hero-tag">Catalogue 2026 · Edition I</p>
+      <h1 class="hero-headline">
+        カードは、<br>
+        <em>飾る</em>ために<br>
+        ある。
+      </h1>
+      <p class="hero-sub">
+        本当に好きな一枚のためのアクリルディスプレイ。
+      </p>
+      <p class="hero-sub-ja">
+        富山県高岡市の小さな工房から、一つずつ手作りでお届けします。<br>
+        コレクターが、コレクターのために設計しました。
+      </p>
+      <div class="hero-cta">
+        <a href="#products" class="btn-primary">カタログを見る</a>
+        <a href="#craft" class="btn-secondary">作り方を見る</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="v">3</div>
+          <div class="l">標準モデル</div>
+        </div>
+        <div>
+          <div class="v">100%</div>
+          <div class="l">手仕上げ</div>
+        </div>
+        <div>
+          <div class="v">¥0</div>
+          <div class="l">全国送料無料</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <span class="build-no">FEATURED · BUILD 008</span>
+      <span class="corner">Award History</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── Marquee strip ─────── -->
+<div class="marquee">
+  <div class="marquee-inner">
+    <span>富山県高岡市から</span>
+    <span>Handcrafted</span>
+    <span>レーザー加工 + 3Dプリント</span>
+    <span>UV対応アクリル</span>
+    <span>全国送料無料</span>
+    <span>One-Person Studio</span>
+    <span>コレクターの、コレクターによる</span>
+    <span>富山県高岡市から</span>
+    <span>Handcrafted</span>
+    <span>レーザー加工 + 3Dプリント</span>
+    <span>UV対応アクリル</span>
+    <span>全国送料無料</span>
+    <span>One-Person Studio</span>
+    <span>コレクターの、コレクターによる</span>
+  </div>
+</div>
+
+<!-- ─────── Catalogue ─────── -->
+<section id="products">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="heading">三つの<br>スタン<em>ダード。</em></h2>
+      <p class="lead">
+        標準モデルは8枚・16枚・25枚の三型。<br>
+        いずれもアクリルからレーザー切削、手仕上げ、全国送料無料でお届けします。
+        <span class="italic-en" style="display:block; margin-top: 12px; color: var(--gray);">— Three sizes, one philosophy.</span>
+      </p>
+    </div>
+
+    <div class="products-grid">
+      <article class="product">
+        <div class="img" data-label="STARTER · No. 008"><span class="badge">8 Cards</span></div>
+        <div class="info">
+          <div class="meta-row">
+            <span class="ref">Ref. 008</span>
+            <span class="cap">8枚展示</span>
+          </div>
+          <div class="name">Starter</div>
+          <div class="name-jp">8枚展示モデル</div>
+          <div class="price-row">
+            <span class="price">¥8,800</span>
+            <span class="ship">送料込</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="product">
+        <div class="img" data-label="COLLECTOR · No. 016"><span class="badge">16 Cards</span></div>
+        <div class="info">
+          <div class="meta-row">
+            <span class="ref">Ref. 016</span>
+            <span class="cap">16枚展示</span>
+          </div>
+          <div class="name">Collector</div>
+          <div class="name-jp">16枚展示モデル</div>
+          <div class="price-row">
+            <span class="price">¥12,800</span>
+            <span class="ship">送料込</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="product">
+        <div class="img" data-label="MASTER · No. 025"><span class="badge">25 Cards</span></div>
+        <div class="info">
+          <div class="meta-row">
+            <span class="ref">Ref. 025</span>
+            <span class="cap">25枚展示</span>
+          </div>
+          <div class="name">Master</div>
+          <div class="name-jp">25枚展示モデル</div>
+          <div class="price-row">
+            <span class="price">¥19,800</span>
+            <span class="ship">送料込</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── Features ─────── -->
+<section class="features">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="heading">長く、<em>共に。</em></h2>
+      <p class="lead">
+        飾るカードの方が長持ちするくらい、ディスプレイ側もしっかり作る。<br>
+        手を抜かないことが、SETA Craft のスタンダードです。
+      </p>
+    </div>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="num">01</div>
+        <h3>変色しないアクリル</h3>
+        <div class="jp">UV-Resistant Acrylic</div>
+        <p>UV安定剤入りキャストアクリルを使用。黄ばみ・くもりが出ません。</p>
+      </div>
+      <div class="feature">
+        <div class="num">02</div>
+        <h3>スリーブ対応</h3>
+        <div class="jp">Sleeve-Compatible</div>
+        <p>標準スリーブのまま展示可能。カードを保護したまま飾れます。</p>
+      </div>
+      <div class="feature">
+        <div class="num">03</div>
+        <h3>壁掛け・卓上 両対応</h3>
+        <div class="jp">Wall or Desktop</div>
+        <p>壁掛け金具と卓上スタンドの両方が付属。いつでも置き場所を変えられます。</p>
+      </div>
+      <div class="feature">
+        <div class="num">04</div>
+        <h3>全国送料無料</h3>
+        <div class="jp">Free Shipping in JP</div>
+        <p>緩衝材入りの梱包と配送保険付き。全国どこでも送料無料でお届けします。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── Craft (process) ─────── -->
+<section id="craft">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="heading">三つの工程、<br><em>一つ</em>のこだわり。</h2>
+      <p class="lead">
+        CADから壁に届くまで、すべての工程をこの工房で行います。<br>
+        外注なし、近道なし。
+      </p>
+    </div>
+    <div class="craft-strip">
+      <div class="craft-card">
+        <div class="img" data-num="01" data-label="Laser Cutting"></div>
+        <h3>精密カット</h3>
+        <div class="label-sm">Laser · 0.1mm 精度</div>
+        <p>
+          産業用CO₂レーザーでアクリルを精密に切削。
+          スリーブを傷つけない隙間まで計算してあります。
+        </p>
+      </div>
+      <div class="craft-card">
+        <div class="img" data-num="02" data-label="3D Printing"></div>
+        <h3>三次元造形</h3>
+        <div class="label-sm">FDM · カスタム形状</div>
+        <p>
+          結合部・取付金具・名前プレートは3Dプリントで造形。
+          市販品にはない、コレクターのための一品仕立てを実現します。
+        </p>
+      </div>
+      <div class="craft-card">
+        <div class="img" data-num="03" data-label="Hand Finishing"></div>
+        <h3>手仕上げ</h3>
+        <div class="label-sm">Solo · 一つずつ</div>
+        <p>
+          エッジの面取りから組立て・検品まで、すべて手作業。
+          自分が納得するまで、出荷しません。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── Workshop ─────── -->
+<section id="workshop" class="workshop">
+  <div class="container">
+    <div class="img"></div>
+    <div class="workshop-text">
+      <p class="eyebrow">The Workshop · 工房について</p>
+      <h2>一人で、<br><em>ひとつずつ。</em></h2>
+      <p>
+        昼はソフトウェアエンジニア、夜はカードディスプレイを作っています。
+        10年以上のMLBカードコレクターであり、400年の金工伝統がある富山県高岡市の小さな工房で、
+        SETA Craft を運営しています。
+      </p>
+      <p>
+        カタログにある全てのモデルは、私が設計・切削・造形・仕上げ・梱包まで一貫して行っています。
+        チームも外注もありません。レーザーと私と、「カードディスプレイはどうあるべきか」という
+        無数の判断だけがあります。
+      </p>
+      <div class="workshop-meta">
+        <div><strong>Est.</strong>2026年・富山県</div>
+        <div><strong>Maker</strong>個人工房</div>
+        <div><strong>Specialty</strong>MLBカード・Topps NOW</div>
+        <div><strong>Output</strong>受注生産・少量</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── Quiz teaser ─────── -->
+<section class="quiz">
+  <div class="container">
+    <div class="quiz-card">
+      <div class="left">
+        <p class="eyebrow">Coming Soon · 近日公開</p>
+        <h2>サイズに、<br><em>迷ったら。</em></h2>
+      </div>
+      <div class="right">
+        <p>
+          推し選手・カードの状態・置き場所・枚数。
+          4つの質問に答えていただければ、最適なモデルを30秒でご提案します。
+        </p>
+        <a href="#" class="btn-primary">サイズ診断をはじめる</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── Final CTA ─────── -->
+<section class="cta-final">
+  <div class="container">
+    <h2>あなたのカードに、<br><em>居場所を。</em></h2>
+    <p>一つずつ手作り、全国送料無料。壁に、机に、あなたのそばに。</p>
+    <div class="buttons">
+      <a href="#" class="btn-light">BASEで購入する</a>
+      <a href="#" class="btn-outline">特注品のご相談</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── Footer ─────── -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="name"><span class="mark"></span> SETA CRAFT</div>
+        <p>
+          MLB Card Display, Handcrafted in Toyama.<br>
+          富山県高岡市の小さな工房から、コレクター品質のディスプレイを一つずつ。
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Catalogue / 品目</h4>
+        <ul>
+          <li><a href="#">Starter · 8枚展示</a></li>
+          <li><a href="#">Collector · 16枚展示</a></li>
+          <li><a href="#">Master · 25枚展示</a></li>
+          <li><a href="#">特注品のご相談</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Studio / 工房</h4>
+        <ul>
+          <li><a href="#">工房について</a></li>
+          <li><a href="#">作り方</a></li>
+          <li><a href="#">ジャーナル</a></li>
+          <li><a href="#">お問い合わせ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Policies / 規約</h4>
+        <ul>
+          <li><a href="#">配送について</a></li>
+          <li><a href="#">返品・交換</a></li>
+          <li><a href="#">特定商取引法</a></li>
+          <li><a href="#">プライバシー</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 SETA Craft · 瀬田製作所</span>
+      <span>富山県高岡市</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,7 +1,11 @@
-# SETA Craft
+# 飾Love (かざらぶ) サイト
 
-瀬田製作所が運営するハンドメイド製品の EC サイト「SETA Craft」のソースコードです。
+**飾Love(かざらぶ)** は、富山県高岡市の小さな工房から MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランドです。
+本リポジトリ(`setaseisakusyo.com`)はそのEC兼ブランドサイトのソースコード。
 Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタック Web アプリケーション。
+
+> 運営事業者は富山県高岡市の個人事業所「**瀬田製作所**」(屋号)。
+> 飾Love のブランド表記ルール・タグライン・歴史は [`docs/file/branding_kaza-love.md`](docs/file/branding_kaza-love.md) を参照。
 
 ## 目次
 
@@ -44,7 +48,7 @@ cp next/.env.example next/.env
 docker compose -f docker-compose.dev.yml up
 
 # 4. ブラウザでアクセス
-# http://localhost:3000
+# http://localhost:3001
 ```
 
 ### ローカル開発（Docker なし）
@@ -55,7 +59,7 @@ yarn install
 npx prisma generate
 npx prisma db push
 npx prisma db seed    # シードデータ投入（任意）
-yarn dev              # http://localhost:3000
+yarn dev              # http://localhost:3000 (Docker 経由は 3001)
 ```
 
 ### 停止
@@ -70,7 +74,7 @@ docker compose -f docker-compose.dev.yml down
 
 | サービス | コンテナ名 | ポート | 説明 |
 |---------|-----------|--------|------|
-| next | next_app | 3000:3000 | Next.js（yarn dev / ホットリロード） |
+| next | next_app | 3001:3000 | Next.js（yarn dev / ホットリロード） |
 | mysql | mysql_db | 3306 | MySQL 8.0 データベース |
 
 ### 本番環境（docker-compose.yml）
@@ -97,12 +101,12 @@ docker compose -f docker-compose.dev.yml down
 | 変数名 | 説明 |
 |--------|------|
 | `DATABASE_URL` | MySQL 接続文字列 |
+| `RATE_LIMIT_STORE` | `database` / `memory`。省略時は環境に応じて自動選択 |
 | `AUTH_SECRET` | NextAuth 暗号化キー |
 | `NEXTAUTH_URL` | 認証コールバック URL |
 | `NEXT_PUBLIC_SITE_URL` | サイト URL（フロントエンド参照） |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（任意） |
 | `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` | Google 認証の有効化フラグ（任意） |
-| `STRIPE_SECRET_KEY` | Stripe 秘密鍵 |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 サイトキー（フロントエンド用） |
 | `RECAPTCHA_SECRET_KEY` | reCAPTCHA v3 検証用（サーバー用） |
 | `ALLOWED_RECAPTCHA_HOSTNAMES` | reCAPTCHA 許可ホスト名（カンマ区切り） |
@@ -124,7 +128,7 @@ cd next
 yarn dev              # 開発サーバー (Turbopack)
 yarn build            # プロダクションビルド + sitemap 生成
 yarn lint             # ESLint
-npx tsc --noEmit      # 型チェック
+yarn typecheck        # 型チェック (.next を再生成してから実行)
 
 # Prisma
 npx prisma generate   # Client 再生成
@@ -140,9 +144,8 @@ npx prisma db seed    # シードデータ投入
 | Frontend | Next.js 15, React 19, MUI v6, Tailwind CSS, Framer Motion |
 | Backend | Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth) |
 | Database | MySQL 8.0, Prisma ORM |
-| 決済 | Stripe |
 | セキュリティ | reCAPTCHA v3, Zod バリデーション, XSS サニタイズ, レート制限 |
-| インフラ | Docker, Nginx, GitHub Actions (CI/CD), Google App Engine |
+| インフラ | Docker, Nginx, GitHub Container Registry, GitHub Actions (CI/CD) |
 | メール | Nodemailer (SMTP) |
 
 ## ページ一覧
@@ -155,19 +158,12 @@ npx prisma db seed    # シードデータ投入
 | `/products` | 商品一覧 |
 | `/products/[id]` | 商品詳細 |
 | `/gallery` | ギャラリー |
-| `/works` | 実績・ポートフォリオ |
-| `/about` | SETA Craft について |
-| `/company` | 会社情報（瀬田製作所） |
-| `/contact` | お問い合わせフォーム |
+| `/about` | 飾Love について(工房紹介) |
+| `/company` | 会社情報(飾Love / 運営: 瀬田製作所) |
+| `/contact` | お問い合わせフォーム（ADMIN は問い合わせ管理画面を表示） |
 | `/shipping` | 配送について |
-| `/shop` | ショップ |
-| `/consultation` | ご相談 |
-| `/engineering` | エンジニアリング |
-| `/fabrication` | ファブリケーション |
-| `/discription` | 会社概要 |
 | `/legal` | 特定商取引法に基づく表記 |
 | `/privacy-policy` | プライバシーポリシー |
-| `/payment` | Stripe 決済フロー |
 
 ### 認証ページ
 
@@ -184,9 +180,8 @@ npx prisma db seed    # シードデータ投入
 | `/gallery-manage` | ギャラリー管理 |
 | `/works-manage` | 実績管理 |
 | `/news` | ニュース管理 |
-| `/estimates` | 見積管理 |
 
-> **Note**: 管理ページはログイン済みであればアクセス可能です。書込み・削除などの操作は API 側で ADMIN / EDITOR ロールを要求します。
+> **Note**: 管理ページは基本的に `ADMIN` / `EDITOR` が利用対象です。削除操作など一部 API は `ADMIN` 専用です。
 
 ## API エンドポイント
 
@@ -197,13 +192,14 @@ npx prisma db seed    # シードデータ投入
 | GET/POST/PUT/DELETE | `/api/works` | 実績 CRUD | 書込: ADMIN/EDITOR |
 | GET/POST/PUT/DELETE | `/api/news` | ニュース CRUD | 書込: ADMIN/EDITOR |
 | GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET: 要認証 / DELETE: ADMIN |
-| GET/POST/DELETE | `/api/estimates` | 見積管理 | 要認証 |
 | POST | `/api/recaptcha` | reCAPTCHA 検証 | - (レート制限あり) |
 | POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
 | POST | `/api/upload` | 画像アップロード | 要認証 |
 | POST | `/api/admin/upload` | 管理者画像アップロード | 要認証 |
-| POST | `/api/checkout/onetime` | Stripe 単発決済 | - |
-| POST | `/api/checkout/subscription` | Stripe サブスクリプション決済 | - |
+| GET/POST | `/api/review-comments` | 社内レビューコメント一覧・作成 | 開発環境のみ有効 / レート制限あり |
+| PATCH/DELETE | `/api/review-comments/[id]` | 社内レビューコメントの状態変更・削除 | 開発環境のみ有効 / レート制限あり |
+| POST/DELETE | `/api/review-comments/[id]/replies` | 社内レビュー返信の作成・削除 | 開発環境のみ有効 / レート制限あり |
+| GET | `/api/health` | ヘルスチェック | - |
 
 ## データベースモデル
 
@@ -214,8 +210,8 @@ npx prisma db seed    # シードデータ投入
 | **Work** | 実績・ポートフォリオ |
 | **News** | ニュース記事（JSON コンテンツ） |
 | **Inquiry** | お問い合わせ |
-| **Estimate** | 見積書（PDF, 金額, Stripe 決済状態） |
 | **Account / Session** | NextAuth 認証関連 |
+| **ReviewComment / ReviewCommentReply** | 社内レビュー用ページコメントと返信 |
 
 ### 商品カテゴリ
 
@@ -257,45 +253,45 @@ seta-hp/
     └── src/
         ├── app/                 # App Router (ページ & API)
         │   ├── _home/           # トップページセクション
-        │   ├── about/           # SETA Craft について
+        │   ├── about/           # 飾Love について
         │   ├── api/             # API Routes
         │   │   ├── admin/upload/ # 管理者画像アップロード
         │   │   ├── auth/        # NextAuth
-        │   │   ├── checkout/    # Stripe 決済 (onetime, subscription)
         │   │   ├── email/       # お問い合わせ (送信・一覧・削除)
-        │   │   ├── estimates/   # 見積管理
+        │   │   ├── health/      # ヘルスチェック
         │   │   ├── news/        # ニュース CRUD
         │   │   ├── products/    # 商品 CRUD
         │   │   ├── recaptcha/   # reCAPTCHA 検証
         │   │   ├── register/    # ユーザー登録
+        │   │   ├── review-comments/ # 社内レビューコメント
         │   │   ├── upload/      # 画像アップロード
         │   │   └── works/       # 実績 CRUD
         │   ├── company/         # 会社情報
-        │   ├── consultation/    # ご相談
         │   ├── contact/         # お問い合わせ
-        │   ├── discription/     # 会社概要
-        │   ├── engineering/     # エンジニアリング
-        │   ├── fabrication/     # ファブリケーション
         │   ├── gallery/         # ギャラリー
         │   ├── gallery-manage/  # ギャラリー管理
         │   ├── legal/           # 特定商取引法
         │   ├── login/           # ログイン
+        │   ├── news/            # ニュース管理
+        │   ├── privacy-policy/  # プライバシーポリシー
         │   ├── products/        # 商品一覧 & 詳細
         │   ├── products-manage/ # 商品管理
         │   ├── register/        # ユーザー登録
         │   ├── shipping/        # 配送について
-        │   ├── shop/            # ショップ
-        │   ├── works/           # 実績
         │   └── works-manage/    # 実績管理
+        ├── __tests__/           # Vitest
         ├── components/          # 共有コンポーネント
         ├── lib/                 # ユーティリティ
         │   ├── constants/       # カテゴリ・在庫定義
         │   ├── api-response.ts  # API レスポンスヘルパー
-        │   ├── rate-limit.ts    # インメモリレート制限
-        │   ├── validation.ts    # Zod バリデーションスキーマ
         │   ├── auth.ts          # NextAuth 初期化
-        │   └── db.ts            # Prisma クライアント
-        ├── actions/             # Server Actions
+        │   ├── db.ts            # Prisma クライアント
+        │   ├── fetchSecrets.ts  # 環境変数/Secret取得
+        │   ├── pagination.ts    # ページネーション共通処理
+        │   ├── rate-limit.ts    # DB共有対応のレート制限
+        │   ├── reviewCommentsGuard.ts # レビューAPI有効化ガード
+        │   ├── upload-validation.ts # 画像アップロード検証
+        │   └── validation.ts    # Zod バリデーションスキーマ
         └── theme/               # MUI テーマ設定
 ```
 
@@ -370,7 +366,7 @@ docker compose exec mysql mysql -u app_user -papp_pass app_db
 |-----|------|
 | NextAuth 認証 | bcrypt によるパスワードハッシュ, JWT セッション |
 | ロールベース認可 | ADMIN / EDITOR / VIEWER の 3 段階 |
-| レート制限 | IP 単位のリクエスト制限（登録, ログイン, お問い合わせ, reCAPTCHA） |
+| レート制限 | IP 単位のリクエスト制限（既定はDB共有ストア、必要に応じて memory に切替可） |
 | バリデーション | Zod スキーマによるサーバーサイド検証 |
 | reCAPTCHA v3 | フォームスパム対策 |
 | XSS サニタイズ | `xss` パッケージによる入力サニタイズ |
@@ -426,14 +422,14 @@ docker compose up -d
 0 3 * * * /root/seta-hp/scripts/renew-ssl.sh >> /var/log/ssl-renew.log 2>&1
 ```
 
-## 会社情報
+## 事業者情報
 
-- **会社名**: 瀬田製作所
-- **ブランド名**: SETA Craft
+- **ブランド名**: 飾Love(かざらぶ)
+- **運営事業者(屋号)**: 瀬田製作所(個人事業所)
 - **設立**: 2023年8月8日
 - **所在地**: 富山県高岡市
-- **Email**: info@setaseisakusyo.com
+- **Email**: info@kaza-love.com
 
 ## ライセンス
 
-このプロジェクトは瀬田製作所に帰属します。
+このプロジェクトの著作権は運営事業者(瀬田製作所)に帰属します。

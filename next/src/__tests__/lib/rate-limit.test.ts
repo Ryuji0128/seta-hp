@@ -1,60 +1,71 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// setIntervalのモック（モジュール読み込み時に実行されるため）
+vi.stubEnv("NODE_ENV", "test");
 vi.useFakeTimers();
 
-const { checkRateLimit, getClientIp } = await import("@/lib/rate-limit");
+const { checkRateLimit, getClientIp, isRateLimited } = await import("@/lib/rate-limit");
 
 describe("checkRateLimit", () => {
   const config = { limit: 3, windowMs: 60_000 };
 
   beforeEach(() => {
-    // タイマーを進めてストアをリセット
     vi.advanceTimersByTime(120_000);
   });
 
-  it("初回リクエストは成功", () => {
-    const result = checkRateLimit("test-new-key", config);
+  it("初回リクエストは成功", async () => {
+    const result = await checkRateLimit("test-new-key", config);
     expect(result.success).toBe(true);
     expect(result.remaining).toBe(2);
   });
 
-  it("制限内の連続リクエストは成功", () => {
+  it("制限内の連続リクエストは成功", async () => {
     const key = "test-within-limit";
-    checkRateLimit(key, config);
-    checkRateLimit(key, config);
-    const result = checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    const result = await checkRateLimit(key, config);
     expect(result.success).toBe(true);
     expect(result.remaining).toBe(0);
   });
 
-  it("制限超過で失敗", () => {
+  it("制限超過で失敗", async () => {
     const key = "test-exceeded";
-    checkRateLimit(key, config);
-    checkRateLimit(key, config);
-    checkRateLimit(key, config);
-    const result = checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    const result = await checkRateLimit(key, config);
     expect(result.success).toBe(false);
     expect(result.remaining).toBe(0);
   });
 
-  it("ウィンドウ経過後にリセット", () => {
+  it("ウィンドウ経過後にリセット", async () => {
     const key = "test-reset";
-    checkRateLimit(key, config);
-    checkRateLimit(key, config);
-    checkRateLimit(key, config);
-    expect(checkRateLimit(key, config).success).toBe(false);
+    await checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    await checkRateLimit(key, config);
+    expect((await checkRateLimit(key, config)).success).toBe(false);
 
     vi.advanceTimersByTime(61_000);
-    expect(checkRateLimit(key, config).success).toBe(true);
+    expect((await checkRateLimit(key, config)).success).toBe(true);
   });
 
-  it("異なるキーは独立してカウント", () => {
-    checkRateLimit("key-a", config);
-    checkRateLimit("key-a", config);
-    checkRateLimit("key-a", config);
-    expect(checkRateLimit("key-a", config).success).toBe(false);
-    expect(checkRateLimit("key-b", config).success).toBe(true);
+  it("異なるキーは独立してカウント", async () => {
+    await checkRateLimit("key-a", config);
+    await checkRateLimit("key-a", config);
+    await checkRateLimit("key-a", config);
+    expect((await checkRateLimit("key-a", config)).success).toBe(false);
+    expect((await checkRateLimit("key-b", config)).success).toBe(true);
+  });
+});
+
+describe("isRateLimited", () => {
+  it("Requestからキーを作って制限判定できる", async () => {
+    const request = new Request("http://localhost/api/test", {
+      headers: { "x-forwarded-for": "203.0.113.5" },
+    });
+
+    expect(await isRateLimited(request, { max: 2, windowMs: 60_000 })).toBe(false);
+    expect(await isRateLimited(request, { max: 2, windowMs: 60_000 })).toBe(false);
+    expect(await isRateLimited(request, { max: 2, windowMs: 60_000 })).toBe(true);
   });
 });
 

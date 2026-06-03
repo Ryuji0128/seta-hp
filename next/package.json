@@ -7,21 +7,20 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build && next-sitemap --config next-sitemap.config.cjs",
+    "build": "next build",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
-    "@azure/msal-node": "^3.2.2",
     "@date-io/date-fns": "^3.2.0",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@google-cloud/secret-manager": "^5.6.0",
     "@hookform/resolvers": "^4.1.0",
     "@mui/icons-material": "^6.4.4",
     "@mui/lab": "^6.0.0-beta.27",
@@ -47,7 +46,6 @@
     "react-slick": "^0.31.0",
     "simplebar-react": "^3.3.0",
     "slick-carousel": "^1.8.1",
-    "stripe": "^20.2.0",
     "swiper": "^12.0.2",
     "xss": "^1.0.15",
     "zod": "^3.24.2"

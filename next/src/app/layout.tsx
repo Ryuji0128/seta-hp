@@ -1,46 +1,90 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LinkToContactPage from "@/components/LinkToContactPage";
+import ReviewOverlay from "@/components/ReviewOverlay";
 import { SimpleBarWrapper } from "@/components/SimpleBarWrapper";
 import theme from "@/theme/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import type { Metadata } from "next";
+import { Cormorant_Garamond, Inter, Inter_Tight, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-inter-tight",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["italic"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const notoJp = Noto_Sans_JP({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-noto-jp",
+  display: "swap",
+});
+
 const siteUrl = "https://setaseisakusyo.com";
-const siteName = "瀬田製作所";
+const siteName = "飾Love";
 const siteDescription =
-  "瀬田製作所は、Webアプリケーションやモバイルアプリの開発を中心に、多様なプロジェクトで信頼を得ているエンジニアチームです。先進技術を用いた、最適なソリューションを提供します。";
+  "飾Love(かざらぶ)は、富山県高岡市の小さな工房から、MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランドです。レーザー加工・3Dプリントで、ひとつずつ丁寧に。";
 
 export const metadata: Metadata = {
-  // 基本情報
   title: {
-    default: siteName,
+    default: `${siteName} | MLBカード・トレカを美しく飾る`,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
+  keywords: [
+    "飾Love",
+    "かざらぶ",
+    "MLBカード",
+    "野球カード",
+    "トレカ",
+    "Topps",
+    "大谷翔平",
+    "ドジャース",
+    "トレカディスプレイ",
+    "アクリルディスプレイ",
+    "壁面ディスプレイ",
+    "カードコレクション",
+    "ハンドメイド",
+    "富山",
+    "高岡",
+  ],
 
-  // canonical URL
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/",
   },
 
-  // アイコン
   icons: {
     icon: "/seta_logo.svg",
     apple: "/seta_logo.svg",
   },
 
-  // OGP (Open Graph Protocol)
   openGraph: {
     type: "website",
     locale: "ja_JP",
     url: siteUrl,
     siteName: siteName,
-    title: siteName,
+    title: `${siteName} | MLBカード・トレカを美しく飾る`,
     description: siteDescription,
     images: [
       {
@@ -52,15 +96,13 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: siteName,
+    title: `${siteName} | MLBカード・トレカを美しく飾る`,
     description: siteDescription,
     images: ["/og-image.png"],
   },
 
-  // robots
   robots: {
     index: true,
     follow: true,
@@ -73,14 +115,11 @@ export const metadata: Metadata = {
     },
   },
 
-  // 検証用（Google Search Console）
   verification: {
     // Google Search Console の確認コードをここに追加
-    // google: "your-google-verification-code",
   },
 };
 
-// 構造化データ (JSON-LD)
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -91,6 +130,8 @@ const jsonLd = {
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",
+    addressLocality: "Takaoka",
+    addressRegion: "Toyama",
   },
 };
 
@@ -100,7 +141,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html
+      lang="ja"
+      className={`${inter.variable} ${interTight.variable} ${cormorant.variable} ${notoJp.variable}`}
+    >
       <head>
         <script
           type="application/ld+json"
@@ -112,10 +156,15 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <SimpleBarWrapper>
-              <Header />
-              {children}
-              <LinkToContactPage />
-              <Footer />
+              {/* ReviewOverlay は SimpleBar 内部スクロールに連動させるためここに置く。
+                  position: relative を付けて、ピン (position: absolute) の基準にする */}
+              <div style={{ position: "relative", minHeight: "100vh" }}>
+                <Header />
+                {children}
+                <LinkToContactPage />
+                <Footer />
+                {process.env.NEXT_PUBLIC_ENABLE_COMMENTS === "true" && <ReviewOverlay />}
+              </div>
             </SimpleBarWrapper>
           </ThemeProvider>
         </AppRouterCacheProvider>

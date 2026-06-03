@@ -20,10 +20,11 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import GoogleIcon from "@mui/icons-material/Google";
 import { signIn } from "next-auth/react";
 
-// Google認証が有効かどうか
-const isGoogleEnabled = !!process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED;
+interface LoginFormProps {
+  isGoogleEnabled: boolean;
+}
 
-export default function LoginForm() {
+export default function LoginForm({ isGoogleEnabled }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

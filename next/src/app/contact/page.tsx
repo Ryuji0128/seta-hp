@@ -5,12 +5,13 @@ import ContactForm from "./ContactForm";
 import ContactPageMainTitle from "./ContactPageMainTitle";
 import { Box } from "@mui/material";
 import { auth } from "@/lib/auth";
+import { isRecaptchaEnabled } from "@/lib/runtime-config";
 import InquiryManagement from "./InquiryManagement";
 
 export const metadata: Metadata = {
-  title: "お問い合わせ | SETA Craft",
+  title: "お問い合わせ | 飾Love",
   description:
-    "SETA Craftへのお問い合わせはこちらから。商品に関するご質問など、お気軽にご相談ください。",
+    "飾Loveへのお問い合わせはこちらから。商品に関するご質問など、お気軽にご相談ください。",
   alternates: {
     canonical: "/contact",
   },
@@ -19,6 +20,8 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   // Todo: middleware若しくはauth.ts(config含む)にて同様の設定が可能、かつパフォーマンス向上が期待できるため、今後改修予定
   const session = await auth();
+
+  const recaptchaEnabled = isRecaptchaEnabled();
 
   return (
     <Box
@@ -29,13 +32,19 @@ export default async function ContactPage() {
         backgroundRepeat: "no-repeat",
       }}
     >
-      <ReCaptchaProvider
-        reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
-        useRecaptchaNet={true}
-      >
-        <ContactPageMainTitle />
-        {session?.user?.role === "ADMIN" ? <InquiryManagement session={session} /> : <ContactForm />}
-      </ReCaptchaProvider>
+      <ContactPageMainTitle />
+      {session?.user?.role === "ADMIN" ? (
+        <InquiryManagement session={session} />
+      ) : recaptchaEnabled ? (
+        <ReCaptchaProvider
+          reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+          useRecaptchaNet={true}
+        >
+          <ContactForm recaptchaEnabled />
+        </ReCaptchaProvider>
+      ) : (
+        <ContactForm recaptchaEnabled={false} />
+      )}
     </Box>
   );
 }

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   try {
     // レート制限チェック
     const clientIp = getClientIp(req);
-    const rateLimitResult = checkRateLimit(`contact:${clientIp}`, RATE_LIMITS.contact);
+    const rateLimitResult = await checkRateLimit(`contact:${clientIp}`, RATE_LIMITS.contact);
     if (!rateLimitResult.success) {
       const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
       return NextResponse.json(
@@ -80,9 +80,9 @@ export async function POST(req: NextRequest) {
 
       // 🔸 管理者宛メール
       await transporter.sendMail({
-        from: `"瀬田製作所Webフォーム" <${process.env.SMTP_USER}>`,
+        from: `"飾Love お問い合わせフォーム" <${process.env.SMTP_USER}>`,
         to: adminAddress,
-        subject: `【お問い合わせ】${sanitizedData.name} 様より`,
+        subject: `【飾Love お問い合わせ】${sanitizedData.name} 様より`,
         html: `
           <h3>新しいお問い合わせがありました。</h3>
           <p><strong>お名前:</strong> ${sanitizedData.name}</p>
@@ -96,20 +96,20 @@ export async function POST(req: NextRequest) {
 
       // 🔸 自動返信メール
       await transporter.sendMail({
-        from: `"瀬田製作所" <${process.env.SMTP_USER}>`,
+        from: `"飾Love" <${process.env.SMTP_USER}>`,
         to: sanitizedData.email,
-        subject: "【自動返信】お問い合わせありがとうございます",
+        subject: "【飾Love・自動返信】お問い合わせありがとうございます",
         html: `
           <p>${sanitizedData.name} 様</p>
-          <p>このたびはお問い合わせありがとうございます。</p>
+          <p>このたびは 飾Love(かざらぶ)へのお問い合わせ、誠にありがとうございます。</p>
           <p>以下の内容で受け付けました。</p>
           <hr />
           <p>${sanitizedData.inquiry}</p>
           <hr />
           <p>２営業日以内に、担当者よりご連絡いたします。</p>
-          <p>瀬田製作所<br>
-          〒<br>
-          Email: info@setaseisakusyo.com<br>
+          <p>飾Love(かざらぶ)<br>
+          運営: 瀬田製作所(個人事業所) / 富山県高岡市<br>
+          Email: info@kaza-love.com<br>
           </p>
         `,
       });

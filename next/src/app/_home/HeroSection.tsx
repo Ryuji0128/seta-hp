@@ -1,130 +1,266 @@
 "use client";
 
-import { Box, Container, Typography, Button } from "@mui/material";
+import { Box, Container } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import Image from "next/image";
 import Link from "next/link";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 const HeroSection = () => {
+  const theme = useTheme();
+  const fontDisplay = theme.custom.fonts.display;
+  const fontItalic = theme.custom.fonts.italic;
+
   return (
     <Box
+      component="section"
       sx={{
         position: "relative",
-        width: "100%",
-        minHeight: { xs: "400px", md: "480px" },
-        display: "flex",
-        alignItems: "center",
-        bgcolor: "#FAFAFA",
+        py: { xs: 7, md: 12.5 },
+        background:
+          "radial-gradient(ellipse at 80% 20%, rgba(180, 83, 9, 0.04), transparent 50%), #FFFFFF",
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
         <Box
           sx={{
-            textAlign: "center",
-            py: { xs: 6, md: 8 },
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.05fr 1fr" },
+            gap: { xs: 6, md: 10 },
+            alignItems: "center",
           }}
         >
-          {/* サブタイトル */}
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#FF5722",
-              fontWeight: 600,
-              fontSize: "14px",
-              letterSpacing: "0.1em",
-              mb: 2,
-            }}
-          >
-            ハンドメイド・オリジナル
-          </Typography>
-
-          {/* メインタイトル */}
-          <Typography
-            variant="h1"
-            sx={{
-              fontWeight: 700,
-              fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
-              color: "#333",
-              mb: 3,
-              lineHeight: 1.4,
-            }}
-          >
-            カード好きが作った
-            <br />
-            <Box component="span" sx={{ color: "#FF5722" }}>
-              こだわりのディスプレイ
+          {/* Text side */}
+          <Box>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1.5,
+                mb: 4,
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "#B45309",
+              }}
+            >
+              <Box sx={{ width: 28, height: "1px", bgcolor: "#B45309" }} />
+              Catalogue 2026 · Edition I
             </Box>
-          </Typography>
 
-          {/* 説明文 */}
-          <Typography
-            variant="body1"
-            sx={{
-              fontSize: { xs: "14px", md: "16px" },
-              color: "#666",
-              mb: 5,
-              maxWidth: 500,
-              mx: "auto",
-              lineHeight: 1.9,
-            }}
-          >
-            大切なカードを美しく飾るスタンド・ケースを
-            <br />
-            一つ一つ丁寧に製作しています。
-          </Typography>
+            <Box
+              component="h1"
+              sx={{
+                fontFamily: fontDisplay,
+                fontWeight: 800,
+                fontSize: "clamp(56px, 7.2vw, 108px)",
+                lineHeight: 0.96,
+                letterSpacing: "-0.04em",
+                color: "#0A0A0A",
+                mb: 4,
+                "& em": { fontStyle: "normal", color: "#B45309" },
+              }}
+            >
+              カードは、
+              <br />
+              <em>飾る</em>ために
+              <br />
+              ある。
+            </Box>
 
-          {/* CTAボタン */}
+            <Box
+              sx={{
+                fontFamily: fontItalic,
+                fontStyle: "italic",
+                fontSize: "20px",
+                color: "#B45309",
+                mb: 2.5,
+                letterSpacing: "0.02em",
+              }}
+            >
+              飾る愛、というのもある。
+            </Box>
+
+            <Box
+              sx={{
+                fontSize: "18px",
+                lineHeight: 1.6,
+                color: "#2A2A2A",
+                mb: 1.5,
+                maxWidth: 480,
+              }}
+            >
+              本当に好きな一枚のためのアクリルディスプレイ。
+            </Box>
+
+            <Box
+              sx={{
+                fontSize: "13.5px",
+                color: "#6B6B6B",
+                letterSpacing: "0.04em",
+                lineHeight: 1.85,
+                maxWidth: 460,
+                mb: 5,
+              }}
+            >
+              富山県高岡市の小さな工房から、一つずつ手作りでお届けします。
+              <br />
+              コレクターが、コレクターのために設計しました。
+            </Box>
+
+            {/* CTA */}
+            <Box sx={{ display: "flex", gap: 1.75, flexWrap: "wrap" }}>
+              <Link href="#products" passHref style={{ textDecoration: "none" }}>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 1.25,
+                    bgcolor: "#0A0A0A",
+                    color: "#FFFFFF",
+                    px: 3.5,
+                    py: 2,
+                    borderRadius: "999px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "background-color 0.2s, transform 0.2s",
+                    "&:hover": { bgcolor: "#B45309", transform: "translateY(-1px)" },
+                  }}
+                >
+                  カタログを見る <span>→</span>
+                </Box>
+              </Link>
+              <Link href="#craft" passHref style={{ textDecoration: "none" }}>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 1.25,
+                    color: "#0A0A0A",
+                    px: 2.75,
+                    py: 2,
+                    borderRadius: "999px",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    border: "1px solid #E5E5E0",
+                    cursor: "pointer",
+                    transition: "border-color 0.2s",
+                    "&:hover": { borderColor: "#0A0A0A" },
+                  }}
+                >
+                  作り方を見る
+                </Box>
+              </Link>
+            </Box>
+
+            {/* Stats */}
+            <Box
+              sx={{
+                display: "flex",
+                gap: { xs: 3, md: 4.5 },
+                mt: 7,
+                pt: 3.5,
+                borderTop: "1px solid #EFEFEA",
+                flexWrap: "wrap",
+              }}
+            >
+              {[
+                { v: "3", l: "標準モデル" },
+                { v: "100%", l: "手仕上げ" },
+                { v: "¥0", l: "全国送料無料" },
+              ].map((s) => (
+                <Box key={s.l} sx={{ flex: 1, minWidth: 100, maxWidth: 140 }}>
+                  <Box
+                    sx={{
+                      fontFamily: fontDisplay,
+                      fontSize: "26px",
+                      fontWeight: 700,
+                      letterSpacing: "-0.02em",
+                      color: "#0A0A0A",
+                      mb: 0.5,
+                    }}
+                  >
+                    {s.v}
+                  </Box>
+                  <Box
+                    sx={{
+                      fontSize: "11px",
+                      color: "#6B6B6B",
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {s.l}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Visual side */}
           <Box
             sx={{
-              display: "flex",
-              gap: 2,
-              justifyContent: "center",
-              flexWrap: "wrap",
+              position: "relative",
+              aspectRatio: "5 / 6",
+              borderRadius: "4px",
+              overflow: "hidden",
+              boxShadow:
+                "0 30px 60px -20px rgba(10,10,10,0.3), 0 18px 36px -18px rgba(180,83,9,0.15)",
             }}
           >
-            <Link href="/products" passHref>
-              <Button
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForwardIcon />}
-                sx={{
-                  bgcolor: "#FF5722",
-                  color: "white",
-                  fontWeight: 600,
-                  px: 5,
-                  py: 1.5,
-                  fontSize: "15px",
-                  borderRadius: "50px",
-                  boxShadow: "none",
-                  "&:hover": {
-                    bgcolor: "#E64A19",
-                    boxShadow: "0 4px 12px rgba(255, 87, 34, 0.3)",
-                  },
-                }}
-              >
-                商品を見る
-              </Button>
-            </Link>
-            <Link href="/gallery" passHref>
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  color: "#333",
-                  borderColor: "#DDD",
-                  fontWeight: 500,
-                  px: 5,
-                  py: 1.5,
-                  fontSize: "15px",
-                  borderRadius: "50px",
-                  "&:hover": {
-                    borderColor: "#333",
-                    bgcolor: "transparent",
-                  },
-                }}
-              >
-                ギャラリー
-              </Button>
-            </Link>
+            <Image
+              src="/images/placeholders/hero-award-history.svg"
+              alt="AWARD HISTORY 壁 — 飾Love 試作品"
+              fill
+              sizes="(max-width: 960px) 100vw, 50vw"
+              priority
+              unoptimized
+              style={{ objectFit: "cover" }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                top: 24,
+                left: 24,
+                color: "rgba(255,255,255,0.45)",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                zIndex: 1,
+              }}
+            >
+              AWARD HISTORY  /  Featured Build
+            </Box>
+            <Box
+              sx={{
+                position: "absolute",
+                top: 24,
+                right: 24,
+                color: "#B45309",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.15em",
+                zIndex: 1,
+              }}
+            >
+              FEATURED · BUILD 008
+            </Box>
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 24,
+                right: 24,
+                fontFamily: fontItalic,
+                fontStyle: "italic",
+                color: "rgba(255,255,255,0.55)",
+                fontSize: "14px",
+                zIndex: 1,
+              }}
+            >
+              Award History
+            </Box>
           </Box>
         </Box>
       </Container>
