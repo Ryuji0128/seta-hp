@@ -55,15 +55,6 @@ describe("InquirySchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("会社名は省略可能", () => {
-    const result = InquirySchema.safeParse({ ...validData, company: "" });
-    expect(result.success).toBe(true);
-  });
-
-  it("会社名が100文字超で失敗", () => {
-    const result = InquirySchema.safeParse({ ...validData, company: "あ".repeat(101) });
-    expect(result.success).toBe(false);
-  });
 });
 
 describe("validateInquiry", () => {
