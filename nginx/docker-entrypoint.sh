@@ -4,7 +4,7 @@ set -e
 CERT_PATH="/etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem"
 
 # 環境変数を展開
-envsubst '${SERVER_NAME}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
+envsubst '${SERVER_NAME} ${OLD_SERVER_NAME}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 # SSL証明書が存在する場合、HTTPS設定を追加
 if [ -f "$CERT_PATH" ]; then
@@ -15,7 +15,7 @@ if [ -f "$CERT_PATH" ]; then
 limit_req_zone \$binary_remote_addr zone=general:10m rate=10r/s;
 limit_req_zone \$binary_remote_addr zone=api:10m rate=30r/m;
 
-# HTTPS
+# HTTPS メインサイト (kaza-love.com)
 server {
     listen 443 ssl;
     server_name ${SERVER_NAME};
@@ -88,10 +88,23 @@ server {
     }
 }
 
-# www → non-www リダイレクト (HTTPS)
+# www.kaza-love.com → kaza-love.com リダイレクト (HTTPS)
 server {
     listen 443 ssl;
     server_name www.${SERVER_NAME};
+
+    ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    return 301 https://${SERVER_NAME}\$request_uri;
+}
+
+# 旧ドメイン setaseisakusyo.com → kaza-love.com リダイレクト (HTTPS)
+server {
+    listen 443 ssl;
+    server_name ${OLD_SERVER_NAME} www.${OLD_SERVER_NAME};
 
     ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
@@ -106,7 +119,7 @@ else
     cat > /etc/nginx/conf.d/default.conf << EOF
 server {
     listen 80;
-    server_name ${SERVER_NAME};
+    server_name ${SERVER_NAME} ${OLD_SERVER_NAME} www.${SERVER_NAME} www.${OLD_SERVER_NAME};
 
     client_max_body_size 10M;
 
