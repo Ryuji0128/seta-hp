@@ -11,7 +11,7 @@ import InquiryManagement from "./InquiryManagement";
 export const metadata: Metadata = {
   title: "お問い合わせ | 飾Love",
   description:
-    "飾Loveへのお問い合わせはこちらから。商品に関するご質問など、お気軽にご相談ください。",
+    "飾Loveへのお問い合わせはこちらから。MLBカード・トレカ用アクリルディスプレイに関するご質問・特注のご相談など、お気軽にどうぞ。",
   alternates: {
     canonical: "/contact",
   },

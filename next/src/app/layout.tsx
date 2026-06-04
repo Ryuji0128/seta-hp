@@ -40,10 +40,10 @@ const notoJp = Noto_Sans_JP({
   display: "swap",
 });
 
-const siteUrl = "https://setaseisakusyo.com";
+const siteUrl = "https://kaza-love.com";
 const siteName = "飾Love";
 const siteDescription =
-  "飾Love(かざらぶ)は、富山県高岡市の小さな工房から、MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランドです。レーザー加工・3Dプリントで、ひとつずつ丁寧に。";
+  "大谷翔平の AWARD HISTORY 風壁面に、MLB・野球カードコレクターのための「ただ飾る」アクリルディスプレイ。レーザー加工・3Dプリントで一つ一つ丁寧に製作、全国送料無料。";
 
 export const metadata: Metadata = {
   title: {
@@ -65,6 +65,7 @@ export const metadata: Metadata = {
     "壁面ディスプレイ",
     "カードコレクション",
     "ハンドメイド",
+    "送料無料",
     "富山",
     "高岡",
   ],
