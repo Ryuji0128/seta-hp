@@ -69,6 +69,7 @@ model Product {
   images      Json?
   stock       String   @default("在庫あり")
   isPublished Boolean  @default(true)
+  purchaseUrl String?
 
   @@index([category])
   @@index([isPublished])
