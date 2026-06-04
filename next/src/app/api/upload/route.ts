@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
     }

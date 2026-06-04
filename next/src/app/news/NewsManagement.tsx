@@ -54,7 +54,7 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.sm}px)`);
 
-  const userRole = (session?.user as { role?: string })?.role;
+  const userRole = session?.user?.role;
   const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
   const canDelete = userRole === "ADMIN";
 

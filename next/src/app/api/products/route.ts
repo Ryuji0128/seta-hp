@@ -82,6 +82,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
+    // 購入URLの検証
+    if (purchaseUrl) {
+      try {
+        new URL(purchaseUrl);
+      } catch {
+        return NextResponse.json({ error: "購入URLは有効なURLを指定してください" }, { status: 400 });
+      }
+    }
+
     const product = await prisma.product.create({
       data: {
         name: xss(name),
@@ -148,6 +157,15 @@ export async function PUT(req: NextRequest) {
     // 在庫状況の検証
     if (stock && !VALID_STOCK_OPTIONS.includes(stock)) {
       return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
+    }
+
+    // 購入URLの検証
+    if (purchaseUrl) {
+      try {
+        new URL(purchaseUrl);
+      } catch {
+        return NextResponse.json({ error: "購入URLは有効なURLを指定してください" }, { status: 400 });
+      }
     }
 
     const product = await prisma.product.update({

@@ -43,7 +43,7 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
 
   // sessionからroleを取得
-  const userRole = (session?.user as { role?: string })?.role;
+  const userRole = session?.user?.role;
 
   const theme = useTheme();
   const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.sm}px)`);

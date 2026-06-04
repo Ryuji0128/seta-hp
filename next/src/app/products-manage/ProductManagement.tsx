@@ -38,21 +38,7 @@ import {
   STOCK_OPTIONS,
   getProductCategoryLabel,
 } from "@/lib/constants/categories";
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  tags: string;
-  image: string | null;
-  images: string[] | null;
-  stock: string;
-  isPublished: boolean;
-  purchaseUrl: string | null;
-  createdAt: string;
-}
+import { type Product } from "@/lib/types/product";
 
 interface ProductManagementProps {
   session: Session;
@@ -80,7 +66,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.sm}px)`);
 
-  const userRole = (session?.user as { role?: string })?.role;
+  const userRole = session?.user?.role;
   const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
   const canDelete = userRole === "ADMIN";
 
@@ -126,7 +112,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormCategory(product.category);
     setFormTags(product.tags);
     // 後方互換性: imagesがあればそれを使い、なければimageから配列を作成
-    const existingImages = product.images || (product.image ? [product.image] : []);
+    const existingImages = Array.isArray(product.images) ? product.images as string[] : (product.image ? [product.image] : []);
     setFormImages(existingImages);
     setFormStock(product.stock);
     setFormIsPublished(product.isPublished);

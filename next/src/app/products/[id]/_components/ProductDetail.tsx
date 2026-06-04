@@ -5,19 +5,7 @@ import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
 import ProductImageGallery from "../ProductImageGallery";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  tags: string;
-  stock: string;
-  image: string | null;
-  images: unknown;
-  purchaseUrl: string | null;
-}
+import { type Product, parseTags, parseProductImages } from "@/lib/types/product";
 
 interface Props {
   product: Product;
@@ -36,15 +24,8 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
   const fontDisplay = theme.custom.fonts.display;
   const fontItalic = theme.custom.fonts.italic;
 
-  const tags = product.tags
-    ? product.tags.split(",").map((t) => t.trim()).filter(Boolean)
-    : [];
-
-  const productImages: string[] = Array.isArray(product.images)
-    ? (product.images as string[])
-    : product.image
-      ? [product.image]
-      : [];
+  const tags = parseTags(product.tags);
+  const productImages = parseProductImages(product.images, product.image);
 
   const ref = formatRefNumber(product.id);
   const stockVariant = STOCK_VARIANTS[product.stock] ?? {
