@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { parsePagination } from "@/lib/pagination";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import xss from "xss";
 
 // お知らせ一覧取得
@@ -40,7 +41,8 @@ export async function POST(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { title, contents, date, url } = body;
 
     if (!title || !contents || !date) {
@@ -79,7 +81,8 @@ export async function PUT(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id, title, contents, date, url } = body;
 
     if (!id) {
@@ -121,7 +124,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id } = body;
 
     if (!id) {

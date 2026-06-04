@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { VALID_PRODUCT_CATEGORIES, VALID_STOCK_OPTIONS } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import xss from "xss";
 
 // 商品一覧取得（公開用）
@@ -59,7 +60,8 @@ export async function POST(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { name, description, price, category, tags, image, images, stock, isPublished, purchaseUrl } = body;
 
     if (!name || !description || price === undefined || !category) {
@@ -127,7 +129,8 @@ export async function PUT(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id, name, description, price, category, tags, image, images, stock, isPublished, purchaseUrl } = body;
 
     if (!id) {
@@ -205,7 +208,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id } = body;
 
     if (!id) {
