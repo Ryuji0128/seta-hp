@@ -46,7 +46,7 @@ const AboutValues = () => {
             letterSpacing: "0.05em",
           }}
         >
-          <Box sx={{ color: "#B45309" }}>— 02</Box>
+          <Box sx={{ color: "#B45309" }}>— 03</Box>
           <Box sx={{ color: "#0A0A0A" }}>Values</Box>
           <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　大切にしていること</Box>
         </Box>

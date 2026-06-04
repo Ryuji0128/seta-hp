@@ -9,9 +9,9 @@ import { isRecaptchaEnabled } from "@/lib/runtime-config";
 import InquiryManagement from "./InquiryManagement";
 
 export const metadata: Metadata = {
-  title: "お問い合わせ | 飾Love",
+  title: "お問い合わせ",
   description:
-    "飾Loveへのお問い合わせはこちらから。商品に関するご質問など、お気軽にご相談ください。",
+    "飾Love へのお問い合わせ。商品に関するご質問、オーダーメイドのご相談など、お気軽にどうぞ。",
   alternates: {
     canonical: "/contact",
   },

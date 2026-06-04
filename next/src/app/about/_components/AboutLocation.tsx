@@ -33,7 +33,7 @@ const AboutLocation = () => {
             letterSpacing: "0.05em",
           }}
         >
-          <Box sx={{ color: "#E5AC60" }}>— 04</Box>
+          <Box sx={{ color: "#E5AC60" }}>— 05</Box>
           <Box sx={{ color: "#FFFFFF" }}>Location</Box>
           <Box sx={{ color: "rgba(255,255,255,0.55)", fontSize: "14px" }}>／　工房の場所</Box>
         </Box>

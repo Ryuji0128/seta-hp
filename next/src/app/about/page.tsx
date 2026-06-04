@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import AboutHero from "./_components/AboutHero";
 import AboutStory from "./_components/AboutStory";
+import AboutCollector from "./_components/AboutCollector";
 import AboutValues from "./_components/AboutValues";
 import AboutFeatures from "./_components/AboutFeatures";
 import AboutLocation from "./_components/AboutLocation";
 
 export const metadata: Metadata = {
-  title: "工房について | 飾Love",
+  title: "工房について",
   description:
-    "飾Loveは、カード好きが一人で運営する小さな工房です。富山県高岡市から、レーザー加工と3Dプリントで一つずつ手作りのアクリルディスプレイをお届けします。",
+    "飾Love は、MLBカードコレクターが一人で運営する富山県高岡市の小さな工房。レーザー加工と3Dプリントで、コレクターが本当に欲しいアクリルディスプレイを一つずつ手作りしています。",
   alternates: {
     canonical: "/about",
   },
@@ -19,6 +20,7 @@ export default function AboutPage() {
     <>
       <AboutHero />
       <AboutStory />
+      <AboutCollector />
       <AboutValues />
       <AboutFeatures />
       <AboutLocation />
