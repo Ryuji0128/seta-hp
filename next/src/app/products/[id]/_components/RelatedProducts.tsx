@@ -4,17 +4,10 @@ import { Box, Container } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
-
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  image: string | null;
-}
+import { type ProductSummary } from "@/lib/types/product";
 
 interface Props {
-  products: Product[];
+  products: ProductSummary[];
 }
 
 const formatRefNumber = (id: number) => String(id).padStart(3, "0");
