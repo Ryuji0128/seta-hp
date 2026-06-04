@@ -40,10 +40,10 @@ const notoJp = Noto_Sans_JP({
   display: "swap",
 });
 
-const siteUrl = "https://setaseisakusyo.com";
+const siteUrl = "https://kaza-love.com";
 const siteName = "飾Love";
 const siteDescription =
-  "飾Love(かざらぶ)は、富山県高岡市の小さな工房から、MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランドです。レーザー加工・3Dプリントで、ひとつずつ丁寧に。";
+  "MLB・野球カードコレクターのためのアクリルディスプレイ工房。大谷翔平 AWARD HISTORY 風の壁面展示をはじめ、レーザー加工・3Dプリントで一つ一つ丁寧に製作。全国送料無料、富山県高岡市から発送。";
 
 export const metadata: Metadata = {
   title: {
@@ -52,19 +52,21 @@ export const metadata: Metadata = {
   },
   description: siteDescription,
   keywords: [
-    "飾Love",
-    "かざらぶ",
     "MLBカード",
     "野球カード",
-    "トレカ",
-    "Topps",
     "大谷翔平",
-    "ドジャース",
+    "Topps",
     "トレカディスプレイ",
     "アクリルディスプレイ",
     "壁面ディスプレイ",
     "カードコレクション",
+    "AWARD HISTORY",
+    "飾Love",
+    "かざらぶ",
+    "トレカ",
+    "ドジャース",
     "ハンドメイド",
+    "全国送料無料",
     "富山",
     "高岡",
   ],
@@ -127,6 +129,7 @@ const jsonLd = {
   url: siteUrl,
   logo: `${siteUrl}/seta_logo.svg`,
   description: siteDescription,
+  sameAs: [],
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",

@@ -78,7 +78,7 @@ const HeroSection = () => {
                 letterSpacing: "0.02em",
               }}
             >
-              飾る愛、というのもある。
+              飾らない愛、はない。
             </Box>
 
             <Box

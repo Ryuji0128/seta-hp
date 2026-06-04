@@ -33,7 +33,7 @@ const AboutFeatures = () => {
             letterSpacing: "0.05em",
           }}
         >
-          <Box sx={{ color: "#B45309" }}>— 03</Box>
+          <Box sx={{ color: "#B45309" }}>— 04</Box>
           <Box sx={{ color: "#0A0A0A" }}>Features</Box>
           <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　飾Love の特徴</Box>
         </Box>

@@ -8,9 +8,9 @@ import GalleryCta from "./_components/GalleryCta";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "ギャラリー | 飾Love",
+  title: "ギャラリー",
   description:
-    "飾Love の制作事例。MLBカードコレクター向けのアクリルディスプレイ・特注品など、これまでに制作した作品をご覧いただけます。",
+    "飾Love の制作事例ギャラリー。MLB・野球カードのアクリル壁面ディスプレイなど、実際の設置イメージをご覧いただけます。",
   alternates: {
     canonical: "/gallery",
   },
