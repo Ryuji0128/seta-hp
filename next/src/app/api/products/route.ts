@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { VALID_PRODUCT_CATEGORIES, VALID_STOCK_OPTIONS } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import xss from "xss";
 
 // 商品一覧取得（公開用）
@@ -59,8 +60,9 @@ export async function POST(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
-    const { name, description, price, category, tags, image, images, stock, isPublished } = body;
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
+    const { name, description, price, category, tags, image, images, stock, isPublished, purchaseUrl } = body;
 
     if (!name || !description || price === undefined || !category) {
       return NextResponse.json({ error: "名前、説明、価格、カテゴリは必須です" }, { status: 400 });
@@ -82,6 +84,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
+    // 購入URLの検証
+    if (purchaseUrl) {
+      try {
+        new URL(purchaseUrl);
+      } catch {
+        return NextResponse.json({ error: "購入URLは有効なURLを指定してください" }, { status: 400 });
+      }
+    }
+
     const product = await prisma.product.create({
       data: {
         name: xss(name),
@@ -93,6 +104,7 @@ export async function POST(req: NextRequest) {
         images: Array.isArray(images) ? images : Prisma.JsonNull,
         stock: stock || "在庫あり",
         isPublished: isPublished !== false,
+        purchaseUrl: purchaseUrl ? xss(purchaseUrl) : null,
       },
     });
 
@@ -117,8 +129,9 @@ export async function PUT(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
-    const { id, name, description, price, category, tags, image, images, stock, isPublished } = body;
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
+    const { id, name, description, price, category, tags, image, images, stock, isPublished, purchaseUrl } = body;
 
     if (!id) {
       return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
@@ -149,6 +162,15 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
     }
 
+    // 購入URLの検証
+    if (purchaseUrl) {
+      try {
+        new URL(purchaseUrl);
+      } catch {
+        return NextResponse.json({ error: "購入URLは有効なURLを指定してください" }, { status: 400 });
+      }
+    }
+
     const product = await prisma.product.update({
       where: { id },
       data: {
@@ -161,6 +183,7 @@ export async function PUT(req: NextRequest) {
         images: images !== undefined ? (Array.isArray(images) ? images : Prisma.JsonNull) : undefined,
         stock,
         isPublished,
+        purchaseUrl: purchaseUrl !== undefined ? (purchaseUrl ? xss(purchaseUrl) : null) : undefined,
       },
     });
 
@@ -185,7 +208,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id } = body;
 
     if (!id) {

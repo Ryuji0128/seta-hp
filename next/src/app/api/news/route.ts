@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { parsePagination } from "@/lib/pagination";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import xss from "xss";
 
 // お知らせ一覧取得
@@ -34,25 +35,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { title, contents, date, url } = body;
 
     if (!title || !contents || !date) {
       return NextResponse.json({ error: "タイトル、内容、日付は必須です" }, { status: 400 });
     }
 
+    const sanitizedContents = typeof contents === "string" ? xss(contents) : contents;
+
     const news = await prisma.news.create({
       data: {
         title: xss(title),
-        contents,
+        contents: sanitizedContents,
         date: new Date(date),
-        url: url || null,
+        url: url ? xss(url) : null,
       },
     });
 
@@ -71,26 +75,31 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id, title, contents, date, url } = body;
 
     if (!id) {
       return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
     }
 
+    const sanitizedContents = contents !== undefined
+      ? (typeof contents === "string" ? xss(contents) : contents)
+      : undefined;
+
     const news = await prisma.news.update({
       where: { id },
       data: {
         title: title ? xss(title) : undefined,
-        contents,
+        contents: sanitizedContents,
         date: date ? new Date(date) : undefined,
-        url: url || null,
+        url: url !== undefined ? (url ? xss(url) : null) : undefined,
       },
     });
 
@@ -109,13 +118,14 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id } = body;
 
     if (!id) {

@@ -3,6 +3,7 @@ import { getPrismaClient } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { VALID_GALLERY_CATEGORIES } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import xss from "xss";
 
 // 制作事例一覧取得（公開用）
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
       if (!session) {
         return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
       }
-      const userRole = (session?.user as { role?: string })?.role;
+      const userRole = session.user?.role;
       if (userRole !== "ADMIN" && userRole !== "EDITOR") {
         return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
       }
@@ -52,13 +53,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { title, description, category, tags, image, isPublished } = body;
 
     if (!title || !description || !category) {
@@ -96,13 +98,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id, title, description, category, tags, image, isPublished } = body;
 
     if (!id) {
@@ -147,13 +150,14 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const userRole = (session?.user as { role?: string })?.role;
+    const userRole = session.user?.role;
     if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
     }
 
     const prisma = getPrismaClient();
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const { id } = body;
 
     if (!id) {

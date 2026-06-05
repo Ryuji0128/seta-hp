@@ -5,18 +5,7 @@ import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
 import ProductImageGallery from "../ProductImageGallery";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  tags: string;
-  stock: string;
-  image: string | null;
-  images: unknown;
-}
+import { type Product, parseTags, parseProductImages } from "@/lib/types/product";
 
 interface Props {
   product: Product;
@@ -35,15 +24,8 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
   const fontDisplay = theme.custom.fonts.display;
   const fontItalic = theme.custom.fonts.italic;
 
-  const tags = product.tags
-    ? product.tags.split(",").map((t) => t.trim()).filter(Boolean)
-    : [];
-
-  const productImages: string[] = Array.isArray(product.images)
-    ? (product.images as string[])
-    : product.image
-      ? [product.image]
-      : [];
+  const tags = parseTags(product.tags);
+  const productImages = parseProductImages(product.images, product.image);
 
   const ref = formatRefNumber(product.id);
   const stockVariant = STOCK_VARIANTS[product.stock] ?? {
@@ -249,10 +231,45 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
           </Box>
 
           {/* CTAs */}
-          <Box sx={{ display: "flex", gap: 1.5, flexDirection: { xs: "column", sm: "row" } }}>
+          <Box sx={{ display: "flex", gap: 1.5, flexDirection: "column" }}>
+            {product.purchaseUrl && (
+              <Box>
+                <a
+                  href={product.purchaseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none" }}
+                >
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1.25,
+                      bgcolor: "#B45309",
+                      color: "#FFFFFF",
+                      width: "100%",
+                      px: 3,
+                      py: 2,
+                      borderRadius: "999px",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "background-color 0.2s, transform 0.2s",
+                      "&:hover": { bgcolor: "#8C3E07", transform: "translateY(-1px)" },
+                    }}
+                  >
+                    BASE で購入する <span>→</span>
+                  </Box>
+                </a>
+                <Box sx={{ fontSize: "11px", color: "#6B6B6B", mt: 1, textAlign: "center" }}>
+                  外部サイト（BASE）に移動します
+                </Box>
+              </Box>
+            )}
             <Link
               href={`/contact?product=${encodeURIComponent(product.name)}`}
-              style={{ textDecoration: "none", flex: 1 }}
+              style={{ textDecoration: "none" }}
             >
               <Box
                 sx={{
@@ -260,8 +277,9 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 1.25,
-                  bgcolor: "#0A0A0A",
-                  color: "#FFFFFF",
+                  bgcolor: product.purchaseUrl ? "#FFFFFF" : "#0A0A0A",
+                  color: product.purchaseUrl ? "#0A0A0A" : "#FFFFFF",
+                  border: product.purchaseUrl ? "1px solid #E5E5E0" : "none",
                   width: "100%",
                   px: 3,
                   py: 2,
@@ -270,7 +288,9 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                   fontWeight: 600,
                   cursor: "pointer",
                   transition: "background-color 0.2s, transform 0.2s",
-                  "&:hover": { bgcolor: "#B45309", transform: "translateY(-1px)" },
+                  "&:hover": product.purchaseUrl
+                    ? { bgcolor: "#F6F6F4", transform: "translateY(-1px)" }
+                    : { bgcolor: "#B45309", transform: "translateY(-1px)" },
                 }}
               >
                 この商品について問い合わせる <span>→</span>

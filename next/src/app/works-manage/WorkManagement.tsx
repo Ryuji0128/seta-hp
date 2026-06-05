@@ -80,7 +80,7 @@ export default function WorkManagement({ session }: Props) {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const userRole = (session?.user as { role?: string })?.role;
+  const userRole = session?.user?.role;
   const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
   const canDelete = userRole === "ADMIN";
 

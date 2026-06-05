@@ -38,20 +38,7 @@ import {
   STOCK_OPTIONS,
   getProductCategoryLabel,
 } from "@/lib/constants/categories";
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  tags: string;
-  image: string | null;
-  images: string[] | null;
-  stock: string;
-  isPublished: boolean;
-  createdAt: string;
-}
+import { type Product } from "@/lib/types/product";
 
 interface ProductManagementProps {
   session: Session;
@@ -74,11 +61,12 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const [formImages, setFormImages] = useState<string[]>([]);
   const [formStock, setFormStock] = useState<string>(STOCK_OPTIONS[0].value);
   const [formIsPublished, setFormIsPublished] = useState(true);
+  const [formPurchaseUrl, setFormPurchaseUrl] = useState("");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.sm}px)`);
 
-  const userRole = (session?.user as { role?: string })?.role;
+  const userRole = session?.user?.role;
   const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
   const canDelete = userRole === "ADMIN";
 
@@ -107,6 +95,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormImages([]);
     setFormStock("在庫あり");
     setFormIsPublished(true);
+    setFormPurchaseUrl("");
     setSelectedProduct(null);
   };
 
@@ -123,10 +112,11 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormCategory(product.category);
     setFormTags(product.tags);
     // 後方互換性: imagesがあればそれを使い、なければimageから配列を作成
-    const existingImages = product.images || (product.image ? [product.image] : []);
+    const existingImages = Array.isArray(product.images) ? product.images as string[] : (product.image ? [product.image] : []);
     setFormImages(existingImages);
     setFormStock(product.stock);
     setFormIsPublished(product.isPublished);
+    setFormPurchaseUrl(product.purchaseUrl || "");
     setDialogOpen(true);
   };
 
@@ -142,6 +132,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         images: formImages.length > 0 ? formImages : null,
         stock: formStock,
         isPublished: formIsPublished,
+        purchaseUrl: formPurchaseUrl || null,
       };
 
       const method = selectedProduct ? "PUT" : "POST";
@@ -385,6 +376,13 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
                 ))}
               </Select>
             </FormControl>
+            <TextField
+              label="購入URL（BASE等の外部ショップURL）"
+              value={formPurchaseUrl}
+              onChange={(e) => setFormPurchaseUrl(e.target.value)}
+              fullWidth
+              placeholder="https://example.thebase.in/items/..."
+            />
             <FormControlLabel
               control={
                 <Switch

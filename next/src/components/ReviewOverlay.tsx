@@ -12,120 +12,24 @@
  */
 
 import { useSimpleBar } from "@/components/SimpleBarWrapper";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
-import ListAltIcon from "@mui/icons-material/ListAlt";
-import RateReviewIcon from "@mui/icons-material/RateReview";
-import RestoreIcon from "@mui/icons-material/Restore";
-import SendIcon from "@mui/icons-material/Send";
-import {
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Drawer,
-  Fab,
-  FormControlLabel,
-  IconButton,
-  Paper,
-  Popover,
-  Stack,
-  Switch,
-  TextField,
-  Tooltip,
-  Typography,
-} from "@mui/material";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-interface Reply {
-  id: number;
-  authorName: string;
-  content: string;
-  createdAt: string;
-}
-
-interface ReviewComment {
-  id: number;
-  pageUrl: string;
-  xRatio: number;
-  yAbsolute: number;
-  elementSelector: string | null;
-  authorName: string;
-  content: string;
-  status: "open" | "resolved";
-  createdAt: string;
-  updatedAt: string;
-  replies: Reply[];
-}
-
-const NAME_STORAGE_KEY = "seta-hp-review-overlay-name";
-const Z_OVERLAY = 1400;
-const Z_PIN = 1399;
-
-function readStoredName(): string {
-  if (typeof window === "undefined") return "";
-  try {
-    return window.localStorage.getItem(NAME_STORAGE_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
-
-function writeStoredName(value: string) {
-  try {
-    window.localStorage.setItem(NAME_STORAGE_KEY, value);
-  } catch {
-    /* localStorage 不可環境では無視 */
-  }
-}
-
-function describeElement(el: Element | null): string {
-  if (!el || !(el instanceof HTMLElement)) return "";
-  const parts: string[] = [];
-  let current: Element | null = el;
-  let depth = 0;
-  while (current && depth < 4) {
-    const tag = current.tagName.toLowerCase();
-    const id = current.id ? `#${current.id}` : "";
-    const cls =
-      typeof current.className === "string" && current.className.trim()
-        ? "." +
-          current.className
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0, 2)
-            .join(".")
-        : "";
-    parts.unshift(`${tag}${id}${cls}`);
-    if (current.id) break;
-    current = current.parentElement;
-    depth += 1;
-  }
-  return parts.join(" > ").slice(0, 500);
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const m = d.getMonth() + 1;
-  const day = d.getDate();
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${m}/${day} ${hh}:${mm}`;
-}
+import CommentPopover from "./review/CommentPopover";
+import CommentsDrawer from "./review/CommentsDrawer";
+import NameDialog from "./review/NameDialog";
+import NewCommentPopover from "./review/NewCommentPopover";
+import PinMarker from "./review/PinMarker";
+import ToolbarFab from "./review/ToolbarFab";
+import {
+  type ReviewComment,
+  describeElement,
+  readStoredName,
+  writeStoredName,
+} from "./review/types";
 
 export default function ReviewOverlay() {
   const pathname = usePathname();
-  // 実スクロールコンテナ (SimpleBarの内部要素)。
-  // 取れない場合は document.scrollingElement にフォールバック。
   const { scrollContainerRef } = useSimpleBar();
   const getScrollEl = useCallback((): HTMLElement => {
     return (
@@ -178,6 +82,7 @@ export default function ReviewOverlay() {
     refetch();
   }, [refetch]);
 
+  // ピン作成モード: クリック時にピン座標を取得
   useEffect(() => {
     if (!pinning) return;
 
@@ -188,20 +93,11 @@ export default function ReviewOverlay() {
       e.preventDefault();
       e.stopPropagation();
 
-      // クリック位置を「スクロールコンテナ内の絶対座標」に変換する。
-      // SimpleBar 内スクロールの場合、window/document はスクロールしないので
-      // e.pageY ではなく clientY + container.scrollTop で計算する。
       const scrollEl = getScrollEl();
       const rect = scrollEl.getBoundingClientRect();
       const containerWidth = rect.width || 1;
-      const xRatio = Math.max(
-        0,
-        Math.min(1, (e.clientX - rect.left) / containerWidth)
-      );
-      const yAbsolute = Math.max(
-        0,
-        e.clientY - rect.top + scrollEl.scrollTop
-      );
+      const xRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / containerWidth));
+      const yAbsolute = Math.max(0, e.clientY - rect.top + scrollEl.scrollTop);
       const selector = describeElement(target);
 
       if (!authorName) {
@@ -276,9 +172,7 @@ export default function ReviewOverlay() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.comment) {
-        setComments((prev) =>
-          prev.map((x) => (x.id === c.id ? data.comment : x))
-        );
+        setComments((prev) => prev.map((x) => (x.id === c.id ? data.comment : x)));
       }
     } catch (err) {
       console.error(err);
@@ -289,9 +183,7 @@ export default function ReviewOverlay() {
   const deleteComment = async (id: number) => {
     if (!confirm("このコメントを削除しますか？(返信もすべて消えます)")) return;
     try {
-      const res = await fetch(`/api/review-comments/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/review-comments/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setComments((prev) => prev.filter((x) => x.id !== id));
       setOpenCommentId(null);
@@ -315,9 +207,7 @@ export default function ReviewOverlay() {
       if (data.reply) {
         setComments((prev) =>
           prev.map((c) =>
-            c.id === commentId
-              ? { ...c, replies: [...c.replies, data.reply] }
-              : c
+            c.id === commentId ? { ...c, replies: [...c.replies, data.reply] } : c
           )
         );
       }
@@ -338,9 +228,7 @@ export default function ReviewOverlay() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setComments((prev) =>
         prev.map((c) =>
-          c.id === commentId
-            ? { ...c, replies: c.replies.filter((r) => r.id !== replyId) }
-            : c
+          c.id === commentId ? { ...c, replies: c.replies.filter((r) => r.id !== replyId) } : c
         )
       );
     } catch (err) {
@@ -350,14 +238,14 @@ export default function ReviewOverlay() {
   };
 
   const visibleComments = useMemo(
-    () =>
-      showResolved
-        ? comments
-        : comments.filter((c) => c.status === "open"),
+    () => (showResolved ? comments : comments.filter((c) => c.status === "open")),
     [comments, showResolved]
   );
 
   const openCount = comments.filter((c) => c.status === "open").length;
+
+  const openComment = openCommentId !== null ? comments.find((x) => x.id === openCommentId) : null;
+  const openAnchor = openCommentId !== null ? popoverAnchorsRef.current.get(openCommentId) : null;
 
   return (
     <>
@@ -377,482 +265,82 @@ export default function ReviewOverlay() {
         />
       ))}
 
-      {openCommentId !== null &&
-        (() => {
-          const c = comments.find((x) => x.id === openCommentId);
-          const anchor = popoverAnchorsRef.current.get(openCommentId);
-          if (!c || !anchor) return null;
-          return (
-            <Popover
-              open
-              anchorEl={anchor}
-              onClose={() => setOpenCommentId(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-              transformOrigin={{ vertical: "top", horizontal: "center" }}
-              PaperProps={{ "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } } as Record<string, unknown>}
-            >
-              <Box sx={{ width: 340, p: 2 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                  <Chip
-                    size="small"
-                    label={c.status === "open" ? "未対応" : "解決済み"}
-                    color={c.status === "open" ? "warning" : "success"}
-                  />
-                  <Typography variant="caption" color="text.secondary">
-                    {c.authorName} ・ {formatDate(c.createdAt)}
-                  </Typography>
-                </Stack>
-                <Typography
-                  variant="body2"
-                  sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word", mb: 1.5 }}
-                >
-                  {c.content}
-                </Typography>
-
-                {c.replies.length > 0 && (
-                  <Stack spacing={1} sx={{ mb: 1.5 }}>
-                    <Divider />
-                    {c.replies.map((r) => (
-                      <Box key={r.id} sx={{ pl: 1, borderLeft: "2px solid", borderColor: "divider" }}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography variant="caption" color="text.secondary">
-                            {r.authorName} ・ {formatDate(r.createdAt)}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={() => deleteReply(c.id, r.id)}
-                            aria-label="返信を削除"
-                            sx={{ ml: "auto" }}
-                          >
-                            <DeleteOutlineIcon fontSize="inherit" />
-                          </IconButton>
-                        </Stack>
-                        <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                          {r.content}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                )}
-
-                <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                  <TextField
-                    size="small"
-                    fullWidth
-                    multiline
-                    maxRows={4}
-                    placeholder={authorName ? "返信を書く…" : "先に名前を設定してください"}
-                    value={replyDraft}
-                    onChange={(e) => setReplyDraft(e.target.value)}
-                    disabled={!authorName}
-                  />
-                  <IconButton
-                    color="primary"
-                    onClick={() => submitReply(c.id)}
-                    disabled={!replyDraft.trim() || !authorName}
-                    aria-label="返信送信"
-                  >
-                    <SendIcon />
-                  </IconButton>
-                </Stack>
-
-                <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                  <Button
-                    size="small"
-                    startIcon={c.status === "open" ? <CheckCircleIcon /> : <RestoreIcon />}
-                    onClick={() => toggleStatus(c)}
-                    variant="outlined"
-                  >
-                    {c.status === "open" ? "解決" : "再オープン"}
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    startIcon={<DeleteOutlineIcon />}
-                    onClick={() => deleteComment(c.id)}
-                  >
-                    削除
-                  </Button>
-                </Stack>
-              </Box>
-            </Popover>
-          );
-        })()}
-
-      {pendingPin && (
-        <>
-          <Box
-            ref={draftAnchorRef}
-            data-review-ui="true"
-            sx={{
-              position: "absolute",
-              top: pendingPin.yAbsolute,
-              left: `${pendingPin.xRatio * 100}%`,
-              width: 0,
-              height: 0,
-              zIndex: Z_PIN,
-            }}
-          />
-          <Popover
-            open
-            anchorEl={draftAnchorRef.current}
-            onClose={() => {
-              setPendingPin(null);
-              setDraftContent("");
-            }}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            transformOrigin={{ vertical: "top", horizontal: "center" }}
-            PaperProps={{ "data-review-ui": "true", sx: { zIndex: Z_OVERLAY + 10 } } as Record<string, unknown>}
-          >
-            <Box sx={{ width: 320, p: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                投稿者: {authorName || "(未設定)"}
-              </Typography>
-              <TextField
-                size="small"
-                fullWidth
-                multiline
-                minRows={3}
-                maxRows={8}
-                placeholder="気になる点を入力…"
-                value={draftContent}
-                onChange={(e) => setDraftContent(e.target.value)}
-                autoFocus
-                sx={{ mt: 1 }}
-              />
-              <Stack direction="row" spacing={1} sx={{ mt: 1.5, justifyContent: "flex-end" }}>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setPendingPin(null);
-                    setDraftContent("");
-                  }}
-                >
-                  キャンセル
-                </Button>
-                <Button
-                  size="small"
-                  variant="contained"
-                  onClick={submitNewComment}
-                  disabled={!draftContent.trim() || !authorName}
-                >
-                  投稿
-                </Button>
-              </Stack>
-            </Box>
-          </Popover>
-        </>
+      {openComment && openAnchor && (
+        <CommentPopover
+          comment={openComment}
+          anchorEl={openAnchor}
+          replyDraft={replyDraft}
+          authorName={authorName}
+          onClose={() => setOpenCommentId(null)}
+          onReplyDraftChange={setReplyDraft}
+          onSubmitReply={submitReply}
+          onToggleStatus={toggleStatus}
+          onDelete={deleteComment}
+          onDeleteReply={deleteReply}
+        />
       )}
 
-      <Box
-        data-review-ui="true"
-        sx={{
-          position: "fixed",
-          left: { xs: 16, md: 24 },
-          bottom: { xs: 16, md: 24 },
-          display: "flex",
-          flexDirection: "column",
-          gap: 1.25,
-          alignItems: "flex-start",
-          zIndex: Z_OVERLAY,
+      {pendingPin && (
+        <NewCommentPopover
+          pendingPin={pendingPin}
+          authorName={authorName}
+          draftContent={draftContent}
+          draftAnchorRef={draftAnchorRef}
+          onDraftContentChange={setDraftContent}
+          onSubmit={submitNewComment}
+          onCancel={() => {
+            setPendingPin(null);
+            setDraftContent("");
+          }}
+        />
+      )}
+
+      <ToolbarFab
+        pinning={pinning}
+        authorName={authorName}
+        openCount={openCount}
+        onTogglePinning={() => {
+          if (!authorName) {
+            setNameDraft("");
+            setNameDialogOpen(true);
+            return;
+          }
+          setPinning((prev) => !prev);
         }}
-      >
-        {pinning && (
-          <Paper
-            elevation={3}
-            sx={{
-              px: 1.5,
-              py: 0.75,
-              backgroundColor: "warning.light",
-              color: "warning.contrastText",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            ページ内をクリックしてピンを立ててください
-          </Paper>
-        )}
-        <Stack direction="row" spacing={1.25} alignItems="center">
-          <Tooltip title={pinning ? "コメントモードを終了" : "コメントを追加"}>
-            <Fab
-              size="medium"
-              color={pinning ? "warning" : "secondary"}
-              onClick={() => {
-                if (!authorName) {
-                  setNameDraft("");
-                  setNameDialogOpen(true);
-                  return;
-                }
-                setPinning((prev) => !prev);
-              }}
-              aria-label="レビューコメントを追加"
-            >
-              {pinning ? <CloseIcon /> : <RateReviewIcon />}
-            </Fab>
-          </Tooltip>
-          <Tooltip title="コメント一覧を開く">
-            <Fab
-              size="small"
-              onClick={() => setDrawerOpen(true)}
-              aria-label="コメント一覧"
-              sx={{ position: "relative" }}
-            >
-              <ListAltIcon />
-              {openCount > 0 && (
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: -4,
-                    right: -4,
-                    minWidth: 18,
-                    height: 18,
-                    px: 0.5,
-                    borderRadius: "9px",
-                    backgroundColor: "error.main",
-                    color: "#fff",
-                    fontSize: 11,
-                    lineHeight: "18px",
-                    textAlign: "center",
-                    fontWeight: 700,
-                  }}
-                >
-                  {openCount}
-                </Box>
-              )}
-            </Fab>
-          </Tooltip>
-          <Tooltip title="名前を変更">
-            <IconButton
-              size="small"
-              onClick={() => {
-                setNameDraft(authorName);
-                setNameDialogOpen(true);
-              }}
-              aria-label="名前変更"
-              sx={{
-                bgcolor: "background.paper",
-                boxShadow: 1,
-                "&:hover": { bgcolor: "background.paper" },
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          {authorName && (
-            <Chip
-              size="small"
-              label={authorName}
-              sx={{ bgcolor: "background.paper", boxShadow: 1 }}
-            />
-          )}
-        </Stack>
-      </Box>
+        onOpenDrawer={() => setDrawerOpen(true)}
+        onOpenNameDialog={() => {
+          setNameDraft(authorName);
+          setNameDialogOpen(true);
+        }}
+      />
 
-      <Drawer
-        anchor="right"
+      <CommentsDrawer
         open={drawerOpen}
+        pathname={pathname}
+        comments={comments}
+        visibleComments={visibleComments}
+        openCount={openCount}
+        showResolved={showResolved}
         onClose={() => setDrawerOpen(false)}
-        PaperProps={{ "data-review-ui": "true", sx: { width: { xs: "90vw", sm: 400 } } } as Record<string, unknown>}
-      >
-        <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
-          <Stack direction="row" alignItems="center" sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ flex: 1 }}>
-              レビューコメント
-            </Typography>
-            <IconButton onClick={() => setDrawerOpen(false)} aria-label="閉じる">
-              <CloseIcon />
-            </IconButton>
-          </Stack>
-          <Typography variant="caption" color="text.secondary">
-            {pathname} の {comments.length} 件(未対応 {openCount})
-          </Typography>
-          <FormControlLabel
-            sx={{ mt: 1 }}
-            control={
-              <Switch
-                size="small"
-                checked={showResolved}
-                onChange={(e) => setShowResolved(e.target.checked)}
-              />
-            }
-            label="解決済みも表示"
-          />
-          <Divider sx={{ my: 1 }} />
-          <Box sx={{ flex: 1, overflowY: "auto" }}>
-            {visibleComments.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-                コメントはまだありません
-              </Typography>
-            ) : (
-              <Stack spacing={1.5}>
-                {visibleComments.map((c, idx) => (
-                  <Paper
-                    key={c.id}
-                    variant="outlined"
-                    sx={{ p: 1.5, cursor: "pointer" }}
-                    onClick={() => {
-                      // SimpleBar の内部スクロールコンテナを使う。
-                      // window.scrollTo は document が固定 100vh なので効かない。
-                      getScrollEl().scrollTo({
-                        top: Math.max(0, c.yAbsolute - 120),
-                        behavior: "smooth",
-                      });
-                      setDrawerOpen(false);
-                      setOpenCommentId(c.id);
-                      setReplyDraft("");
-                    }}
-                  >
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                      <Chip size="small" label={`#${idx + 1}`} sx={{ height: 20 }} />
-                      <Chip
-                        size="small"
-                        label={c.status === "open" ? "未対応" : "解決済み"}
-                        color={c.status === "open" ? "warning" : "success"}
-                        sx={{ height: 20 }}
-                      />
-                      <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
-                        {formatDate(c.createdAt)}
-                      </Typography>
-                    </Stack>
-                    <Typography variant="caption" color="text.secondary">
-                      {c.authorName}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        mt: 0.5,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {c.content}
-                    </Typography>
-                    {c.replies.length > 0 && (
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
-                        返信 {c.replies.length} 件
-                      </Typography>
-                    )}
-                  </Paper>
-                ))}
-              </Stack>
-            )}
-          </Box>
-        </Box>
-      </Drawer>
+        onShowResolvedChange={setShowResolved}
+        onCommentClick={(c) => {
+          getScrollEl().scrollTo({
+            top: Math.max(0, c.yAbsolute - 120),
+            behavior: "smooth",
+          });
+          setDrawerOpen(false);
+          setOpenCommentId(c.id);
+          setReplyDraft("");
+        }}
+      />
 
-      <Dialog
+      <NameDialog
         open={nameDialogOpen}
+        nameDraft={nameDraft}
         onClose={() => setNameDialogOpen(false)}
-        PaperProps={{ "data-review-ui": "true" } as Record<string, unknown>}
-      >
-        <DialogTitle>お名前を入力してください</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            この端末に保存されます(社内レビュー用)。
-          </Typography>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            placeholder="例: 山田"
-            value={nameDraft}
-            onChange={(e) => setNameDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.nativeEvent.isComposing) {
-                e.preventDefault();
-                confirmName();
-              }
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setNameDialogOpen(false)}>キャンセル</Button>
-          <Button onClick={confirmName} variant="contained" disabled={!nameDraft.trim()}>
-            保存
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onNameDraftChange={setNameDraft}
+        onConfirm={confirmName}
+      />
     </>
-  );
-}
-
-interface PinMarkerProps {
-  comment: ReviewComment;
-  index: number;
-  onOpen: () => void;
-  registerAnchor: (el: HTMLButtonElement | null) => void;
-}
-
-function PinMarker({ comment, index, onOpen, registerAnchor }: PinMarkerProps) {
-  const isResolved = comment.status === "resolved";
-  return (
-    <Box
-      data-review-ui="true"
-      sx={{
-        position: "absolute",
-        top: comment.yAbsolute,
-        left: `${comment.xRatio * 100}%`,
-        zIndex: Z_PIN,
-        transform: "translate(-50%, -100%)",
-        pointerEvents: "auto",
-      }}
-    >
-      <Tooltip
-        title={
-          <Box sx={{ maxWidth: 220 }}>
-            <Typography variant="caption" sx={{ display: "block", opacity: 0.8 }}>
-              {comment.authorName}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {comment.content}
-            </Typography>
-          </Box>
-        }
-        arrow
-      >
-        <Box
-          component="button"
-          ref={registerAnchor}
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpen();
-          }}
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 28,
-            height: 28,
-            borderRadius: "14px 14px 14px 2px",
-            border: "2px solid #fff",
-            backgroundColor: isResolved ? "success.main" : "warning.main",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 12,
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-            opacity: isResolved ? 0.7 : 1,
-            transition: "transform 120ms ease",
-            "&:hover": { transform: "scale(1.1)" },
-          }}
-          aria-label={`コメント #${index} を開く`}
-        >
-          {index}
-        </Box>
-      </Tooltip>
-    </Box>
   );
 }

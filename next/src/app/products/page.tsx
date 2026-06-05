@@ -8,9 +8,9 @@ import ProductsBespokeCta from "./_components/ProductsBespokeCta";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Catalogue / 商品一覧 | 飾Love",
+  title: "Catalogue / 商品一覧",
   description:
-    "飾Love の商品一覧。MLBカード・トレカコレクター向けのアクリルディスプレイ、特注品など、富山県高岡市の工房から一つずつお届け。",
+    "MLBカード・野球カードコレクター向けアクリルディスプレイの商品一覧。8枚・16枚・25枚の壁面展示モデルやオーダーメイドに対応。全国送料無料。",
   alternates: { canonical: "/products" },
 };
 
