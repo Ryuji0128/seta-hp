@@ -80,16 +80,17 @@ export default function Footer() {
               }}
             >
               <Box
-                component="span"
+                component="img"
+                src="/kaza-love_logo.png"
+                alt=""
                 sx={{
+                  height: 48,
+                  width: "auto",
                   display: "inline-block",
-                  width: 10,
-                  height: 10,
-                  bgcolor: "#B45309",
-                  transform: "rotate(45deg)",
+                  flexShrink: 0,
                 }}
               />
-              飾Love
+              かざらぶ
             </Box>
             <Typography
               sx={{
