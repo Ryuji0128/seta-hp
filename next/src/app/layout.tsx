@@ -77,8 +77,8 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: "/seta_logo.svg",
-    apple: "/seta_logo.svg",
+    icon: "/kaza-love_favicon.png",
+    apple: "/kaza-love_favicon.png",
   },
 
   openGraph: {
