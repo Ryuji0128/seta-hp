@@ -79,16 +79,17 @@ export default function Header() {
                 }}
               >
                 <Box
-                  component="span"
+                  component="img"
+                  src="/kaza-love_logo.png"
+                  alt=""
                   sx={{
+                    height: { xs: 32, md: 38 },
+                    width: "auto",
                     display: "inline-block",
-                    width: 8,
-                    height: 8,
-                    bgcolor: "#B45309",
-                    transform: "rotate(45deg)",
+                    flexShrink: 0,
                   }}
                 />
-                飾Love
+                かざらぶ
               </Box>
             </Link>
 
