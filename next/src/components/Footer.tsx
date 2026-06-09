@@ -75,7 +75,7 @@ export default function Footer() {
                 color: "#FFFFFF",
                 mb: 1.75,
                 display: "flex",
-                alignItems: "baseline",
+                alignItems: "center",
                 gap: "10px",
               }}
             >

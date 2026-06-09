@@ -4,8 +4,6 @@ import HeroSection from "./_home/HeroSection";
 import MarqueeSection from "./_home/MarqueeSection";
 import CatalogueSection from "./_home/CatalogueSection";
 import FeaturesSection from "./_home/FeaturesSection";
-import CraftSection from "./_home/CraftSection";
-import WorkshopSection from "./_home/WorkshopSection";
 import QuizTeaserSection from "./_home/QuizTeaserSection";
 import CTASection from "./_home/CTASection";
 
@@ -27,8 +25,6 @@ export default function HomePage() {
       <MarqueeSection />
       <CatalogueSection />
       <FeaturesSection />
-      <CraftSection />
-      <WorkshopSection />
       <QuizTeaserSection />
       <CTASection />
     </Box>

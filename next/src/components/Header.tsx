@@ -69,7 +69,7 @@ export default function Header() {
               <Box
                 sx={{
                   display: "flex",
-                  alignItems: "baseline",
+                  alignItems: "center",
                   gap: "10px",
                   fontFamily: theme.custom.fonts.display,
                   fontSize: { xs: "16px", md: "19px" },
