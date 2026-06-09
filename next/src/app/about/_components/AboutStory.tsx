@@ -66,7 +66,7 @@ const AboutStory = () => {
 
           <Box sx={{ pt: 2 }}>
             <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2, mb: 3 }}>
-              飾Love は、カード好きの私が一人で運営している小さな工房です。
+              飾Love は、カード好きが営む小さな個人工房です。
             </Box>
             <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2, mb: 3 }}>
               MLBカードを集めていると、「お気に入りのカードをもっとちゃんと飾りたい」

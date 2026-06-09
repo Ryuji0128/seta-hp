@@ -100,7 +100,7 @@ export default function Footer() {
                 color: "rgba(255,255,255,0.55)",
               }}
             >
-              飾Love(かざらぶ)は、富山県高岡市の小さな工房から、
+              飾Love(かざらぶ)は、小さな個人工房から、
               MLBカード・トレカコレクターのためのハンドメイドアクリルディスプレイをお届けします。
               レーザー加工と3Dプリントで、ひとつずつ丁寧に。
             </Typography>
@@ -154,7 +154,7 @@ export default function Footer() {
           }}
         >
           <span>© {new Date().getFullYear()} 飾Love</span>
-          <span>富山県高岡市</span>
+          <span>Made in Japan</span>
         </Box>
       </Container>
     </Box>

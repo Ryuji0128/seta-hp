@@ -43,7 +43,7 @@ const notoJp = Noto_Sans_JP({
 const siteUrl = "https://kaza-love.com";
 const siteName = "飾Love";
 const siteDescription =
-  "MLB・野球カードコレクターのためのアクリルディスプレイ工房。大谷翔平 AWARD HISTORY 風の壁面展示をはじめ、レーザー加工・3Dプリントで一つ一つ丁寧に製作。全国送料無料、富山県高岡市から発送。";
+  "MLB・野球カードコレクターのためのアクリルディスプレイ工房。大谷翔平 AWARD HISTORY 風の壁面展示をはじめ、レーザー加工・3Dプリントで一つ一つ丁寧に製作。全国送料無料。";
 
 export const metadata: Metadata = {
   title: {
@@ -67,8 +67,6 @@ export const metadata: Metadata = {
     "ドジャース",
     "ハンドメイド",
     "全国送料無料",
-    "富山",
-    "高岡",
   ],
 
   metadataBase: new URL(siteUrl),
@@ -133,8 +131,6 @@ const jsonLd = {
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",
-    addressLocality: "Takaoka",
-    addressRegion: "Toyama",
   },
 };
 

@@ -49,7 +49,7 @@ const AboutHero = () => {
               "& em": { fontStyle: "normal", color: "#E5AC60" },
             }}
           >
-            一人で、
+            個人工房で、
             <br />
             <em>ひとつずつ。</em>
           </Box>
@@ -64,7 +64,7 @@ const AboutHero = () => {
               letterSpacing: "0.02em",
             }}
           >
-            — A one-person workshop, in Takaoka, Toyama.
+            — A small personal workshop.
           </Box>
 
           <Box
@@ -75,7 +75,7 @@ const AboutHero = () => {
               maxWidth: 640,
             }}
           >
-            富山県高岡市の小さな工房から、MLBカード・トレカコレクターのための
+            小さな個人工房から、MLBカード・トレカコレクターのための
             「ただ飾る」ためのアクリルディスプレイを、一つずつ手作りでお届けしています。
           </Box>
         </Box>

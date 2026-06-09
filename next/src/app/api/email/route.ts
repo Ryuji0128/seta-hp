@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
           <hr />
           <p>２営業日以内に、担当者よりご連絡いたします。</p>
           <p>飾Love(かざらぶ)<br>
-          運営: 瀬田製作所(個人事業所) / 富山県高岡市<br>
+          運営: 瀬田製作所(個人事業所)<br>
           Email: info@kaza-love.com<br>
           </p>
         `,

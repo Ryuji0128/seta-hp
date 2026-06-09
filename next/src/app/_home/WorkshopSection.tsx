@@ -5,7 +5,7 @@ import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 
 const META = [
-  { label: "Est.", value: "2026年・富山県" },
+  { label: "Est.", value: "2026年" },
   { label: "Maker", value: "個人工房" },
   { label: "Specialty", value: "MLBカード・Topps NOW" },
   { label: "Output", value: "受注生産・少量" },
@@ -41,7 +41,7 @@ const WorkshopSection = () => {
           >
             <Image
               src="/images/placeholders/workshop.svg"
-              alt="工房 / Workshop in Takaoka, Toyama"
+              alt="工房 / Workshop"
               fill
               sizes="(max-width: 960px) 100vw, 50vw"
               unoptimized
@@ -77,19 +77,18 @@ const WorkshopSection = () => {
                 "& em": { fontStyle: "normal", color: "#E5AC60" },
               }}
             >
-              一人で、
+              個人工房で、
               <br />
               <em>ひとつずつ。</em>
             </Box>
 
             <Box sx={{ color: "rgba(255,255,255,0.7)", fontSize: "15px", lineHeight: 1.8, mb: 2.5 }}>
               昼はソフトウェアエンジニア、夜はカードディスプレイを作っています。
-              10年以上のMLBカードコレクターであり、400年の金工伝統がある富山県高岡市の小さな工房で、
-              飾Love を運営しています。
+              10年以上のMLBカードコレクターが営む小さな個人工房で、飾Love を運営しています。
             </Box>
             <Box sx={{ color: "rgba(255,255,255,0.7)", fontSize: "15px", lineHeight: 1.8, mb: 2.5 }}>
-              カタログにある全てのモデルは、私が設計・切削・造形・仕上げ・梱包まで一貫して行っています。
-              チームも外注もありません。レーザーと私と、「カードディスプレイはどうあるべきか」という
+              カタログにある全てのモデルは、設計・切削・造形・仕上げ・梱包まで個人工房で一貫して仕上げています。
+              量産はできませんが、レーザーと、「カードディスプレイはどうあるべきか」という
               無数の判断だけがあります。
             </Box>
 
