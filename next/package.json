@@ -13,7 +13,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "create:admin": "sh scripts/create-admin.sh"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

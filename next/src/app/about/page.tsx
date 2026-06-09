@@ -4,7 +4,6 @@ import AboutStory from "./_components/AboutStory";
 import AboutCollector from "./_components/AboutCollector";
 import AboutValues from "./_components/AboutValues";
 import AboutFeatures from "./_components/AboutFeatures";
-import AboutLocation from "./_components/AboutLocation";
 
 export const metadata: Metadata = {
   title: "工房について",
@@ -23,7 +22,6 @@ export default function AboutPage() {
       <AboutCollector />
       <AboutValues />
       <AboutFeatures />
-      <AboutLocation />
     </>
   );
 }

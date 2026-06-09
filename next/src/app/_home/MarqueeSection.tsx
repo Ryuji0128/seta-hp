@@ -3,12 +3,12 @@
 import { Box } from "@mui/material";
 
 const ITEMS = [
-  "富山県高岡市から",
+  "Made in Japan",
   "Handcrafted",
   "レーザー加工 + 3Dプリント",
   "UV対応アクリル",
   "全国送料無料",
-  "One-Person Studio",
+  "Personal Studio",
   "コレクターの、コレクターによる",
 ];
 

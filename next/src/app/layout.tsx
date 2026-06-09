@@ -133,8 +133,6 @@ const jsonLd = {
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",
-    addressLocality: "Takaoka",
-    addressRegion: "Toyama",
   },
 };
 

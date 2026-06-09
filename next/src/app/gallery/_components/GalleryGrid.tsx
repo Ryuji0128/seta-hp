@@ -99,7 +99,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                 sx={{
                   position: "relative",
                   aspectRatio: "4 / 5",
-                  bgcolor: "#F6F6F4",
+                  bgcolor: "#FFFFFF",
                   overflow: "hidden",
                   borderRadius: "4px",
                   border: "1px solid #E5E5E0",
@@ -112,7 +112,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                     alt={work.title}
                     fill
                     sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
-                    style={{ objectFit: "cover" }}
+                    style={{ objectFit: "contain", objectPosition: "center center" }}
                   />
                 ) : (
                   <Box

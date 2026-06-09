@@ -4,7 +4,7 @@ import { Box, Container } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
 const FEATURES = [
-  { en: "Solo-Built", ja: "設計・製作・梱包まで一人で一貫" },
+  { en: "Studio-Built", ja: "設計・製作・梱包まで個人工房で一貫" },
   { en: "Laser + 3D Print", ja: "0.1mm 精度のレーザー加工とカスタム造形" },
   { en: "UV-Resistant Acrylic", ja: "黄ばみ・くもりが出ない素材を使用" },
   { en: "Sleeve-Compatible", ja: "標準スリーブのまま展示できる設計" },
