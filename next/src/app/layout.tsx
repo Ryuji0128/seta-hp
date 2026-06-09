@@ -67,6 +67,8 @@ export const metadata: Metadata = {
     "ドジャース",
     "ハンドメイド",
     "全国送料無料",
+    "富山",
+    "高岡",
   ],
 
   metadataBase: new URL(siteUrl),
