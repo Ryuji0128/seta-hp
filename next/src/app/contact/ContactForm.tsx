@@ -205,6 +205,29 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
             </Field>
 
             <Field label="お問い合わせ内容" labelEn="Message" required>
+              <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    if (inquiryRef.current) {
+                      inquiryRef.current.value = `【カスタム対応のご相談】\n\n飾りたいカード: （例: Topps, ポケカ, 写真）\nケースの外形: （例: 96×71mm）\n枚数: （例: 縦4 × 横4）\nカードの間隔: （例: 5mm）\n外形余白: （例: 10mm）\n取り付け穴のサイズ: （例: Φ7）\n\nその他ご要望:\n`;
+                      inquiryRef.current.focus();
+                      handleChange("inquiry");
+                    }
+                  }}
+                  sx={{
+                    fontSize: "12px",
+                    borderColor: "#E5E5E0",
+                    color: "#6B6B6B",
+                    borderRadius: "999px",
+                    px: 2,
+                    "&:hover": { borderColor: "#B45309", color: "#B45309" },
+                  }}
+                >
+                  カスタム対応テンプレート
+                </Button>
+              </Box>
               <TextField
                 inputRef={inquiryRef}
                 name="inquiry"
