@@ -17,7 +17,7 @@ const ROWS: LegalInfoRow[] = [
   {
     label: "事業内容 / Business",
     value:
-      "ハンドメイドアクリルディスプレイの製造販売(飾Love)\nレーザー加工・3Dプリント試作",
+      "ハンドメイドアクリルディスプレイの製造販売(飾Love)",
   },
   { label: "Email", value: "info@kaza-love.com" },
 ];
@@ -32,7 +32,7 @@ export default function CompanyPage() {
       <p>
         <strong>飾Love(かざらぶ)</strong> は、小さな個人工房から、
         MLBカード・トレカコレクターのための、ハンドメイドアクリルディスプレイをお届けする新ブランドです。
-        レーザー加工と3Dプリントで、ひとつずつ丁寧に製作しています。
+        レーザー加工で、ひとつずつ丁寧に製作しています。
       </p>
       <p>
         飾Love の運営事業者は、個人事業所「<strong>瀬田製作所</strong>」です。

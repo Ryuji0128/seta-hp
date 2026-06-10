@@ -5,7 +5,7 @@ import { Box } from "@mui/material";
 const ITEMS = [
   "Made in Japan",
   "Handcrafted",
-  "レーザー加工 + 3Dプリント",
+  "レーザー加工",
   "UV対応アクリル",
   "全国送料無料",
   "Personal Studio",
