@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import HeroSection from "./_home/HeroSection";
 import MarqueeSection from "./_home/MarqueeSection";
 import CatalogueSection from "./_home/CatalogueSection";
+import { getCatalogueProducts } from "./_home/getCatalogueProducts";
 import FeaturesSection from "./_home/FeaturesSection";
 import QuizTeaserSection from "./_home/QuizTeaserSection";
 import CTASection from "./_home/CTASection";
@@ -18,12 +19,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const catalogueProducts = await getCatalogueProducts();
+
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
       <HeroSection />
       <MarqueeSection />
-      <CatalogueSection />
+      <CatalogueSection products={catalogueProducts} />
       <FeaturesSection />
       <QuizTeaserSection />
       <CTASection />

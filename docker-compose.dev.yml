@@ -14,6 +14,11 @@ services:
       # 社内レビュー用ページ内コメント機能を有効化 (dev環境のみ)
       # docker-compose.yml (本番) には絶対に追加しないこと
       - NEXT_PUBLIC_ENABLE_COMMENTS=true
+      # Windows ホスト→Linux コンテナのバインドマウントは inotify(変更イベント)が
+      # 伝わらず HMR/ホットリロードが効かない。ファイル変更をポーリングで検知させる。
+      # (dev のみ。CPU はやや上がるが開発時は許容)
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./next:/app
       - /app/node_modules
