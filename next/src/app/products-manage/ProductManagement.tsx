@@ -61,6 +61,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const [formImages, setFormImages] = useState<string[]>([]);
   const [formStock, setFormStock] = useState<string>(STOCK_OPTIONS[0].value);
   const [formIsPublished, setFormIsPublished] = useState(true);
+  const [formIsHeroImage, setFormIsHeroImage] = useState(false);
   const [formPurchaseUrl, setFormPurchaseUrl] = useState("");
 
   const theme = useTheme();
@@ -95,6 +96,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormImages([]);
     setFormStock("在庫あり");
     setFormIsPublished(true);
+    setFormIsHeroImage(false);
     setFormPurchaseUrl("");
     setSelectedProduct(null);
   };
@@ -116,6 +118,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormImages(existingImages);
     setFormStock(product.stock);
     setFormIsPublished(product.isPublished);
+    setFormIsHeroImage(product.isHeroImage);
     setFormPurchaseUrl(product.purchaseUrl || "");
     setDialogOpen(true);
   };
@@ -132,6 +135,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         images: formImages.length > 0 ? formImages : null,
         stock: formStock,
         isPublished: formIsPublished,
+        isHeroImage: formIsHeroImage,
         purchaseUrl: formPurchaseUrl || null,
       };
 
@@ -391,6 +395,15 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
                 />
               }
               label="公開する"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formIsHeroImage}
+                  onChange={(e) => setFormIsHeroImage(e.target.checked)}
+                />
+              }
+              label="TOPヒーロー画像に使用"
             />
           </Box>
         </DialogContent>

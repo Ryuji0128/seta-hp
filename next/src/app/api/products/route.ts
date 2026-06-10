@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
     if (isErrorResponse(body)) return body;
-    const { name, description, price, category, tags, image, images, stock, isPublished, purchaseUrl } = body;
+    const { name, description, price, category, tags, image, images, stock, isPublished, isHeroImage, purchaseUrl } = body;
 
     if (!name || !description || price === undefined || !category) {
       return NextResponse.json({ error: "名前、説明、価格、カテゴリは必須です" }, { status: 400 });
@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
         images: Array.isArray(images) ? images : Prisma.JsonNull,
         stock: stock || "在庫あり",
         isPublished: isPublished !== false,
+        isHeroImage: isHeroImage === true,
         purchaseUrl: purchaseUrl ? xss(purchaseUrl) : null,
       },
     });
@@ -131,7 +132,7 @@ export async function PUT(req: NextRequest) {
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
     if (isErrorResponse(body)) return body;
-    const { id, name, description, price, category, tags, image, images, stock, isPublished, purchaseUrl } = body;
+    const { id, name, description, price, category, tags, image, images, stock, isPublished, isHeroImage, purchaseUrl } = body;
 
     if (!id) {
       return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
@@ -183,6 +184,7 @@ export async function PUT(req: NextRequest) {
         images: images !== undefined ? (Array.isArray(images) ? images : Prisma.JsonNull) : undefined,
         stock,
         isPublished,
+        isHeroImage: isHeroImage !== undefined ? isHeroImage === true : undefined,
         purchaseUrl: purchaseUrl !== undefined ? (purchaseUrl ? xss(purchaseUrl) : null) : undefined,
       },
     });

@@ -5,7 +5,7 @@ import { useTheme } from "@mui/material/styles";
 
 const FEATURES = [
   { en: "Studio-Built", ja: "設計・製作・梱包まで個人工房で一貫" },
-  { en: "Laser + 3D Print", ja: "0.1mm 精度のレーザー加工とカスタム造形" },
+  { en: "Laser Cut", ja: "0.1mm 精度のレーザー加工" },
   { en: "UV-Resistant Acrylic", ja: "黄ばみ・くもりが出ない素材を使用" },
   { en: "Sleeve-Compatible", ja: "標準スリーブのまま展示できる設計" },
   { en: "Free JP Shipping", ja: "全国送料無料、緩衝材・保険込み" },
