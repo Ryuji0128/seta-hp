@@ -4,6 +4,7 @@ import HeroSection from "./_home/HeroSection";
 import MarqueeSection from "./_home/MarqueeSection";
 import CatalogueSection from "./_home/CatalogueSection";
 import { getCatalogueProducts } from "./_home/getCatalogueProducts";
+import { getRandomHeroImage } from "./_home/getRandomHeroImage";
 import FeaturesSection from "./_home/FeaturesSection";
 import QuizTeaserSection from "./_home/QuizTeaserSection";
 import CTASection from "./_home/CTASection";
@@ -13,18 +14,21 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "飾Love | MLBカード・トレカを美しく飾る",
   description:
-    "MLBカード・トレカを美しく飾るための、小さな個人工房から。レーザー加工と3Dプリントで一つずつ手作りのアクリルディスプレイ。全国送料無料。",
+    "MLBカード・トレカを美しく飾るための、小さな個人工房から。レーザー加工で一つずつ手作りのアクリルディスプレイ。全国送料無料。",
   alternates: {
     canonical: "/",
   },
 };
 
 export default async function HomePage() {
-  const catalogueProducts = await getCatalogueProducts();
+  const [catalogueProducts, heroImage] = await Promise.all([
+    getCatalogueProducts(),
+    getRandomHeroImage(),
+  ]);
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
-      <HeroSection />
+      <HeroSection heroImage={heroImage} />
       <MarqueeSection />
       <CatalogueSection products={catalogueProducts} />
       <FeaturesSection />

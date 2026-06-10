@@ -9,6 +9,7 @@ export interface Product {
   image: string | null;
   images: unknown;
   isPublished: boolean;
+  isHeroImage: boolean;
   purchaseUrl: string | null;
   createdAt: string | Date;
 }

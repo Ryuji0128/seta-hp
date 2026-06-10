@@ -5,7 +5,11 @@ import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  heroImage?: string | null;
+}
+
+const HeroSection = ({ heroImage }: HeroSectionProps) => {
   const theme = useTheme();
   const fontDisplay = theme.custom.fonts.display;
   const fontItalic = theme.custom.fonts.italic;
@@ -131,27 +135,6 @@ const HeroSection = () => {
                   カタログを見る <span>→</span>
                 </Box>
               </Link>
-              <Link href="#craft" passHref style={{ textDecoration: "none" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    color: "#0A0A0A",
-                    px: 2.75,
-                    py: 2,
-                    borderRadius: "999px",
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    border: "1px solid #E5E5E0",
-                    cursor: "pointer",
-                    transition: "border-color 0.2s",
-                    "&:hover": { borderColor: "#0A0A0A" },
-                  }}
-                >
-                  作り方を見る
-                </Box>
-              </Link>
             </Box>
 
             {/* Stats */}
@@ -210,57 +193,14 @@ const HeroSection = () => {
             }}
           >
             <Image
-              src="/images/placeholders/hero-award-history.svg"
-              alt="AWARD HISTORY 壁 — 飾Love 試作品"
+              src={heroImage || "/uploads/471469d3-8704-4879-b270-67d508b000a8.png"}
+              alt="飾Love アクリル壁面ディスプレイ"
               fill
               sizes="(max-width: 960px) 100vw, 50vw"
               priority
               unoptimized
               style={{ objectFit: "cover" }}
             />
-            <Box
-              sx={{
-                position: "absolute",
-                top: 24,
-                left: 24,
-                color: "rgba(255,255,255,0.45)",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                zIndex: 1,
-              }}
-            >
-              AWARD HISTORY  /  Featured Build
-            </Box>
-            <Box
-              sx={{
-                position: "absolute",
-                top: 24,
-                right: 24,
-                color: "#B45309",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.15em",
-                zIndex: 1,
-              }}
-            >
-              FEATURED · BUILD 008
-            </Box>
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: 24,
-                right: 24,
-                fontFamily: fontItalic,
-                fontStyle: "italic",
-                color: "rgba(255,255,255,0.55)",
-                fontSize: "14px",
-                zIndex: 1,
-              }}
-            >
-              Award History
-            </Box>
           </Box>
         </Box>
       </Container>
