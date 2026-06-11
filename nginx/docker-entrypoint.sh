@@ -154,6 +154,12 @@ server {
         proxy_pass http://next_app:3000;
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
+
+    location /uploads/ {
+        alias /var/www/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
 }
 EOF
 fi

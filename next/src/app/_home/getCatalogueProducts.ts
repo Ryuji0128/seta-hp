@@ -1,4 +1,5 @@
 import { getPrismaClient } from "@/lib/db";
+import { normalizeImageUrl } from "@/lib/images";
 
 // トップの「ラインナップ」カードに表示する商品データ。
 export type CatalogueProduct = {
@@ -23,13 +24,15 @@ export async function getCatalogueProducts(): Promise<CatalogueProduct[]> {
 
     return products.map((p) => {
       const fallbackImage = Array.isArray(p.images)
-        ? (p.images.find((img): img is string => typeof img === "string") ?? null)
+        ? (p.images
+            .map((img) => typeof img === "string" ? normalizeImageUrl(img) : null)
+            .find((img): img is string => Boolean(img)) ?? null)
         : null;
       return {
         id: p.id,
         name: p.name,
         price: p.price,
-        image: p.image || fallbackImage,
+        image: normalizeImageUrl(p.image) || fallbackImage,
       };
     });
   } catch (error) {

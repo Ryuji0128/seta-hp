@@ -58,7 +58,19 @@ const nextConfig: NextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
+                hostname: "kaza-love.com",
+            },
+            {
+                protocol: "https",
+                hostname: "www.kaza-love.com",
+            },
+            {
+                protocol: "https",
                 hostname: "setaseisakusyo.com",
+            },
+            {
+                protocol: "https",
+                hostname: "www.setaseisakusyo.com",
             },
         ],
     },

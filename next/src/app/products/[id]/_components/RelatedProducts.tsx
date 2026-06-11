@@ -4,6 +4,7 @@ import { Box, Container } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
+import { normalizeImageUrl } from "@/lib/images";
 import { type ProductSummary } from "@/lib/types/product";
 
 interface Props {
@@ -48,6 +49,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
         >
           {products.map((p) => {
             const ref = formatRefNumber(p.id);
+            const imageUrl = normalizeImageUrl(p.image);
             return (
               <Link
                 key={p.id}
@@ -76,12 +78,13 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                       overflow: "hidden",
                     }}
                   >
-                    {p.image ? (
+                    {imageUrl ? (
                       <Image
-                        src={p.image}
+                        src={imageUrl}
                         alt={p.name}
                         fill
                         sizes="(max-width: 600px) 50vw, 25vw"
+                        unoptimized
                         style={{ objectFit: "cover" }}
                       />
                     ) : (

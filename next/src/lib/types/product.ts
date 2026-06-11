@@ -1,3 +1,5 @@
+import { normalizeImageUrl } from "@/lib/images";
+
 export interface Product {
   id: number;
   name: string;
@@ -24,7 +26,9 @@ export function parseTags(tagString: string | null | undefined): string[] {
 
 export function parseProductImages(images: unknown, image: string | null): string[] {
   if (Array.isArray(images) && images.every((i) => typeof i === "string")) {
-    return images;
+    return images.map((img) => normalizeImageUrl(img)).filter((img): img is string => Boolean(img));
   }
-  return image ? [image] : [];
+
+  const normalizedImage = normalizeImageUrl(image);
+  return normalizedImage ? [normalizedImage] : [];
 }
