@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh issue *)",
+      "Bash(git -C /home/ubuntu/seta-hp log --oneline -10)",
+      "Bash(git -C /home/ubuntu/seta-hp checkout -b feature/site-updates-and-hero-image)",
+      "Bash(git -C /home/ubuntu/seta-hp add next/prisma/schema.prisma next/src/app/_home/HeroSection.tsx next/src/app/_home/MarqueeSection.tsx next/src/app/_home/getRandomHeroImage.ts next/src/app/about/_components/AboutFeatures.tsx next/src/app/about/_components/AboutStory.tsx next/src/app/about/_components/AboutValues.tsx next/src/app/about/page.tsx next/src/app/api/products/route.ts next/src/app/company/page.tsx next/src/app/layout.tsx next/src/app/page.tsx next/src/app/products-manage/ProductManagement.tsx next/src/components/Footer.tsx next/src/components/Header.tsx next/src/lib/types/product.ts)",
+      "Bash(git -C /home/ubuntu/seta-hp commit -m ' *)",
+      "Bash(git -C /home/ubuntu/seta-hp push -u upstream feature/site-updates-and-hero-image)",
+      "Bash(gh pr create --base develop --title 'サイト改善: ヒーロー画像管理・X連携・表記整理' --body ' *)",
+      "Bash(git stash *)",
+      "Bash(git pull *)",
+      "Bash(gh auth *)"
+    ]
+  }
+}
