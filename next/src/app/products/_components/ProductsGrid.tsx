@@ -5,6 +5,7 @@ import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
+import { normalizeImageUrl } from "@/lib/images";
 import { type ProductGridItem } from "@/lib/types/product";
 
 interface Props {
@@ -79,6 +80,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
             const isPopular = tags.includes("人気");
             const isNew = tags.includes("NEW");
             const ref = formatRefNumber(p.id);
+            const imageUrl = normalizeImageUrl(p.image);
 
             return (
               <Link
@@ -110,12 +112,13 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                       overflow: "hidden",
                     }}
                   >
-                    {p.image ? (
+                    {imageUrl ? (
                       <Image
-                        src={p.image}
+                        src={imageUrl}
                         alt={p.name}
                         fill
                         sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
+                        unoptimized
                         style={{ objectFit: "cover" }}
                       />
                     ) : (
