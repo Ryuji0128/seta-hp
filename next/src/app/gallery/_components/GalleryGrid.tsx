@@ -112,6 +112,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                     alt={work.title}
                     fill
                     sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
+                    unoptimized
                     style={{ objectFit: "contain", objectPosition: "center center" }}
                   />
                 ) : (
