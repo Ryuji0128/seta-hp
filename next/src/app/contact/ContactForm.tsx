@@ -90,18 +90,23 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
   const { executeRecaptcha, loaded: recaptchaLoaded } = useReCaptcha();
   const searchParams = useSearchParams();
 
-  // URLパラメータから商品名を取得して自動入力
+  // URLパラメータから対象名を取得して自動入力
   useEffect(() => {
+    const display = searchParams.get("display");
     const product = searchParams.get("product");
-    if (product && inquiryRef.current) {
-      const sanitizedProduct = product
+    const target = display || product;
+
+    if (target && inquiryRef.current) {
+      const sanitizedTarget = target
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#x27;")
         .slice(0, 200);
-      inquiryRef.current.value = `【商品購入のお問い合わせ】\n商品名: ${sanitizedProduct}\n\n`;
+      inquiryRef.current.value = display
+        ? `【ギャラリー掲載ディスプレイについてのお問い合わせ】\n対象作品: ${sanitizedTarget}\n\n`
+        : `【商品購入のお問い合わせ】\n商品名: ${sanitizedTarget}\n\n`;
     }
   }, [searchParams]);
 
