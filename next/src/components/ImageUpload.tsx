@@ -88,6 +88,7 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
               src={value}
               alt="アップロード画像"
               fill
+              unoptimized
               style={{ objectFit: "cover" }}
             />
           </Box>

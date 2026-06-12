@@ -44,11 +44,11 @@ cd seta-hp
 cp next/.env.example next/.env
 # .envファイルを編集して必要な値を設定
 
-# 3. Docker環境を起動（開発）
-docker compose -f docker-compose.dev.yml up
+# 3. Docker環境を起動（ローカルビルド）
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 
 # 4. ブラウザでアクセス
-# http://localhost:3001
+# http://127.0.0.1:2999
 ```
 
 ### ローカル開発（Docker なし）
@@ -59,29 +59,22 @@ yarn install
 npx prisma generate
 npx prisma db push
 npx prisma db seed    # シードデータ投入（任意）
-yarn dev              # http://localhost:3000 (Docker 経由は 3001)
+yarn dev              # http://localhost:3000
 ```
 
 ### 停止
 
 ```bash
-docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.yml -f docker-compose.local.yml down
 ```
 
 ## Docker環境の構成
 
-### 開発環境（docker-compose.dev.yml）
+### ローカルビルド環境（docker-compose.yml + docker-compose.local.yml）
 
 | サービス | コンテナ名 | ポート | 説明 |
 |---------|-----------|--------|------|
-| next | next_app | 3001:3000 | Next.js（yarn dev / ホットリロード） |
-| mysql | mysql_db | 3306 | MySQL 8.0 データベース |
-
-### 本番環境（docker-compose.yml）
-
-| サービス | コンテナ名 | ポート | 説明 |
-|---------|-----------|--------|------|
-| next | next_app | 2999:3000 | Next.js（standalone / ghcr.io から pull） |
+| next | next_app | 2999:3000 | Next.js（standalone / ローカルビルド） |
 | mysql | mysql_db | 3306 | MySQL 8.0 データベース |
 | nginx | nginx_proxy | 80, 443 | リバースプロキシ（SSL 対応） |
 | certbot | certbot | - | SSL 証明書管理 |
@@ -118,10 +111,10 @@ docker compose -f docker-compose.dev.yml down
 
 ```bash
 # Docker 経由
-docker compose -f docker-compose.dev.yml up        # 起動
-docker compose -f docker-compose.dev.yml down       # 停止
-docker compose -f docker-compose.dev.yml logs -f next  # ログ
-docker compose -f docker-compose.dev.yml exec next sh  # シェル
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build  # 起動
+docker compose -f docker-compose.yml -f docker-compose.local.yml down        # 停止
+docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f next # ログ
+docker compose -f docker-compose.yml -f docker-compose.local.yml exec next sh # シェル
 
 # ローカル（next/ ディレクトリで実行）
 cd next
@@ -228,7 +221,7 @@ npx prisma db seed    # シードデータ投入
 ```
 seta-hp/
 ├── docker-compose.yml          # 本番用 Docker Compose
-├── docker-compose.dev.yml      # 開発用 Docker Compose
+├── docker-compose.local.yml    # ローカルビルド用 Docker Compose override
 ├── nginx/                      # Nginx 設定
 │   ├── default.conf.template
 │   └── docker-entrypoint.sh

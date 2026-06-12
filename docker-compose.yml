@@ -10,6 +10,7 @@ services:
       - DATABASE_URL=mysql://app_user:${MYSQL_PASSWORD:-app_pass}@mysql:3306/app_db
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
       - NEXTAUTH_TRUST_HOST=true
+      - HOSTNAME=0.0.0.0
     volumes:
       - ./uploads:/app/public/uploads
     command: node server.js
@@ -19,7 +20,7 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -67,7 +68,7 @@ services:
     restart: unless-stopped
     mem_limit: 64m
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/api/health"]
       interval: 30s
       timeout: 5s
       retries: 3

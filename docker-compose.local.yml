@@ -1,0 +1,7 @@
+services:
+  next:
+    build:
+      context: ./next
+      dockerfile: Dockerfile
+    image: seta-hp:local
+    pull_policy: build

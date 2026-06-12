@@ -14,6 +14,7 @@ if [ -f "$CERT_PATH" ]; then
 # レート制限ゾーン定義
 limit_req_zone \$binary_remote_addr zone=general:10m rate=10r/s;
 limit_req_zone \$binary_remote_addr zone=api:10m rate=30r/m;
+limit_req_zone \$binary_remote_addr zone=upload:10m rate=120r/m;
 
 # HTTPS メインサイト (kaza-love.com)
 server {
@@ -57,6 +58,36 @@ server {
 
     location /api/ {
         limit_req zone=api burst=10 nodelay;
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location = /api/upload {
+        limit_req zone=upload burst=20 nodelay;
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location = /api/admin/upload {
+        limit_req zone=upload burst=20 nodelay;
         proxy_pass http://next_app:3000;
         proxy_http_version 1.1;
 
@@ -125,6 +156,34 @@ server {
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
+    }
+
+    location = /api/upload {
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location = /api/admin/upload {
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
     }
 
     location / {
