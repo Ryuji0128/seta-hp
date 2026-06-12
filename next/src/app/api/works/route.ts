@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { VALID_GALLERY_CATEGORIES } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
 import xss from "xss";
 
 // 制作事例一覧取得（公開用）
@@ -130,10 +131,12 @@ export async function PUT(req: NextRequest) {
         description: description ? xss(description) : undefined,
         category,
         tags: tags !== undefined ? (Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags)) : undefined,
-        image: image || null,
+        image: image !== undefined ? (image || null) : undefined,
         isPublished,
       },
     });
+
+    await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
     return NextResponse.json({ message: "制作事例を更新しました", work });
   } catch (error) {
@@ -173,6 +176,8 @@ export async function DELETE(req: NextRequest) {
     await prisma.work.delete({
       where: { id },
     });
+
+    await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
     return NextResponse.json({ message: "制作事例を削除しました" });
   } catch (error) {

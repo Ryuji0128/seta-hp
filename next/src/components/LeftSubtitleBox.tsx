@@ -92,6 +92,7 @@ const LeftSubtitleBox: React.FC<titleProps> = ({
             alt={imageTitle ?? ""}
             width={100}
             height={100}
+            unoptimized
             style={{ width: "100%", height: "auto" }}
             sizes="100vw"
           />

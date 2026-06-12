@@ -193,7 +193,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
             }}
           >
             <Image
-              src={heroImage || "/uploads/471469d3-8704-4879-b270-67d508b000a8.png"}
+              src={heroImage || "/kaza-love_logo.png"}
               alt="飾Love アクリル壁面ディスプレイ"
               fill
               sizes="(max-width: 960px) 100vw, 50vw"
