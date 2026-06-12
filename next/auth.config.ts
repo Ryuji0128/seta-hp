@@ -1,5 +1,6 @@
 // src/auth.config.ts
 import { getPrismaClient } from "@/lib/db";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import bcryptjs from "bcryptjs";
 import { isGoogleAuthEnabled } from "@/lib/runtime-config";
 import { NextAuthConfig } from "next-auth";
@@ -41,6 +42,12 @@ const authConfig = {
 
         if (!email || !password) {
           throw new Error("メールアドレス若しくはパスワードが入力されていません。");
+        }
+
+        // 同一アカウントへのパスワード総当たり対策
+        const rateLimit = await checkRateLimit(`login:${email}`, RATE_LIMITS.login);
+        if (!rateLimit.success) {
+          throw new Error("ログイン試行回数が上限に達しました。しばらくお待ちください。");
         }
 
         const user = await prisma.user.findUnique({

@@ -20,9 +20,7 @@ export const STOCK_OPTIONS = [
   { value: "売り切れ", label: "売り切れ" },
 ] as const;
 
-export type ProductCategoryValue = (typeof PRODUCT_CATEGORIES)[number]["value"];
 export type GalleryCategoryValue = (typeof GALLERY_CATEGORIES)[number]["value"];
-export type StockOptionValue = (typeof STOCK_OPTIONS)[number]["value"];
 
 export function getProductCategoryLabel(value: string): string {
   return PRODUCT_CATEGORIES.find((c) => c.value === value)?.label || value;
@@ -34,10 +32,6 @@ export function getGalleryCategoryLabel(value: string): string {
 
 export function getGalleryCategoryColor(value: string): string {
   return GALLERY_CATEGORIES.find((c) => c.value === value)?.color || "#666";
-}
-
-export function getStockLabel(value: string): string {
-  return STOCK_OPTIONS.find((s) => s.value === value)?.label || value;
 }
 
 export const VALID_PRODUCT_CATEGORIES = PRODUCT_CATEGORIES.map((c) => c.value);

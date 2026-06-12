@@ -44,7 +44,7 @@ declare module "@mui/material/styles" {
           desktop: number;
         };
       };
-      fonts?: {
+      fonts: {
         display: string;
         body: string;
         italic: string;

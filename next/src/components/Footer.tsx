@@ -180,7 +180,8 @@ export default function Footer() {
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          <span>© {new Date().getFullYear()} 飾Love</span>
+          {/* 年越し時のSSR/クライアント不一致による警告を抑止 */}
+          <span suppressHydrationWarning>© {new Date().getFullYear()} 飾Love</span>
           <span>Made in Japan</span>
         </Box>
       </Container>

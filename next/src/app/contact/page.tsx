@@ -24,14 +24,7 @@ export default async function ContactPage() {
   const recaptchaEnabled = isRecaptchaEnabled();
 
   return (
-    <Box
-      sx={{
-        // backgroundImage: "url(/fusetsu_logo_background.png)",
-        backgroundSize: "contain",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
+    <Box>
       <ContactPageMainTitle />
       {session?.user?.role === "ADMIN" ? (
         <InquiryManagement session={session} />

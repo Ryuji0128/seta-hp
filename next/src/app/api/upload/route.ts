@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { isErrorResponse, requireRole } from "@/lib/api-utils";
 import { getActualMimeType, getExtensionFromMimeType, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from "@/lib/upload-validation";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-
-    const userRole = session.user?.role;
-    if (userRole !== "ADMIN" && userRole !== "EDITOR") {
-      return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    if (isErrorResponse(session)) return session;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
-import { auth } from "@/lib/auth";
 import { VALID_GALLERY_CATEGORIES } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
-import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
 import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
 import xss from "xss";
 
@@ -16,14 +15,8 @@ export async function GET(req: NextRequest) {
 
     // 認証・権限チェック（非公開を含める場合はADMIN/EDITORのみ）
     if (includeUnpublished) {
-      const session = await auth();
-      if (!session) {
-        return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-      }
-      const userRole = session.user?.role;
-      if (userRole !== "ADMIN" && userRole !== "EDITOR") {
-        return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
-      }
+      const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+      if (isErrorResponse(session)) return session;
     }
 
     const { page, limit, skip } = parsePagination(searchParams);
@@ -49,15 +42,8 @@ export async function GET(req: NextRequest) {
 // 制作事例作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-
-    const userRole = session.user?.role;
-    if (userRole !== "ADMIN" && userRole !== "EDITOR") {
-      return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
@@ -78,7 +64,7 @@ export async function POST(req: NextRequest) {
         title: xss(title),
         description: xss(description),
         category,
-        tags: Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags || ""),
+        tags: sanitizeTags(tags),
         image: image || null,
         isPublished: isPublished !== false,
       },
@@ -94,15 +80,8 @@ export async function POST(req: NextRequest) {
 // 制作事例更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-
-    const userRole = session.user?.role;
-    if (userRole !== "ADMIN" && userRole !== "EDITOR") {
-      return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
@@ -130,7 +109,7 @@ export async function PUT(req: NextRequest) {
         title: title ? xss(title) : undefined,
         description: description ? xss(description) : undefined,
         category,
-        tags: tags !== undefined ? (Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags)) : undefined,
+        tags: tags !== undefined ? sanitizeTags(tags) : undefined,
         image: image !== undefined ? (image || null) : undefined,
         isPublished,
       },
@@ -148,15 +127,8 @@ export async function PUT(req: NextRequest) {
 // 制作事例削除
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-
-    const userRole = session.user?.role;
-    if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN"], "管理者権限が必要です");
+    if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);

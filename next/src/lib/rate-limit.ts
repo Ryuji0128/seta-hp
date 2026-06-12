@@ -5,13 +5,18 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
-const rateLimitStore = new Map<string, RateLimitEntry>();
 let storeFallbackWarned = false;
 
 declare global {
   // eslint-disable-next-line no-var
   var __setaRateLimitCleanupStarted: boolean | undefined;
+  // eslint-disable-next-line no-var
+  var __setaRateLimitStore: Map<string, RateLimitEntry> | undefined;
 }
+
+// dev HMRでモジュールが再評価されてもストアとクリーンアップの対応が崩れないようglobalThisに保持
+const rateLimitStore =
+  globalThis.__setaRateLimitStore ?? (globalThis.__setaRateLimitStore = new Map());
 
 function ensureMemoryCleanupStarted() {
   if (globalThis.__setaRateLimitCleanupStarted) return;
@@ -198,10 +203,6 @@ export const RATE_LIMITS = {
   },
   recaptcha: {
     limit: 5,
-    windowMs: 60 * 1000,
-  },
-  api: {
-    limit: 60,
     windowMs: 60 * 1000,
   },
 } as const;
