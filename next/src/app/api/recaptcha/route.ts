@@ -1,7 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { fetchSecret } from "@/lib/fetchSecrets";
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
-import axios from "axios";
+import { rateLimitResponse } from "@/lib/api-response";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
   // レート制限チェック
@@ -9,20 +10,12 @@ export async function POST(req: NextRequest) {
   const rateLimitResult = await checkRateLimit(`recaptcha:${clientIp}`, RATE_LIMITS.recaptcha);
   if (!rateLimitResult.success) {
     const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
-    return NextResponse.json(
-      { success: false, error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(retryAfter),
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": String(rateLimitResult.resetAt),
-        },
-      }
-    );
+    return rateLimitResponse(retryAfter, rateLimitResult.resetAt);
   }
 
-  const { token, expectedAction } = await req.json();
+  const body = await parseJsonBody(req);
+  if (isErrorResponse(body)) return body;
+  const { token, expectedAction } = body;
 
   if (!token) {
     return NextResponse.json({ success: false, message: 'No token provided' }, { status: 400 });
@@ -32,16 +25,15 @@ export async function POST(req: NextRequest) {
   const recaptchaKey = await fetchSecret(secretName);
 
   try {
-    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify`;
-
-    const response = await axios.post(verificationUrl, null, {
-      params: {
-        secret: recaptchaKey,
-        response: token,
-      },
+    const params = new URLSearchParams({ secret: recaptchaKey, response: token });
+    const response = await fetch(`https://www.google.com/recaptcha/api/siteverify?${params}`, {
+      method: "POST",
     });
+    if (!response.ok) {
+      throw new Error(`siteverify応答エラー: HTTP ${response.status}`);
+    }
 
-    const { success, score, action, hostname } = response.data;
+    const { success, score, action, hostname } = await response.json();
 
     if (!success) {
       // トークンが無効な場合

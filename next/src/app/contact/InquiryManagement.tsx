@@ -15,7 +15,6 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/ja";
 import { Session } from "next-auth";
@@ -60,8 +59,10 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
   // 問い合わせ一覧を取得
   const fetchInquiries = useCallback(async () => {
     try {
-      const response = await axios.get<{ inquiries: Inquiry[] }>("/api/email");
-      setInquiries(response.data.inquiries);
+      const res = await fetch("/api/email");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: { inquiries: Inquiry[] } = await res.json();
+      setInquiries(data.inquiries);
     } catch (error) {
       console.error("問い合わせ一覧の取得に失敗:", error);
     } finally {
@@ -78,9 +79,12 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
     if (!inquiryToDelete) return;
 
     try {
-      await axios.delete("/api/email", {
-        data: { id: inquiryToDelete },
+      const res = await fetch("/api/email", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: inquiryToDelete }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setDeleteModalOpen(false);
       fetchInquiries();
     } catch (error) {
@@ -119,25 +123,27 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
   return (
     <Box sx={{ maxWidth: "1000px", margin: "0 auto", padding: 2 }}>
       {/* ページネーション：テーブル前 */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-        <Button
-          variant="outlined"
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          前へ
-        </Button>
-        <Typography sx={{ fontSize: { xs: "12px", md: "14px" }, alignSelf: "center" }}>
-          {currentPage} / {totalPages}
-        </Typography>
-        <Button
-          variant="outlined"
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          次へ
-        </Button>
-      </Box>
+      {!loading && totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+          <Button
+            variant="outlined"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            前へ
+          </Button>
+          <Typography sx={{ fontSize: { xs: "12px", md: "14px" }, alignSelf: "center" }}>
+            {currentPage} / {totalPages}
+          </Typography>
+          <Button
+            variant="outlined"
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            次へ
+          </Button>
+        </Box>
+      )}
 
       {loading ? (
         <Typography>読み込み中...</Typography>

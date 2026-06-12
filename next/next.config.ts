@@ -18,10 +18,6 @@ const securityHeaders = [
         value: "nosniff",
     },
     {
-        key: "X-XSS-Protection",
-        value: "1; mode=block",
-    },
-    {
         key: "Referrer-Policy",
         value: "strict-origin-when-cross-origin",
     },
@@ -45,10 +41,6 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
     output: "standalone",
-    distDir: ".next",
-    experimental: {
-        serverActions: { bodySizeLimit: "2mb" },
-    },
     images: {
         localPatterns: [
             {

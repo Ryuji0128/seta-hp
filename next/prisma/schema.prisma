@@ -73,7 +73,8 @@ model Product {
   purchaseUrl String?
 
   @@index([category])
-  @@index([isPublished])
+  @@index([isPublished, createdAt])
+  @@index([isHeroImage, isPublished])
 }
 
 model Session {
@@ -116,7 +117,7 @@ model Work {
   isPublished Boolean  @default(true)
 
   @@index([category])
-  @@index([isPublished])
+  @@index([isPublished, createdAt])
 }
 
 enum User_role {

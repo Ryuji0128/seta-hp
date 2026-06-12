@@ -1,13 +1,34 @@
 import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
+import { rateLimitResponse, validationErrorResponse } from "@/lib/api-response";
+import { isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateInquiry } from "@/lib/validation";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
 import xss from "xss";
 import { parsePagination } from "@/lib/pagination";
 
 const prisma = getPrismaClient();
+
+// SMTP接続を使い回すため、トランスポーターはリクエスト毎ではなく一度だけ生成する
+let transporter: Transporter | null = null;
+function getTransporter(): Transporter {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+  return transporter;
+}
 
 /**
  * ✅ 問い合わせ登録（メール送信 + DB保存）
@@ -19,20 +40,11 @@ export async function POST(req: NextRequest) {
     const rateLimitResult = await checkRateLimit(`contact:${clientIp}`, RATE_LIMITS.contact);
     if (!rateLimitResult.success) {
       const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
-      return NextResponse.json(
-        { success: false, error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(retryAfter),
-            "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(rateLimitResult.resetAt),
-          },
-        }
-      );
+      return rateLimitResponse(retryAfter, rateLimitResult.resetAt);
     }
 
-    const inquiryData = await req.json();
+    const inquiryData = await parseJsonBody(req);
+    if (isErrorResponse(inquiryData)) return inquiryData;
 
     // 🔹 XSS対策
     const sanitizedData = {
@@ -45,7 +57,7 @@ export async function POST(req: NextRequest) {
     // 🔹 バリデーション
     const validateResult = validateInquiry(sanitizedData);
     if (Object.keys(validateResult).length > 0) {
-      return NextResponse.json({ errors: validateResult }, { status: 400 });
+      return validationErrorResponse(validateResult);
     }
 
     // ログイン中ユーザーのIDを取得（監査証跡用、未ログインならnull）
@@ -66,16 +78,7 @@ export async function POST(req: NextRequest) {
     // 🔹 メール送信（失敗してもDB登録は成功として扱う）
     let emailSent = true;
     try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 465,
-        secure: true,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-
+      const transporter = getTransporter();
       const adminAddress = process.env.CONTACT_TO_EMAIL || process.env.SMTP_USER;
 
       // 🔸 管理者宛メール
@@ -138,13 +141,8 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     // 認証・権限チェック（ADMINのみ）
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "権限がありません" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN"]);
+    if (isErrorResponse(session)) return session;
 
     const { searchParams } = new URL(req.url);
     const { page, limit, skip } = parsePagination(searchParams);
@@ -172,33 +170,31 @@ export async function GET(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   try {
-    // 認証チェック
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
+    // 認証・権限チェック（ADMINのみ）
+    const session = await requireRole(["ADMIN"]);
+    if (isErrorResponse(session)) return session;
 
-    // ADMINロールチェック
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "権限がありません" }, { status: 403 });
-    }
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
+    const id = Number(body.id);
 
-    const body = await req.json();
-    const { id } = body;
-
-    if (!id) {
+    if (!Number.isInteger(id) || id <= 0) {
       return NextResponse.json(
-        { error: "IDが指定されていません" },
+        { error: "IDが正しく指定されていません" },
         { status: 400 }
       );
     }
 
     await prisma.inquiry.delete({
-      where: { id: Number(id) },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    // 存在しないIDの削除は404として返す
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      return NextResponse.json({ error: "指定された問い合わせが見つかりません" }, { status: 404 });
+    }
     console.error("問い合わせ削除エラー:", error);
     return NextResponse.json(
       { error: "削除に失敗しました" },

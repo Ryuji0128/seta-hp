@@ -108,26 +108,6 @@ export default function UserAuthButton() {
           </Typography>
         </Box>
 
-        <Divider sx={{ my: 1 }} />
-
-        <MenuItem
-          onClick={() => {
-            handleMenuClose();
-            router.push("/mypage");
-          }}
-        >
-          <Typography variant="body2">マイページ</Typography>
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            handleMenuClose();
-            router.push("/mypage/orders");
-          }}
-        >
-          <Typography variant="body2">注文履歴</Typography>
-        </MenuItem>
-
         {isAdmin && [
           <Divider key="admin-divider" sx={{ my: 1 }} />,
           <MenuItem

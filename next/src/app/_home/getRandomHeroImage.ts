@@ -1,4 +1,5 @@
 import { getPrismaClient } from "@/lib/db";
+import { normalizeImageUrl } from "@/lib/images";
 
 export async function getRandomHeroImage(): Promise<string | null> {
   const prisma = getPrismaClient();
@@ -10,5 +11,5 @@ export async function getRandomHeroImage(): Promise<string | null> {
   if (heroProducts.length === 0) return null;
 
   const idx = Math.floor(Math.random() * heroProducts.length);
-  return heroProducts[idx].image;
+  return normalizeImageUrl(heroProducts[idx].image);
 }

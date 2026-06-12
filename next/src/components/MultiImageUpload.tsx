@@ -103,7 +103,7 @@ export default function MultiImageUpload({
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
         {value.map((url, index) => (
           <Box
-            key={index}
+            key={url}
             sx={{
               position: "relative",
               width: 120,

@@ -56,10 +56,11 @@ export function validationErrorResponse(
  */
 export function rateLimitResponse(
   retryAfter: number,
-  resetAt: number
+  resetAt: number,
+  message: string = "リクエスト回数が上限に達しました。しばらくお待ちください。"
 ): NextResponse<ApiResponse> {
   return NextResponse.json(
-    { success: false, error: "リクエスト回数が上限に達しました。しばらくお待ちください。" },
+    { success: false, error: message },
     {
       status: 429,
       headers: {

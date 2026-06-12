@@ -107,7 +107,6 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                     sx={{
                       position: "relative",
                       aspectRatio: "4 / 5",
-                      bgcolor: "linear-gradient(150deg, #F6F6F4 0%, #EDEDE8 100%)",
                       background: "linear-gradient(150deg, #F6F6F4 0%, #EDEDE8 100%)",
                       overflow: "hidden",
                     }}

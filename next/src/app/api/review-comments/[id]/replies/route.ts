@@ -10,24 +10,16 @@
 
 import { getPrismaClient } from "@/lib/db";
 import { isRateLimited } from "@/lib/rate-limit";
-import { reviewCommentsDisabledResponse } from "@/lib/reviewCommentsGuard";
+import {
+  cleanReviewInput as clean,
+  parseReviewId as parseId,
+  REVIEW_MAX_CONTENT as MAX_CONTENT,
+  REVIEW_MAX_NAME as MAX_NAME,
+  reviewCommentsDisabledResponse,
+} from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
-import xss from "xss";
 
 const prisma = getPrismaClient();
-
-const MAX_CONTENT = 2000;
-const MAX_NAME = 80;
-
-function clean(value: unknown, max: number): string {
-  return xss(String(value ?? "")).trim().slice(0, max);
-}
-
-function parseId(raw: string | null): number | null {
-  if (!raw) return null;
-  const id = Number(raw);
-  return Number.isInteger(id) && id > 0 ? id : null;
-}
 
 export async function POST(
   req: NextRequest,
