@@ -94,7 +94,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     setFormCategory(PRODUCT_CATEGORIES[0].value);
     setFormTags("");
     setFormImages([]);
-    setFormStock("在庫あり");
+    setFormStock(STOCK_OPTIONS[0].value);
     setFormIsPublished(true);
     setFormIsHeroImage(false);
     setFormPurchaseUrl("");

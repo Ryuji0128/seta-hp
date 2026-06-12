@@ -9,19 +9,17 @@
 
 import { getPrismaClient } from "@/lib/db";
 import { isRateLimited } from "@/lib/rate-limit";
-import { reviewCommentsDisabledResponse } from "@/lib/reviewCommentsGuard";
+import {
+  cleanReviewInput as clean,
+  REVIEW_MAX_CONTENT as MAX_CONTENT,
+  REVIEW_MAX_NAME as MAX_NAME,
+  REVIEW_MAX_PAGE_URL as MAX_PAGE_URL,
+  REVIEW_MAX_SELECTOR as MAX_SELECTOR,
+  reviewCommentsDisabledResponse,
+} from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
-import xss from "xss";
 
 const prisma = getPrismaClient();
-
-const MAX_CONTENT = 2000;
-const MAX_NAME = 80;
-const MAX_SELECTOR = 500;
-
-function clean(value: unknown, max: number): string {
-  return xss(String(value ?? "")).trim().slice(0, max);
-}
 
 export async function GET(req: NextRequest) {
   const disabled = reviewCommentsDisabledResponse();
@@ -55,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const pageUrl = clean(body.pageUrl, 500);
+    const pageUrl = clean(body.pageUrl, MAX_PAGE_URL);
     const authorName = clean(body.authorName, MAX_NAME);
     const content = clean(body.content, MAX_CONTENT);
     const elementSelector = body.elementSelector

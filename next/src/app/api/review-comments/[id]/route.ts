@@ -7,15 +7,13 @@
 
 import { getPrismaClient } from "@/lib/db";
 import { isRateLimited } from "@/lib/rate-limit";
-import { reviewCommentsDisabledResponse } from "@/lib/reviewCommentsGuard";
+import {
+  parseReviewId as parseId,
+  reviewCommentsDisabledResponse,
+} from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = getPrismaClient();
-
-function parseId(raw: string): number | null {
-  const id = Number(raw);
-  return Number.isInteger(id) && id > 0 ? id : null;
-}
 
 export async function PATCH(
   req: NextRequest,

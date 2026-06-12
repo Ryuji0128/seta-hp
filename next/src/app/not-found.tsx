@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Typography, Box, useMediaQuery } from "@mui/material";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { useTheme } from "@mui/material";
 import { useSimpleBar } from "@/components/SimpleBarWrapper";
 
@@ -42,12 +41,15 @@ export default function NotFound() {
     }[]
   >([]);
 
+  // 三角形の生成はスクロールコンテナの有無と無関係に行う
+  useEffect(() => {
+    setTriangles(generateTriangles(7)); // 7つの三角形を生成
+  }, []);
+
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
 
     if (!scrollContainer) return;
-
-    setTriangles(generateTriangles(7)); // 7つの三角形を生成
 
     // スクロールイベントのリスナー
     const handleScroll = () => {
@@ -102,15 +104,17 @@ export default function NotFound() {
       overflow="hidden"
     >
       {/* 影付きテキスト */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.2 }}
-        transition={{ duration: 1 }}
-        style={{
+      <Box
+        sx={{
           position: "absolute",
           color: "rgba(0, 0, 0, 0.1)",
           zIndex: 0,
           transform: "translateY(30px) scale(1.1)",
+          animation: "nfFadeIn 1s ease both",
+          "@keyframes nfFadeIn": {
+            from: { opacity: 0 },
+            to: { opacity: 0.2 },
+          },
         }}
       >
         <Typography
@@ -119,14 +123,19 @@ export default function NotFound() {
         >
           404
         </Typography>
-      </motion.div>
+      </Box>
 
       {/* メインテキスト */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.5 }}
-        style={{ zIndex: 1, textAlign: "center" }}
+      <Box
+        sx={{
+          zIndex: 1,
+          textAlign: "center",
+          animation: "nfRiseIn 1.5s ease both",
+          "@keyframes nfRiseIn": {
+            from: { opacity: 0, transform: "translateY(50px)" },
+            to: { opacity: 1, transform: "translateY(0)" },
+          },
+        }}
       >
         <Typography
           variant="h1"
@@ -149,7 +158,7 @@ export default function NotFound() {
         >
           ページが見つかりません
         </Typography>
-      </motion.div>
+      </Box>
 
       {/* 戻るボタン */}
       <Box sx={{ mt: 4, zIndex: 1 }}>

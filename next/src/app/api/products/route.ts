@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { auth } from "@/lib/auth";
 import { VALID_PRODUCT_CATEGORIES, VALID_STOCK_OPTIONS } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
-import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
 import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
 import xss from "xss";
 
@@ -17,14 +16,8 @@ export async function GET(req: NextRequest) {
 
     // 認証・権限チェック（非公開商品を含める場合はADMIN/EDITORのみ）
     if (includeUnpublished) {
-      const session = await auth();
-      if (!session) {
-        return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-      }
-      const userRole = session.user?.role;
-      if (userRole !== "ADMIN" && userRole !== "EDITOR") {
-        return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
-      }
+      const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+      if (isErrorResponse(session)) return session;
     }
 
     const { page, limit, skip } = parsePagination(searchParams);
@@ -50,15 +43,8 @@ export async function GET(req: NextRequest) {
 // 商品作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-
-    const userRole = session.user?.role;
-    if (userRole !== "ADMIN" && userRole !== "EDITOR") {
-      return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
@@ -69,10 +55,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "名前、説明、価格、カテゴリは必須です" }, { status: 400 });
     }
 
-    // 価格の検証
+    // 価格の検証（DBのInt型カラムに合わせて整数のみ許可）
     const priceNum = Number(price);
-    if (isNaN(priceNum) || priceNum < 0) {
-      return NextResponse.json({ error: "価格は0以上の数値を指定してください" }, { status: 400 });
+    if (!Number.isInteger(priceNum) || priceNum < 0) {
+      return NextResponse.json({ error: "価格は0以上の整数を指定してください" }, { status: 400 });
     }
 
     // カテゴリの検証
@@ -100,7 +86,7 @@ export async function POST(req: NextRequest) {
         description: xss(description),
         price: priceNum,
         category,
-        tags: Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags || ""),
+        tags: sanitizeTags(tags),
         image: image || null,
         images: Array.isArray(images) ? images : Prisma.JsonNull,
         stock: stock || "在庫あり",
@@ -120,15 +106,8 @@ export async function POST(req: NextRequest) {
 // 商品更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-
-    const userRole = session.user?.role;
-    if (userRole !== "ADMIN" && userRole !== "EDITOR") {
-      return NextResponse.json({ error: "編集権限が必要です" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
@@ -145,12 +124,12 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "指定された商品が見つかりません" }, { status: 404 });
     }
 
-    // 価格の検証
+    // 価格の検証（DBのInt型カラムに合わせて整数のみ許可）
     let priceNum: number | undefined;
     if (price !== undefined) {
       priceNum = Number(price);
-      if (isNaN(priceNum) || priceNum < 0) {
-        return NextResponse.json({ error: "価格は0以上の数値を指定してください" }, { status: 400 });
+      if (!Number.isInteger(priceNum) || priceNum < 0) {
+        return NextResponse.json({ error: "価格は0以上の整数を指定してください" }, { status: 400 });
       }
     }
 
@@ -180,7 +159,7 @@ export async function PUT(req: NextRequest) {
         description: description ? xss(description) : undefined,
         price: priceNum,
         category,
-        tags: tags !== undefined ? (Array.isArray(tags) ? tags.map((t: string) => xss(t)).join(",") : xss(tags)) : undefined,
+        tags: tags !== undefined ? sanitizeTags(tags) : undefined,
         image: image !== undefined ? (image || null) : undefined,
         images: images !== undefined ? (Array.isArray(images) ? images : Prisma.JsonNull) : undefined,
         stock,
@@ -202,15 +181,8 @@ export async function PUT(req: NextRequest) {
 // 商品削除
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
-    }
-
-    const userRole = session.user?.role;
-    if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "管理者権限が必要です" }, { status: 403 });
-    }
+    const session = await requireRole(["ADMIN"], "管理者権限が必要です");
+    if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);

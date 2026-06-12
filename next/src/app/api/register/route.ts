@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import bcryptjs from "bcryptjs";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
+import { rateLimitResponse } from "@/lib/api-response";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import { RegistrationSchema } from "@/lib/validation";
 
@@ -20,22 +23,15 @@ export async function POST(request: NextRequest) {
       const retryAfter = Math.ceil(
         (rateLimitResult.resetAt - Date.now()) / 1000
       );
-      return NextResponse.json(
-        {
-          error: "登録の試行回数が上限に達しました。しばらく時間をおいてからお試しください。",
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(retryAfter),
-            "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(rateLimitResult.resetAt),
-          },
-        }
+      return rateLimitResponse(
+        retryAfter,
+        rateLimitResult.resetAt,
+        "登録の試行回数が上限に達しました。しばらく時間をおいてからお試しください。"
       );
     }
 
-    const body = await request.json();
+    const body = await parseJsonBody(request);
+    if (isErrorResponse(body)) return body;
     const validatedData = RegistrationSchema.parse(body);
 
     // 既存ユーザーのチェック
@@ -84,6 +80,13 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
+        { status: 400 }
+      );
+    }
+    // 同時登録による一意制約違反は既存ユーザーと同じ応答にする（事前チェックとのTOCTOU対策）
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json(
+        { error: "アカウントの作成に失敗しました" },
         { status: 400 }
       );
     }

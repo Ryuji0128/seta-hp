@@ -12,7 +12,6 @@ import {
   Typography
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReCaptcha } from "next-recaptcha-v3";
 import { useSearchParams } from "next/navigation";
@@ -90,18 +89,18 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
   const { executeRecaptcha, loaded: recaptchaLoaded } = useReCaptcha();
   const searchParams = useSearchParams();
 
-  // URLパラメータから商品名を取得して自動入力
+  // URLパラメータから対象名を取得して自動入力
   useEffect(() => {
+    const display = searchParams.get("display");
     const product = searchParams.get("product");
-    if (product && inquiryRef.current) {
-      const sanitizedProduct = product
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#x27;")
-        .slice(0, 200);
-      inquiryRef.current.value = `【商品購入のお問い合わせ】\n商品名: ${sanitizedProduct}\n\n`;
+    const target = display || product;
+
+    if (target && inquiryRef.current) {
+      // textareaへのプレーンテキスト挿入なのでHTMLエスケープは不要（送信時にサーバー側でサニタイズされる）
+      const sanitizedTarget = target.slice(0, 200);
+      inquiryRef.current.value = display
+        ? `【ギャラリー掲載ディスプレイについてのお問い合わせ】\n対象作品: ${sanitizedTarget}\n\n`
+        : `【商品購入のお問い合わせ】\n商品名: ${sanitizedTarget}\n\n`;
     }
   }, [searchParams]);
 
@@ -130,17 +129,27 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
     try {
       if (recaptchaEnabled) {
         const token = await executeRecaptcha("contact_form");
-        const recaptchaRes = await axios.post("/api/recaptcha", { token, expectedAction: "contact_form" });
+        const recaptchaRes = await fetch("/api/recaptcha", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, expectedAction: "contact_form" }),
+        });
+        const recaptchaData = await recaptchaRes.json();
 
-        if (!recaptchaRes.data.success) {
+        if (!recaptchaData.success) {
           setModalContent("error");
           return;
         }
       }
 
-      const emailRes = await axios.post("/api/email", formData);
+      const emailRes = await fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const emailData = await emailRes.json();
 
-      if (emailRes.data.success) {
+      if (emailData.success) {
         setModalContent("success");
         if (nameRef.current) nameRef.current.value = "";
         if (emailRef.current) emailRef.current.value = "";

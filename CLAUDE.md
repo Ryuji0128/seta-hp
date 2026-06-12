@@ -40,16 +40,17 @@ seta-hp/
 │   ├── auth.config.ts       # NextAuth設定（providers, callbacks）
 │   ├── prisma/              # Prismaスキーマ & シード
 │   └── public/              # 静的ファイル
-├── docker-compose.dev.yml   # 開発環境
-├── docker-compose.yml       # 本番環境
-└── nginx/                   # Nginx設定
+├── docker-compose.yml          # 本番環境（ベース）
+├── docker-compose.override.yml # 開発環境（docker compose up で自動適用）
+├── docker-compose.local.yml    # ローカルビルド検証用
+└── nginx/                      # Nginx設定
 ```
 
 ## Development Commands
 
 ```bash
-# Docker開発環境の起動
-docker compose -f docker-compose.dev.yml up
+# Docker開発環境の起動（override.ymlが自動適用される）
+docker compose up
 
 # 個別コマンド (nextディレクトリで実行)
 cd next

@@ -16,7 +16,6 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/ja";
 import { Session } from "next-auth";
@@ -69,8 +68,10 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
 
   const fetchNews = useCallback(async () => {
     try {
-      const response = await axios.get<{ news: News[] }>("/api/news");
-      setNewsList(response.data.news);
+      const res = await fetch("/api/news");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: { news: News[] } = await res.json();
+      setNewsList(data.news);
     } catch (error) {
       console.error("お知らせ一覧の取得に失敗:", error);
     } finally {
@@ -86,9 +87,12 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
     if (!newsToDelete) return;
 
     try {
-      await axios.delete("/api/news", {
-        data: { id: newsToDelete },
+      const res = await fetch("/api/news", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: newsToDelete }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setDeleteModalOpen(false);
       fetchNews();
     } catch (error) {
@@ -98,12 +102,17 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
 
   const createNews = async () => {
     try {
-      await axios.post("/api/news", {
-        title: formTitle,
-        contents: { text: formContents },
-        date: formDate,
-        url: formUrl || null,
+      const res = await fetch("/api/news", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formTitle,
+          contents: { text: formContents },
+          date: formDate,
+          url: formUrl || null,
+        }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setCreateModalOpen(false);
       resetForm();
       fetchNews();
@@ -116,13 +125,18 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
     if (!selectedNews) return;
 
     try {
-      await axios.put("/api/news", {
-        id: selectedNews.id,
-        title: formTitle,
-        contents: { text: formContents },
-        date: formDate,
-        url: formUrl || null,
+      const res = await fetch("/api/news", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedNews.id,
+          title: formTitle,
+          contents: { text: formContents },
+          date: formDate,
+          url: formUrl || null,
+        }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setEditModalOpen(false);
       resetForm();
       fetchNews();
