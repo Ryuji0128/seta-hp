@@ -15,6 +15,8 @@ if [ -f "$CERT_PATH" ]; then
 limit_req_zone \$binary_remote_addr zone=general:10m rate=10r/s;
 limit_req_zone \$binary_remote_addr zone=api:10m rate=30r/m;
 limit_req_zone \$binary_remote_addr zone=upload:10m rate=120r/m;
+# designer 用（未認証フラッドが auth_request を過負荷にするのを抑止。対話ツールなので緩め）。
+limit_req_zone \$binary_remote_addr zone=designer:10m rate=15r/s;
 
 # Designer upstream へ渡す前に HP の SSO セッションCookieを除去するフィルタ。
 # designer 自身の csrftoken / sessionid は残し、HPのJWT Cookieだけ落とす。
@@ -174,8 +176,13 @@ server {
     ssl_prefer_server_ciphers on;
 
     add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    # CSP: designer フロントは外部リソース依存ゼロ（CDN/外部フォント/Worker無し）を確認済。
+    # Next の hydration 用に script/style は unsafe-inline/eval を許可、画像生成用に data:/blob:。
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
 
     client_max_body_size 20M;
 
@@ -210,6 +217,7 @@ server {
 
     # Designer API（同一オリジン → CORS不要）。
     location /api/ {
+        limit_req zone=designer burst=30 nodelay;
         auth_request /__auth;
         auth_request_set \$auth_email \$upstream_http_x_user_email;
         proxy_pass \$designer_back;
@@ -231,6 +239,7 @@ server {
 
     # Django admin（到達者は全員HPのADMIN。SSO側で is_staff/superuser を付与済み）。
     location /admin/ {
+        limit_req zone=designer burst=30 nodelay;
         auth_request /__auth;
         auth_request_set \$auth_email \$upstream_http_x_user_email;
         proxy_pass \$designer_back;
@@ -246,6 +255,7 @@ server {
 
     # Django / DRF の静的ファイル。Cookie不要なので全除去。
     location /static/ {
+        limit_req zone=designer burst=30 nodelay;
         auth_request /__auth;
         proxy_pass \$designer_back;
         proxy_set_header Host \$host;
@@ -254,6 +264,7 @@ server {
 
     # Designer フロント（UIもゲート）。HPのCookieは一切渡さない。
     location / {
+        limit_req zone=designer burst=30 nodelay;
         auth_request /__auth;
         proxy_pass \$designer_front;
         proxy_http_version 1.1;
