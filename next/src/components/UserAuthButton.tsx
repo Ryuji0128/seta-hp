@@ -71,6 +71,10 @@ export default function UserAuthButton() {
 
   // ログイン済み
   const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
+  // 飾Love Designer は ADMIN のみアクセス可（verify-admin が ADMIN 限定のため）。
+  const isDesignerAdmin = session?.user?.role === "ADMIN";
+  const designerUrl =
+    process.env.NEXT_PUBLIC_DESIGNER_URL || "https://designer.kaza-love.com";
 
   return (
     <>
@@ -133,6 +137,20 @@ export default function UserAuthButton() {
             </Typography>
           </MenuItem>,
         ]}
+
+        {isDesignerAdmin && (
+          <MenuItem
+            key="designer"
+            onClick={() => {
+              handleMenuClose();
+              window.open(designerUrl, "_blank", "noopener,noreferrer");
+            }}
+          >
+            <Typography variant="body2" sx={{ color: "#FF5722" }}>
+              飾Love Designer ↗
+            </Typography>
+          </MenuItem>
+        )}
 
         <Divider sx={{ my: 1 }} />
 
