@@ -41,3 +41,17 @@ server {
         return 301 https://$host$request_uri;
     }
 }
+
+# designer.kaza-love.com HTTP → HTTPS リダイレクト（証明書発行のACMEチャレンジも配信）
+server {
+    listen 80;
+    server_name designer.${SERVER_NAME};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
