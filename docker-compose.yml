@@ -11,6 +11,11 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
       - NEXTAUTH_TRUST_HOST=true
       - HOSTNAME=0.0.0.0
+      # --- SSO: designer.kaza-love.com を HP管理者ログインでゲートする ---
+      # Cookie を親ドメインまで広げ、auth_request 検証エンドポイントを有効化。
+      - SSO_COOKIE_DOMAIN=.kaza-love.com
+      - SSO_COOKIE_SECURE=1
+      - SSO_VERIFY_ENABLED=1
     volumes:
       - ./uploads:/app/public/uploads
     command: node server.js
@@ -56,6 +61,9 @@ services:
     environment:
       - SERVER_NAME=${SERVER_NAME:-kaza-love.com}
       - OLD_SERVER_NAME=${OLD_SERVER_NAME:-setaseisakusyo.com}
+      # Designer SSO の共有秘密（designer の Django と同値にする）。
+      # 未設定なら空文字 → designer 側も非強制（後方互換）。設定時のみ偽装防止が有効。
+      - PROXY_SSO_SECRET=${PROXY_SSO_SECRET:-}
     volumes:
       - ./nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template:ro
       - ./nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro
@@ -83,4 +91,4 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    command: certonly --webroot --webroot-path=/var/www/certbot --email k_ryuji@setaseisakusyo.com --agree-tos --no-eff-email --cert-name kaza-love.com --keep-until-expiring -d kaza-love.com -d www.kaza-love.com -d setaseisakusyo.com -d www.setaseisakusyo.com
+    command: certonly --webroot --webroot-path=/var/www/certbot --email k_ryuji@setaseisakusyo.com --agree-tos --no-eff-email --cert-name kaza-love.com --keep-until-expiring -d kaza-love.com -d www.kaza-love.com -d setaseisakusyo.com -d www.setaseisakusyo.com -d designer.kaza-love.com

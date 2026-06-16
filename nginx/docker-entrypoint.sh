@@ -16,6 +16,22 @@ limit_req_zone \$binary_remote_addr zone=general:10m rate=10r/s;
 limit_req_zone \$binary_remote_addr zone=api:10m rate=30r/m;
 limit_req_zone \$binary_remote_addr zone=upload:10m rate=120r/m;
 
+# Designer upstream へ渡す前に HP の SSO セッションCookieを除去するフィルタ。
+# designer 自身の csrftoken / sessionid は残し、HPのJWT Cookieだけ落とす。
+# secure/非secure 名、および Auth.js のchunk(.0/.1…)を「連続する複数個まとめて」除去する
+# （末尾の "+" が連続chunkに対応）。現状のJWTサイズではchunkは発生しない想定だが将来耐性として。
+map \$http_cookie \$designer_cookie {
+    default \$http_cookie;
+    "~*^(.*?)(?:(?:__Secure-)?kazalove\.session-token(?:\.[0-9]+)?=[^;]*;?\s*)+(.*)\$" "\$1\$2";
+}
+
+# 逆向き: HP の verify-admin(/__auth) へは「HPのSSO Cookie(全chunk)だけ」を渡す。
+# designer 自身の sessionid/csrftoken を HP 側に漏らさないための境界。
+map \$http_cookie \$sso_only_cookie {
+    default "";
+    "~*(?:^|;\s*)((?:(?:__Secure-)?kazalove\.session-token(?:\.[0-9]+)?=[^;]*;?\s*)+)" "\$1";
+}
+
 # HTTPS メインサイト (kaza-love.com)
 server {
     listen 443 ssl;
@@ -143,6 +159,115 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
 
     return 301 https://${SERVER_NAME}\$request_uri;
+}
+
+# designer.kaza-love.com（飾Love Designer / HP管理者ログインでSSOゲート）
+server {
+    listen 443 ssl;
+    server_name designer.${SERVER_NAME};
+
+    ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers on;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    client_max_body_size 20M;
+
+    # Designer は別composeスタック。落ちていても HP nginx 起動を妨げないよう
+    # Docker埋め込みDNS(127.0.0.11)で実行時解決する（未起動時は502を返すだけ）。
+    resolver 127.0.0.11 valid=30s ipv6=off;
+    set \$designer_front http://designer-frontend:3000;
+    set \$designer_back  http://designer-backend:8000;
+
+    # 未ログイン(401)→HPログイン / 権限不足(403)→専用メッセージ で分ける。
+    error_page 401 = @to_login;
+    error_page 403 = @forbidden;
+    location @to_login {
+        return 302 https://${SERVER_NAME}/login;
+    }
+    location @forbidden {
+        default_type text/html;
+        return 403 "<!doctype html><meta charset=utf-8><title>403 Forbidden</title><body style='font-family:sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem;line-height:1.7'><h1>アクセス権限がありません</h1><p>このツールは管理者(ADMIN)アカウントのみ利用できます。別の権限でログインしている場合は、管理者アカウントでログインし直してください。</p><p><a href='https://${SERVER_NAME}/'>トップへ戻る</a></p></body>";
+    }
+
+    # auth_request: HP の管理者検証。Cookie は HP の SSO Cookie だけに絞って渡す
+    # （designer 自身の sessionid/csrftoken を HP 側へ渡さない＝Cookie境界を明確化）。
+    location = /__auth {
+        internal;
+        proxy_pass http://next_app:3000/api/auth/verify-admin;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Host ${SERVER_NAME};
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Cookie \$sso_only_cookie;
+    }
+
+    # Designer API（同一オリジン → CORS不要）。
+    location /api/ {
+        auth_request /__auth;
+        auth_request_set \$auth_email \$upstream_http_x_user_email;
+        proxy_pass \$designer_back;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        # ★HPセッションCookieは Designer に渡さない（designer自身のcsrf/sessionのみ）。
+        proxy_set_header Cookie \$designer_cookie;
+        # ★なりすまし対策: クライアント供給の X-Remote-User を必ず上書き。
+        proxy_set_header X-Remote-User \$auth_email;
+        # ★同一network内の他コンテナからの偽装防止: 共有秘密(未設定なら空=Django側も非強制)。
+        proxy_set_header X-SSO-Auth "${PROXY_SSO_SECRET}";
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # Django admin（到達者は全員HPのADMIN。SSO側で is_staff/superuser を付与済み）。
+    location /admin/ {
+        auth_request /__auth;
+        auth_request_set \$auth_email \$upstream_http_x_user_email;
+        proxy_pass \$designer_back;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Cookie \$designer_cookie;
+        proxy_set_header X-Remote-User \$auth_email;
+        proxy_set_header X-SSO-Auth "${PROXY_SSO_SECRET}";
+    }
+
+    # Django / DRF の静的ファイル。Cookie不要なので全除去。
+    location /static/ {
+        auth_request /__auth;
+        proxy_pass \$designer_back;
+        proxy_set_header Host \$host;
+        proxy_set_header Cookie "";
+    }
+
+    # Designer フロント（UIもゲート）。HPのCookieは一切渡さない。
+    location / {
+        auth_request /__auth;
+        proxy_pass \$designer_front;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Cookie "";
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
 }
 EOFCONF
 else
