@@ -1,7 +1,15 @@
+# 全コンテナ共通のログローテーション（json-file はデフォルト無制限なので上限を設定）。
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   next:
     image: ghcr.io/seta-seisakusyo/seta-hp:${IMAGE_TAG:-latest}
     container_name: next_app
+    logging: *default-logging
     ports:
       - "127.0.0.1:2999:3000"
     env_file:
@@ -34,6 +42,7 @@ services:
   mysql:
     image: mysql:8.0.40
     container_name: mysql_db
+    logging: *default-logging
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
@@ -55,6 +64,7 @@ services:
   nginx:
     image: nginx:1.27-alpine
     container_name: nginx_proxy
+    logging: *default-logging
     ports:
       - "80:80"
       - "443:443"
@@ -86,6 +96,7 @@ services:
   certbot:
     image: certbot/certbot
     container_name: certbot
+    logging: *default-logging
     profiles:
       - certbot
     volumes:
