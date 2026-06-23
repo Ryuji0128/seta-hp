@@ -1,34 +1,8 @@
-import type { Metadata } from "next";
-import { Box, Typography } from "@mui/material";
-import BaseContainer from "@/components/BaseContainer";
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import WorkManagement from "./WorkManagement";
 
-export const metadata: Metadata = {
-  title: "制作事例管理",
-  robots: "noindex, nofollow",
-};
-
-export default async function WorksManagePage() {
-  const session = await auth();
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
-    redirect("/");
-  }
-
-  return (
-    <BaseContainer>
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ mb: 4, fontWeight: 600 }}>
-          制作事例管理
-        </Typography>
-        <WorkManagement session={session} />
-      </Box>
-    </BaseContainer>
-  );
+// /works-manage は /gallery-manage に統合された（同一の Work リソースを CRUD する
+// 重複した管理画面だったため・#194）。旧URLは 404 にせず常設で /gallery-manage へ
+// リダイレクトする。認証は遷移先の /gallery-manage 側で行う。
+export default function WorksManagePage() {
+  redirect("/gallery-manage");
 }
