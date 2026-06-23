@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Container, Dialog, IconButton } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
@@ -21,96 +21,19 @@ interface Props {
 }
 
 const formatRefNumber = (id: number) => String(id).padStart(3, "0");
-const imageBgCache = new Map<string, string>();
 const FALLBACK_IMAGE_BG = "rgb(246, 246, 244)";
 
-async function extractSoftImageBackground(src: string): Promise<string> {
-  const cached = imageBgCache.get(src);
-  if (cached) return cached;
-
-  const color = await new Promise<string>((resolve) => {
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.decoding = "async";
-
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) {
-          resolve(FALLBACK_IMAGE_BG);
-          return;
-        }
-
-        const sampleWidth = 24;
-        const sampleHeight = 24;
-        canvas.width = sampleWidth;
-        canvas.height = sampleHeight;
-        ctx.drawImage(img, 0, 0, sampleWidth, sampleHeight);
-
-        const { data } = ctx.getImageData(0, 0, sampleWidth, sampleHeight);
-        let r = 0;
-        let g = 0;
-        let b = 0;
-        let count = 0;
-
-        for (let i = 0; i < data.length; i += 4) {
-          const alpha = data[i + 3];
-          if (alpha < 32) continue;
-
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
-          count += 1;
-        }
-
-        if (count === 0) {
-          resolve(FALLBACK_IMAGE_BG);
-          return;
-        }
-
-        const avgR = Math.round(r / count);
-        const avgG = Math.round(g / count);
-        const avgB = Math.round(b / count);
-
-        // 少し白を混ぜて、背景として使いやすい柔らかい色に寄せる
-        const soften = (value: number) => Math.round(value * 0.35 + 255 * 0.65);
-        resolve(`rgb(${soften(avgR)}, ${soften(avgG)}, ${soften(avgB)})`);
-      } catch {
-        resolve(FALLBACK_IMAGE_BG);
-      }
-    };
-
-    img.onerror = () => resolve(FALLBACK_IMAGE_BG);
-    img.src = src;
-  });
-
-  imageBgCache.set(src, color);
-  return color;
-}
-
+// カード余白（contain のレターボックス部）は静的な淡いグレー背景＋微グラデで統一する。
+// 以前は各画像を canvas で再ダウンロードしてドミナントカラーを抽出していたが、
+// ギャラリーの画像帯域が2倍になるため廃止（#199）。
 function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
-  const [backgroundColor, setBackgroundColor] = useState(FALLBACK_IMAGE_BG);
-
-  useEffect(() => {
-    let active = true;
-
-    extractSoftImageBackground(src).then((color) => {
-      if (active) setBackgroundColor(color);
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [src]);
-
   return (
     <Box
       sx={{
         position: "absolute",
         inset: 0,
-        bgcolor: backgroundColor,
-        backgroundImage: `linear-gradient(180deg, ${backgroundColor} 0%, rgba(255,255,255,0.28) 100%)`,
+        bgcolor: FALLBACK_IMAGE_BG,
+        backgroundImage: `linear-gradient(180deg, ${FALLBACK_IMAGE_BG} 0%, rgba(255,255,255,0.45) 100%)`,
       }}
     >
       <Image
