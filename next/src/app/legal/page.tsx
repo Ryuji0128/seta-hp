@@ -3,7 +3,7 @@ import LegalPageLayout from "../_legal/LegalPageLayout";
 import LegalInfoTable, { LegalInfoRow } from "../_legal/LegalInfoTable";
 
 export const metadata: Metadata = {
-  title: "特定商取引法に基づく表記 | 飾Love",
+  title: "特定商取引法に基づく表記",
   description: "飾Love(運営: 瀬田製作所)の特定商取引法に基づく表記です。",
   alternates: { canonical: "/legal" },
 };

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import GalleryManagement from "./GalleryManagement";
 import BaseContainer from "@/components/BaseContainer";
 import { Box, Typography } from "@mui/material";
+
+export const metadata: Metadata = {
+  title: "ギャラリー管理",
+  robots: { index: false, follow: false },
+};
 
 export default async function GalleryManagePage() {
   const session = await auth();
