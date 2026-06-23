@@ -58,11 +58,11 @@ declare module "@mui/material/styles" {
 
 // next/font の自動生成フォント名を CSS 変数経由で参照
 // (layout.tsx で <html> に --font-* 変数を付与している前提)
-const FONT_DISPLAY =
+export const FONT_DISPLAY =
   'var(--font-inter-tight), var(--font-noto-jp), "Helvetica Neue", Arial, sans-serif';
-const FONT_BODY =
+export const FONT_BODY =
   'var(--font-inter), var(--font-noto-jp), "Helvetica Neue", Arial, sans-serif';
-const FONT_ITALIC = 'var(--font-cormorant), serif';
+export const FONT_ITALIC = 'var(--font-cormorant), serif';
 
 export const themeConstants = {
   palette: {

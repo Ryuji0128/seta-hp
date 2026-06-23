@@ -1,7 +1,5 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
 import Link from "next/link";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
@@ -15,9 +13,8 @@ interface Props {
 const formatRefNumber = (id: number) => String(id).padStart(3, "0");
 
 const ProductsGrid: React.FC<Props> = ({ products }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   if (products.length === 0) {
     return (

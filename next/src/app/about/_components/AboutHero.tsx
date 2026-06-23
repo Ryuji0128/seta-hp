@@ -1,12 +1,9 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const AboutHero = () => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   return (
     <Box
