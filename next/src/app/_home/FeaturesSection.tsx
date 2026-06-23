@@ -1,7 +1,5 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 const FEATURES = [
   {
@@ -31,8 +29,7 @@ const FEATURES = [
 ];
 
 const FeaturesSection = () => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
+  const fontDisplay = FONT_DISPLAY;
 
   return (
     <Box component="section" sx={{ bgcolor: "#F6F6F4", py: { xs: 10, md: 15 } }}>

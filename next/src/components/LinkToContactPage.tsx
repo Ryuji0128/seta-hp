@@ -34,7 +34,7 @@ const LinkToContactPage = () => {
             component="h1"
             sx={{ fontWeight: "bold", marginBottom: 1 }}
           >
-            プロジェクトのご相談
+            オーダーメイドのご相談
           </Typography>
           <Typography
             variant="h5"
@@ -48,7 +48,7 @@ const LinkToContactPage = () => {
             Contact Us
           </Typography>
           <Typography variant="body1" sx={{ color: "primary.contrastText" }}>
-            新規開発・システム改修など、お気軽にご相談ください
+            お手持ちのカードに合わせた特注ディスプレイや、サイズ・枚数のご相談など、お気軽にお問い合わせください。
           </Typography>
         </Box>
 

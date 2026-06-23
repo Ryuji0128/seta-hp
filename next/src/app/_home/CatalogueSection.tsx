@@ -1,7 +1,5 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
 import Link from "next/link";
 import type { CatalogueProduct } from "./getCatalogueProducts";
@@ -37,9 +35,8 @@ function catalogueMeta(name: string): CatalogueMeta {
 }
 
 const CatalogueSection = ({ products }: CatalogueSectionProps) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   // 公開商品が無ければセクションごと非表示
   if (products.length === 0) return null;
