@@ -126,13 +126,17 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: siteName,
+  alternateName: "かざらぶ",
   url: siteUrl,
-  logo: `${siteUrl}/seta_logo.svg`,
+  logo: `${siteUrl}/kaza-love_logo.png`,
   description: siteDescription,
+  email: "info@kaza-love.com",
   sameAs: [],
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",
+    addressRegion: "富山県",
+    addressLocality: "高岡市",
   },
 };
 

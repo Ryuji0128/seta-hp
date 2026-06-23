@@ -32,7 +32,7 @@ const securityHeaders = [
             "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.recaptcha.net",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data: blob: https://setaseisakusyo.com https://*.googleusercontent.com",
+            "img-src 'self' data: blob: https://kaza-love.com https://www.kaza-love.com https://setaseisakusyo.com https://*.googleusercontent.com",
             "frame-src https://www.google.com https://www.recaptcha.net",
             "connect-src 'self' https://www.google.com https://www.recaptcha.net",
         ].join("; "),
