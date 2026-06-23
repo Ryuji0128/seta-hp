@@ -46,13 +46,10 @@ server {
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
     ssl_prefer_server_ciphers on;
 
-    # セキュリティヘッダー
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    # セキュリティヘッダー（HSTS / X-Frame-Options / X-Content-Type-Options /
+    # Referrer-Policy / Permissions-Policy / CSP）は Next 側 next.config.ts の
+    # headers() に一本化している（旧: ここと二重付与で HSTS の max-age も食い違っていた）。
+    # 直配信の /uploads には MIME スニフ防止のみ各ロケーションで付与する。
 
     client_max_body_size 10M;
 
@@ -123,6 +120,7 @@ server {
         alias /var/www/uploads/;
         expires 30d;
         add_header Cache-Control "public, max-age=2592000";
+        add_header X-Content-Type-Options "nosniff" always;
     }
 
     location /_next/static/ {
@@ -134,6 +132,18 @@ server {
     location /static/ {
         proxy_pass http://next_app:3000;
         add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # public/ 直下の静的アセット（ロゴ・favicon・og-image 等）に長期キャッシュを付与。
+    # ルート直下のファイルのみに限定し、/uploads/ や /_next/static/ は侵さない。
+    location ~* ^/[^/]+\.(?:png|jpg|jpeg|gif|svg|ico|webp|avif|woff2?)\$ {
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_hide_header Cache-Control;
+        add_header Cache-Control "public, max-age=604800" always;
+        add_header X-Content-Type-Options "nosniff" always;
     }
 }
 
@@ -354,6 +364,7 @@ server {
         alias /var/www/uploads/;
         expires 30d;
         add_header Cache-Control "public, max-age=2592000";
+        add_header X-Content-Type-Options "nosniff" always;
     }
 }
 EOF
