@@ -195,7 +195,6 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
               fill
               sizes="(max-width: 960px) 100vw, 50vw"
               priority
-              unoptimized
               style={{ objectFit: "cover" }}
             />
           </Box>
