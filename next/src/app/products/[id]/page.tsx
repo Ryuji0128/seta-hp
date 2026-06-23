@@ -31,15 +31,20 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (isNaN(productId)) return { title: "商品が見つかりません" };
 
   const product = await getProduct(productId);
-  if (!product) return { title: "商品が見つかりません" };
+  // 非公開商品はページ本体が 404 になるため、メタデータでも同条件で弾く
+  // （非公開商品の title/description/OG が head に漏れないようにする）
+  if (!product || !product.isPublished) return { title: "商品が見つかりません" };
 
   return {
-    title: `${product.name} | 飾Love`,
+    title: product.name,
     description: product.description,
+    alternates: { canonical: `/products/${productId}` },
     openGraph: {
+      type: "website",
       title: product.name,
       description: product.description,
-      images: product.image ? [product.image] : [],
+      url: `/products/${productId}`,
+      images: product.image ? [product.image] : ["/og-image.png"],
     },
   };
 }

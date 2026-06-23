@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Box, Container } from "@mui/material";
 import { isGoogleAuthEnabled } from "@/lib/runtime-config";
 import LoginForm from "./LoginForm";
+
+export const metadata: Metadata = {
+  title: "ログイン",
+  robots: { index: false, follow: false },
+};
 
 export default async function LoginPage() {
   const session = await auth();

@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-**飾Love(かざらぶ)** ブランドの EC兼ブランドサイト(`setaseisakusyo.com`)。Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタックWebアプリケーション。
+**飾Love(かざらぶ)** ブランドの EC兼ブランドサイト(`kaza-love.com`)。Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタックWebアプリケーション。
+(旧ドメイン `setaseisakusyo.com` は Nginx で `kaza-love.com` へ 301 リダイレクト。サイトのドメイン参照・sitemap・canonical はすべて `kaza-love.com` に統一する。)
 
 飾Love は、富山県高岡市の小さな工房から MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランド。
 運営事業者は個人事業所「**瀬田製作所**」(屋号)— 法的表記(特商法・プライバシーポリシー)では「販売業者: 瀬田製作所」と記載するが、サイト表示・SNS・OG情報・サブジェクト等のブランド面はすべて「飾Love」で統一する。

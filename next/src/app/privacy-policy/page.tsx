@@ -3,7 +3,7 @@ import LegalPageLayout from "../_legal/LegalPageLayout";
 import PrivacyPolicy from "./PrivacyPolicy";
 
 export const metadata: Metadata = {
-  title: "プライバシーポリシー | 飾Love",
+  title: "プライバシーポリシー",
   description:
     "飾Love(運営: 瀬田製作所)のプライバシーポリシー。個人情報の取り扱い、利用目的、第三者提供についてご説明します。",
   alternates: { canonical: "/privacy-policy" },

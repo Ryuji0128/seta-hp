@@ -3,7 +3,7 @@ import LegalPageLayout from "../_legal/LegalPageLayout";
 import LegalInfoTable, { LegalInfoRow } from "../_legal/LegalInfoTable";
 
 export const metadata: Metadata = {
-  title: "会社情報 | 飾Love",
+  title: "会社情報",
   description:
     "飾Love(かざらぶ)は、小さな個人工房から、MLBカード・トレカコレクター向けのハンドメイドアクリルディスプレイをお届けする新ブランドです。運営は個人事業所「瀬田製作所」。",
   alternates: { canonical: "/company" },
