@@ -32,6 +32,10 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
+# 画像最適化(next/image)に必要な sharp とネイティブ依存(@img)を runtime に同梱（#196）。
+# standalone のトレースに依存せず確実にコピーする。
+COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
+COPY --from=builder /app/node_modules/@img ./node_modules/@img
 
 EXPOSE 3000
 CMD ["node", "server.js"]

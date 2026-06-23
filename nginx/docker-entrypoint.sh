@@ -134,6 +134,16 @@ server {
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
 
+    # next/image 最適化エンドポイント（#196）。多数のサムネイルを読み込むギャラリー等で
+    # 一般レート制限(zone=general)に当たらないよう専用 location でプロキシする。
+    # Cache-Control は Next 側が付与する（images.minimumCacheTTL）。
+    location /_next/image {
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
     # public/ 直下の静的アセット（ロゴ・favicon・og-image 等）に長期キャッシュを付与。
     # ルート直下のファイルのみに限定し、/uploads/ や /_next/static/ は侵さない。
     location ~* ^/[^/]+\.(?:png|jpg|jpeg|gif|svg|ico|webp|avif|woff2?)\$ {

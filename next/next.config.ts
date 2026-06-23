@@ -41,7 +41,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
     output: "standalone",
+    // sharp はネイティブ依存のため Next にバンドルさせず外部解決させる（#196）。
+    serverExternalPackages: ["sharp"],
     images: {
+        // アップロード画像は一意なファイル名で実質不変なため長期キャッシュにする（#196）。
+        minimumCacheTTL: 31536000,
         localPatterns: [
             {
                 pathname: "/uploads/**",

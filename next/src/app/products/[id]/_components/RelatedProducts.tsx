@@ -81,7 +81,6 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                         alt={p.name}
                         fill
                         sizes="(max-width: 600px) 50vw, 25vw"
-                        unoptimized
                         style={{ objectFit: "cover" }}
                       />
                     ) : (
