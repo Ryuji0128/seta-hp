@@ -138,7 +138,6 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                         alt={p.name}
                         fill
                         sizes="(max-width: 960px) 100vw, 33vw"
-                        unoptimized
                         style={{ objectFit: "cover" }}
                       />
                     ) : (

@@ -114,7 +114,6 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                         alt={p.name}
                         fill
                         sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
-                        unoptimized
                         style={{ objectFit: "cover" }}
                       />
                     ) : (

@@ -61,7 +61,6 @@ export default function ProductImageGallery({ images, productName }: ProductImag
           src={images[selectedIndex]}
           alt={`${productName} - 画像 ${selectedIndex + 1}`}
           fill
-          unoptimized
           style={{ objectFit: "cover" }}
           priority
         />
@@ -126,7 +125,6 @@ export default function ProductImageGallery({ images, productName }: ProductImag
                 src={image}
                 alt={`${productName} - サムネイル ${index + 1}`}
                 fill
-                unoptimized
                 style={{ objectFit: "cover" }}
               />
             </Box>

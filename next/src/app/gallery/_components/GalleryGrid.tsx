@@ -41,7 +41,6 @@ function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
-        unoptimized
         style={{ objectFit: "contain", objectPosition: "center center" }}
       />
     </Box>
@@ -313,7 +312,6 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                 src={selectedWork.image}
                 alt={selectedWork.title}
                 fill
-                unoptimized
                 sizes="92vw"
                 style={{ objectFit: "contain", objectPosition: "center center" }}
                 priority
