@@ -1,12 +1,9 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 import Link from "next/link";
 
 const QuizTeaserSection = () => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
+  const fontDisplay = FONT_DISPLAY;
 
   return (
     <Box component="section" sx={{ bgcolor: "#FFFFFF", py: { xs: 10, md: 15 } }}>

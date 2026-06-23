@@ -1,7 +1,5 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
 import Link from "next/link";
 import { normalizeImageUrl } from "@/lib/images";
@@ -14,9 +12,8 @@ interface Props {
 const formatRefNumber = (id: number) => String(id).padStart(3, "0");
 
 const RelatedProducts: React.FC<Props> = ({ products }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   return (
     <Box component="section" sx={{ bgcolor: "#F6F6F4", py: { xs: 8, md: 12 } }}>

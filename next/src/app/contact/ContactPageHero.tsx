@@ -1,7 +1,5 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
   titleJa: string;
@@ -10,9 +8,8 @@ interface Props {
 }
 
 const ContactPageHero: React.FC<Props> = ({ titleJa, titleEn, lead }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   return (
     <Box
