@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Box, Container } from "@mui/material";
 import type { Metadata } from "next";
 import { getPrismaClient } from "@/lib/db";
+import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data";
 import ProductDetail from "./_components/ProductDetail";
 import RelatedProducts from "./_components/RelatedProducts";
 
@@ -61,12 +62,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
     getRelatedProducts(product.category, product.id),
   ]);
 
+  // 検索結果に価格・在庫を表示させる Product 構造化データと、
+  // パンくずリッチリザルト用の BreadcrumbList をサーバーレンダリングで埋め込む。
+  const productJsonLd = buildProductJsonLd(product);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(product);
+
   return (
-    <Box sx={{ bgcolor: "#FFFFFF" }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important", py: { xs: 4, md: 8 } }}>
-        <ProductDetail product={product} />
-      </Container>
-      {relatedProducts.length > 0 && <RelatedProducts products={relatedProducts} />}
-    </Box>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Box sx={{ bgcolor: "#FFFFFF" }}>
+        <Container maxWidth="xl" sx={{ maxWidth: "1320px !important", py: { xs: 4, md: 8 } }}>
+          <ProductDetail product={product} />
+        </Container>
+        {relatedProducts.length > 0 && <RelatedProducts products={relatedProducts} />}
+      </Box>
+    </>
   );
 }
