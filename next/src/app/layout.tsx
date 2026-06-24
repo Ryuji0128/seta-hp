@@ -131,7 +131,7 @@ const jsonLd = {
   logo: `${siteUrl}/kaza-love_logo.png`,
   description: siteDescription,
   email: "info@kaza-love.com",
-  sameAs: [],
+  sameAs: ["https://x.com/kaza_love_"],
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",
