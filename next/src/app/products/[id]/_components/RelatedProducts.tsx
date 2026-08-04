@@ -4,12 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { normalizeImageUrl } from "@/lib/images";
 import { type ProductSummary } from "@/lib/types/product";
+import { formatRefNumber } from "@/lib/format";
 
 interface Props {
   products: ProductSummary[];
 }
-
-const formatRefNumber = (id: number) => String(id).padStart(3, "0");
 
 const RelatedProducts: React.FC<Props> = ({ products }) => {
   const fontDisplay = FONT_DISPLAY;

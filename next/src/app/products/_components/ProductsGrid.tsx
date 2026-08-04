@@ -4,13 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
 import { normalizeImageUrl } from "@/lib/images";
-import { type ProductGridItem } from "@/lib/types/product";
+import { parseTags, type ProductGridItem } from "@/lib/types/product";
+import { formatRefNumber } from "@/lib/format";
 
 interface Props {
   products: ProductGridItem[];
 }
-
-const formatRefNumber = (id: number) => String(id).padStart(3, "0");
 
 const ProductsGrid: React.FC<Props> = ({ products }) => {
   const fontDisplay = FONT_DISPLAY;
@@ -73,7 +72,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
           }}
         >
           {products.map((p) => {
-            const tags = p.tags ? p.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
+            const tags = parseTags(p.tags);
             const isPopular = tags.includes("人気");
             const isNew = tags.includes("NEW");
             const ref = formatRefNumber(p.id);

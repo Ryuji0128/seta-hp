@@ -13,14 +13,46 @@ export const GALLERY_CATEGORIES = [
   { value: "mockup", label: "試作品", color: "#7b1fa2" },
 ] as const;
 
+// 在庫ステータスの一元メタテーブル。
+// muiColor: 管理画面 Chip の色 / schemaUrl: schema.org availability /
+// detail: 商品詳細ページのバッジ配色（bg/文字色）
 export const STOCK_OPTIONS = [
-  { value: "在庫あり", label: "在庫あり" },
-  { value: "残りわずか", label: "残りわずか" },
-  { value: "受注生産", label: "受注生産" },
-  { value: "売り切れ", label: "売り切れ" },
+  {
+    value: "在庫あり",
+    label: "在庫あり",
+    muiColor: "success",
+    schemaUrl: "https://schema.org/InStock",
+    detail: { bg: "rgba(180,83,9,0.08)", color: "#B45309" },
+  },
+  {
+    value: "残りわずか",
+    label: "残りわずか",
+    muiColor: "warning",
+    schemaUrl: "https://schema.org/LimitedAvailability",
+    detail: { bg: "#FEF3E2", color: "#8C3E07" },
+  },
+  {
+    value: "受注生産",
+    label: "受注生産",
+    muiColor: "info",
+    schemaUrl: "https://schema.org/InStock",
+    detail: { bg: "#F6F6F4", color: "#6B6B6B" },
+  },
+  {
+    value: "売り切れ",
+    label: "売り切れ",
+    muiColor: "error",
+    schemaUrl: "https://schema.org/OutOfStock",
+    detail: { bg: "#FEE2E2", color: "#991B1B" },
+  },
 ] as const;
 
-export type GalleryCategoryValue = (typeof GALLERY_CATEGORIES)[number]["value"];
+export type StockMeta = (typeof STOCK_OPTIONS)[number];
+
+/** 在庫ステータス文字列からメタ情報を引く（未知の値は undefined） */
+export function getStockMeta(value: string): StockMeta | undefined {
+  return STOCK_OPTIONS.find((s) => s.value === value);
+}
 
 export function getProductCategoryLabel(value: string): string {
   return PRODUCT_CATEGORIES.find((c) => c.value === value)?.label || value;
@@ -28,10 +60,6 @@ export function getProductCategoryLabel(value: string): string {
 
 export function getGalleryCategoryLabel(value: string): string {
   return GALLERY_CATEGORIES.find((c) => c.value === value)?.label || value;
-}
-
-export function getGalleryCategoryColor(value: string): string {
-  return GALLERY_CATEGORIES.find((c) => c.value === value)?.color || "#666";
 }
 
 export const VALID_PRODUCT_CATEGORIES = PRODUCT_CATEGORIES.map((c) => c.value);

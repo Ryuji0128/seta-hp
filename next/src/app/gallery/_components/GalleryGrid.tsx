@@ -7,20 +7,12 @@ import Image from "next/image";
 import Link from "next/link";
 import CloseIcon from "@mui/icons-material/Close";
 import { getGalleryCategoryLabel } from "@/lib/constants/categories";
-
-interface Work {
-  id: number;
-  title: string;
-  category: string;
-  image: string | null;
-  createdAt: Date | string;
-}
+import { formatRefNumber } from "@/lib/format";
+import type { WorkGridItem } from "@/lib/types/work";
 
 interface Props {
-  works: Work[];
+  works: WorkGridItem[];
 }
-
-const formatRefNumber = (id: number) => String(id).padStart(3, "0");
 const FALLBACK_IMAGE_BG = "rgb(246, 246, 244)";
 
 // カード余白（contain のレターボックス部）は静的な淡いグレー背景＋微グラデで統一する。
@@ -51,7 +43,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
   const theme = useTheme();
   const fontDisplay = theme.custom.fonts.display;
   const fontItalic = theme.custom.fonts.italic;
-  const [selectedWork, setSelectedWork] = useState<Work | null>(null);
+  const [selectedWork, setSelectedWork] = useState<WorkGridItem | null>(null);
 
   if (works.length === 0) {
     return (
