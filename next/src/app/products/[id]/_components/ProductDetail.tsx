@@ -1,38 +1,29 @@
-"use client";
-
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
 import ProductImageGallery from "../ProductImageGallery";
-import { getProductCategoryLabel } from "@/lib/constants/categories";
+import { getProductCategoryLabel, getStockMeta } from "@/lib/constants/categories";
 import { type Product, parseTags, parseProductImages } from "@/lib/types/product";
+import { formatRefNumber } from "@/lib/format";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
   product: Product;
 }
 
-const formatRefNumber = (id: number) => String(id).padStart(3, "0");
-
-const STOCK_VARIANTS: Record<string, { bg: string; color: string; label: string }> = {
-  在庫あり: { bg: "rgba(180,83,9,0.08)", color: "#B45309", label: "在庫あり" },
-  残りわずか: { bg: "#FEF3E2", color: "#8C3E07", label: "残りわずか" },
-  売り切れ: { bg: "#FEE2E2", color: "#991B1B", label: "売り切れ" },
-};
-
+// サーバーコンポーネント: フォントは themeConstants から直接参照する
+// （useTheme のためだけにクライアント化しない。インタラクティブな画像ギャラリーのみ client リーフ）
 const ProductDetail: React.FC<Props> = ({ product }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   const tags = parseTags(product.tags);
   const productImages = parseProductImages(product.images, product.image);
 
   const ref = formatRefNumber(product.id);
-  const stockVariant = STOCK_VARIANTS[product.stock] ?? {
-    bg: "#F6F6F4",
-    color: "#6B6B6B",
-    label: product.stock,
-  };
+  const stockMeta = getStockMeta(product.stock);
+  const stockVariant = stockMeta
+    ? { ...stockMeta.detail, label: stockMeta.label }
+    : { bg: "#F6F6F4", color: "#6B6B6B", label: product.stock };
 
   return (
     <Box>

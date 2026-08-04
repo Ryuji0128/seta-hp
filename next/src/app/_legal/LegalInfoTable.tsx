@@ -1,7 +1,5 @@
-"use client";
-
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 export interface LegalInfoRow {
   label: string;
@@ -15,10 +13,10 @@ interface Props {
 /**
  * label / value の縦並びテーブル(規約・会社情報用)
  * 細罫線スタイルの label / value テーブル
+ * サーバーコンポーネント（フォントは themeConstants から直接参照）
  */
 const LegalInfoTable: React.FC<Props> = ({ rows }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
+  const fontDisplay = FONT_DISPLAY;
 
   return (
     <Box

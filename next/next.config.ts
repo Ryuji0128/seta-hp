@@ -44,6 +44,8 @@ const nextConfig: NextConfig = {
     // sharp はネイティブ依存のため Next にバンドルさせず外部解決させる（#196）。
     serverExternalPackages: ["sharp"],
     images: {
+        // AVIF を優先して配信し転送量を削減（非対応ブラウザは WebP にフォールバック）。
+        formats: ["image/avif", "image/webp"],
         // アップロード画像は一意なファイル名で実質不変なため長期キャッシュにする（#196）。
         minimumCacheTTL: 31536000,
         localPatterns: [

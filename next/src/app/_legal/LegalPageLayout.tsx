@@ -1,8 +1,6 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
   titleJa: string;
@@ -15,6 +13,7 @@ interface Props {
 /**
  * 規約系ページ用の共通レイアウト
  * /shipping, /legal, /privacy-policy, /company で共有
+ * サーバーコンポーネント（フォントは themeConstants から直接参照）
  */
 const LegalPageLayout: React.FC<Props> = ({
   titleJa,
@@ -23,9 +22,8 @@ const LegalPageLayout: React.FC<Props> = ({
   children,
   showFooterCta = true,
 }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
