@@ -6,7 +6,6 @@ import {
   AppBar,
   Box,
   Button,
-  Container,
   IconButton,
   Menu,
   MenuItem,
@@ -15,6 +14,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import React, { useState } from "react";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 // next-auth のクライアントJSは遅延チャンクに分離（初期バンドル削減 #245）
@@ -60,10 +60,10 @@ export default function Header() {
           WebkitBackdropFilter: "blur(14px)",
           borderBottom: "1px solid #EFEFEA",
           boxShadow: "none",
-          color: "#0A0A0A",
+          color: "text.primary",
         }}
       >
-        <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+        <SectionContainer>
           <Toolbar
             disableGutters
             sx={{
@@ -88,7 +88,7 @@ export default function Header() {
                   fontSize: { xs: "16px", md: "19px" },
                   fontWeight: 800,
                   letterSpacing: "-0.02em",
-                  color: "#0A0A0A",
+                  color: "text.primary",
                 }}
               >
                 <Box
@@ -127,12 +127,12 @@ export default function Header() {
                   >
                     <Box
                       sx={{
-                        color: "#0A0A0A",
+                        color: "text.primary",
                         fontSize: "14px",
                         fontWeight: 500,
                         transition: "color 0.2s",
                         cursor: "pointer",
-                        "&:hover": { color: "#B45309" },
+                        "&:hover": { color: "primary.main" },
                       }}
                     >
                       {item.title}
@@ -151,10 +151,10 @@ export default function Header() {
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#0A0A0A",
+                  color: "text.primary",
                   p: { xs: 0.5, md: 0 },
                   transition: "color 0.2s",
-                  "&:hover": { color: "#B45309" },
+                  "&:hover": { color: "primary.main" },
                 }}
                 aria-label="X (Twitter)"
               >
@@ -167,13 +167,13 @@ export default function Header() {
                   <Button
                     variant="contained"
                     sx={{
-                      bgcolor: "#0A0A0A",
+                      bgcolor: "background.dark",
                       color: "#FFFFFF",
                       px: 2.5,
                       py: 1.1,
                       fontSize: "13px",
                       fontWeight: 600,
-                      "&:hover": { bgcolor: "#B45309" },
+                      "&:hover": { bgcolor: "primary.main" },
                     }}
                   >
                     購入する →
@@ -191,7 +191,7 @@ export default function Header() {
                 onClick={handleMenuOpen}
                 sx={{ display: { xs: "inline-flex", md: "none" } }}
               >
-                <MenuIcon sx={{ color: "#0A0A0A" }} />
+                <MenuIcon sx={{ color: "text.primary" }} />
               </IconButton>
               <Menu
                 anchorEl={anchorEl}
@@ -217,7 +217,7 @@ export default function Header() {
               </Menu>
             </Box>
           </Toolbar>
-        </Container>
+        </SectionContainer>
       </AppBar>
       <Box sx={{ height: { xs: 60, md: 72 } }} />
     </>

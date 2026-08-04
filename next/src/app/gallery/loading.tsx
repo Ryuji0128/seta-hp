@@ -1,9 +1,10 @@
-import { Box, Container, Skeleton } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 
 export default function GalleryLoading() {
   return (
     <Box sx={{ bgcolor: "#FFFFFF", py: { xs: 4, md: 8 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Skeleton variant="text" width={180} height={40} sx={{ mb: 2 }} />
         <Skeleton variant="text" width={260} height={24} sx={{ mb: 4 }} />
         <Box
@@ -21,7 +22,7 @@ export default function GalleryLoading() {
             </Box>
           ))}
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 }

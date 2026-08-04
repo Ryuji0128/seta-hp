@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,14 +16,15 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
   const fontItalic = FONT_ITALIC;
 
   return (
-    <Box component="section" sx={{ bgcolor: "#F6F6F4", py: { xs: 8, md: 12 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+    <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 8, md: 12 } }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "flex",
             alignItems: "baseline",
             gap: 3,
-            borderTop: "1px solid #0A0A0A",
+            borderTop: "1px solid",
+            borderColor: "text.primary",
             pt: 3.5,
             mb: 6,
             fontFamily: fontItalic,
@@ -31,9 +33,9 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
             letterSpacing: "0.05em",
           }}
         >
-          <Box sx={{ color: "#B45309" }}>—</Box>
-          <Box sx={{ color: "#0A0A0A" }}>Related</Box>
-          <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　関連商品</Box>
+          <Box sx={{ color: "primary.main" }}>—</Box>
+          <Box sx={{ color: "text.primary" }}>Related</Box>
+          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　関連商品</Box>
         </Box>
 
         <Box
@@ -54,7 +56,8 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
               >
                 <Box
                   sx={{
-                    border: "1px solid #E5E5E0",
+                    border: "1px solid",
+                    borderColor: "divider",
                     borderRadius: "6px",
                     overflow: "hidden",
                     bgcolor: "#FFFFFF",
@@ -62,7 +65,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                     transition: "transform 0.4s, border-color 0.3s",
                     "&:hover": {
                       transform: "translateY(-4px)",
-                      borderColor: "#0A0A0A",
+                      borderColor: "text.primary",
                     },
                   }}
                 >
@@ -90,7 +93,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "#9A9A9A",
+                          color: "text.disabled",
                           fontFamily: fontItalic,
                           fontStyle: "italic",
                           fontSize: "13px",
@@ -105,7 +108,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                       sx={{
                         fontFamily: fontItalic,
                         fontStyle: "italic",
-                        color: "#B45309",
+                        color: "primary.main",
                         fontSize: "12px",
                         letterSpacing: "0.05em",
                         mb: 0.5,
@@ -119,7 +122,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                         fontSize: "14px",
                         fontWeight: 600,
                         letterSpacing: "-0.01em",
-                        color: "#0A0A0A",
+                        color: "text.primary",
                         mb: 1,
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
@@ -136,7 +139,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                         fontSize: "15px",
                         fontWeight: 700,
                         letterSpacing: "-0.015em",
-                        color: "#0A0A0A",
+                        color: "text.primary",
                       }}
                     >
                       ¥{p.price.toLocaleString()}
@@ -147,7 +150,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
             );
           })}
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

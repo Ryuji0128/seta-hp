@@ -1,6 +1,7 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 interface DarkCtaSectionProps {
@@ -32,8 +33,8 @@ export default function DarkCtaSection({
   secondaryHref,
 }: DarkCtaSectionProps) {
   return (
-    <Box component="section" sx={{ bgcolor: "#0A0A0A", color: "#FFFFFF", py: { xs: 10, md: 14 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+    <Box component="section" sx={{ bgcolor: "background.dark", color: "#FFFFFF", py: { xs: 10, md: 14 } }}>
+      <SectionContainer>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1.2fr 1fr" }, gap: { xs: 4, md: 8 }, alignItems: "center" }}>
           <Box
             component="h2"
@@ -69,7 +70,7 @@ export default function DarkCtaSection({
                     alignItems: "center",
                     gap: 1.25,
                     bgcolor: "#FFFFFF",
-                    color: "#0A0A0A",
+                    color: "text.primary",
                     px: 3.5,
                     py: 1.75,
                     borderRadius: "999px",
@@ -107,7 +108,7 @@ export default function DarkCtaSection({
             </Box>
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 }

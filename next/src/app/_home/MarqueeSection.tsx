@@ -18,7 +18,7 @@ const MarqueeSection = () => {
     <Box
       component="section"
       sx={{
-        bgcolor: "#0A0A0A",
+        bgcolor: "background.dark",
         color: "#FFFFFF",
         py: 2.25,
         overflow: "hidden",
@@ -42,7 +42,7 @@ const MarqueeSection = () => {
           },
           "& > span::after": {
             content: '"\\2726"',
-            color: "#B45309",
+            color: "primary.main",
             marginLeft: "80px",
           },
         }}

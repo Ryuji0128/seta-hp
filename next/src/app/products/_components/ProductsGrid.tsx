@@ -1,7 +1,9 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
 import Link from "next/link";
+import EmptyState from "@/components/EmptyState";
+import SectionContainer from "@/components/SectionContainer";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
 import { normalizeImageUrl } from "@/lib/images";
 import { parseTags, type ProductGridItem } from "@/lib/types/product";
@@ -16,54 +18,12 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
   const fontItalic = FONT_ITALIC;
 
   if (products.length === 0) {
-    return (
-      <Box component="section" sx={{ py: { xs: 8, md: 12 }, bgcolor: "#F6F6F4" }}>
-        <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
-          <Box
-            sx={{
-              border: "1px solid #E5E5E0",
-              borderRadius: "6px",
-              p: { xs: 5, md: 10 },
-              textAlign: "center",
-              bgcolor: "#FFFFFF",
-            }}
-          >
-            <Box
-              sx={{
-                fontFamily: fontItalic,
-                fontStyle: "italic",
-                color: "#B45309",
-                fontSize: "14px",
-                letterSpacing: "0.1em",
-                mb: 1,
-              }}
-            >
-              Coming Soon
-            </Box>
-            <Box
-              sx={{
-                fontFamily: fontDisplay,
-                fontSize: "28px",
-                fontWeight: 700,
-                letterSpacing: "-0.025em",
-                color: "#0A0A0A",
-                mb: 1.5,
-              }}
-            >
-              商品を準備中
-            </Box>
-            <Box sx={{ fontSize: "14px", color: "#6B6B6B" }}>
-              標準ラインナップを準備しています。
-            </Box>
-          </Box>
-        </Container>
-      </Box>
-    );
+    return <EmptyState title="商品を準備中" description="標準ラインナップを準備しています。" />;
   }
 
   return (
     <Box component="section" sx={{ py: { xs: 8, md: 12 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "grid",
@@ -86,7 +46,8 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
               >
                 <Box
                   sx={{
-                    border: "1px solid #E5E5E0",
+                    border: "1px solid",
+                    borderColor: "divider",
                     borderRadius: "6px",
                     overflow: "hidden",
                     cursor: "pointer",
@@ -94,7 +55,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                     transition: "transform 0.4s, border-color 0.3s, box-shadow 0.3s",
                     "&:hover": {
                       transform: "translateY(-4px)",
-                      borderColor: "#0A0A0A",
+                      borderColor: "text.primary",
                       boxShadow: "0 22px 40px -22px rgba(10,10,10,0.2)",
                     },
                   }}
@@ -123,7 +84,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "#9A9A9A",
+                          color: "text.disabled",
                           fontFamily: fontItalic,
                           fontStyle: "italic",
                           fontSize: "15px",
@@ -139,7 +100,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                           position: "absolute",
                           top: 16,
                           left: 16,
-                          bgcolor: isPopular ? "#B45309" : "#0A0A0A",
+                          bgcolor: isPopular ? "primary.main" : "background.dark",
                           color: "#FFFFFF",
                           px: 1.25,
                           py: 0.625,
@@ -168,7 +129,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                         sx={{
                           fontFamily: fontItalic,
                           fontStyle: "italic",
-                          color: "#B45309",
+                          color: "primary.main",
                           fontSize: "13px",
                           letterSpacing: "0.05em",
                         }}
@@ -178,7 +139,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                       <Box
                         sx={{
                           fontSize: "11px",
-                          color: "#6B6B6B",
+                          color: "text.secondary",
                           letterSpacing: "0.12em",
                           textTransform: "uppercase",
                           fontWeight: 500,
@@ -193,7 +154,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                         fontSize: "18px",
                         fontWeight: 700,
                         letterSpacing: "-0.015em",
-                        color: "#0A0A0A",
+                        color: "text.primary",
                         lineHeight: 1.4,
                         mb: 2.25,
                         display: "-webkit-box",
@@ -220,7 +181,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                           fontSize: "22px",
                           fontWeight: 700,
                           letterSpacing: "-0.02em",
-                          color: "#0A0A0A",
+                          color: "text.primary",
                         }}
                       >
                         ¥{p.price.toLocaleString()}
@@ -228,7 +189,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                       <Box
                         sx={{
                           fontSize: "11px",
-                          color: "#6B6B6B",
+                          color: "text.secondary",
                           letterSpacing: "0.12em",
                           textTransform: "uppercase",
                         }}
@@ -242,7 +203,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
             );
           })}
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };
