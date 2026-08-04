@@ -1,38 +1,29 @@
-"use client";
-
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
 import ProductImageGallery from "../ProductImageGallery";
-import { getProductCategoryLabel } from "@/lib/constants/categories";
+import { getProductCategoryLabel, getStockMeta } from "@/lib/constants/categories";
 import { type Product, parseTags, parseProductImages } from "@/lib/types/product";
+import { formatRefNumber } from "@/lib/format";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
   product: Product;
 }
 
-const formatRefNumber = (id: number) => String(id).padStart(3, "0");
-
-const STOCK_VARIANTS: Record<string, { bg: string; color: string; label: string }> = {
-  在庫あり: { bg: "rgba(180,83,9,0.08)", color: "#B45309", label: "在庫あり" },
-  残りわずか: { bg: "#FEF3E2", color: "#8C3E07", label: "残りわずか" },
-  売り切れ: { bg: "#FEE2E2", color: "#991B1B", label: "売り切れ" },
-};
-
+// サーバーコンポーネント: フォントは themeConstants から直接参照する
+// （useTheme のためだけにクライアント化しない。インタラクティブな画像ギャラリーのみ client リーフ）
 const ProductDetail: React.FC<Props> = ({ product }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   const tags = parseTags(product.tags);
   const productImages = parseProductImages(product.images, product.image);
 
   const ref = formatRefNumber(product.id);
-  const stockVariant = STOCK_VARIANTS[product.stock] ?? {
-    bg: "#F6F6F4",
-    color: "#6B6B6B",
-    label: product.stock,
-  };
+  const stockMeta = getStockMeta(product.stock);
+  const stockVariant = stockMeta
+    ? { ...stockMeta.detail, label: stockMeta.label }
+    : { bg: "#F6F6F4", color: "#6B6B6B", label: product.stock };
 
   return (
     <Box>
@@ -45,18 +36,18 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
           mb: 4,
           fontSize: "12px",
           letterSpacing: "0.08em",
-          color: "#6B6B6B",
+          color: "text.secondary",
         }}
       >
         <Link href="/" style={{ color: "inherit", textDecoration: "none" }}>
           Home
         </Link>
-        <Box sx={{ color: "#9A9A9A" }}>/</Box>
+        <Box sx={{ color: "text.disabled" }}>/</Box>
         <Link href="/products" style={{ color: "inherit", textDecoration: "none" }}>
           Catalogue
         </Link>
-        <Box sx={{ color: "#9A9A9A" }}>/</Box>
-        <Box sx={{ color: "#0A0A0A", fontWeight: 500 }}>Ref. {ref}</Box>
+        <Box sx={{ color: "text.disabled" }}>/</Box>
+        <Box sx={{ color: "text.primary", fontWeight: 500 }}>Ref. {ref}</Box>
       </Box>
 
       <Box
@@ -87,7 +78,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
               sx={{
                 fontFamily: fontItalic,
                 fontStyle: "italic",
-                color: "#B45309",
+                color: "primary.main",
                 fontSize: "14px",
                 letterSpacing: "0.05em",
               }}
@@ -97,7 +88,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
             <Box
               sx={{
                 fontSize: "11px",
-                color: "#6B6B6B",
+                color: "text.secondary",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
                 fontWeight: 500,
@@ -116,7 +107,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
               fontWeight: 700,
               letterSpacing: "-0.03em",
               lineHeight: 1.15,
-              color: "#0A0A0A",
+              color: "text.primary",
               mt: 0,
               mb: 3,
             }}
@@ -141,7 +132,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                 fontSize: "44px",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
-                color: "#0A0A0A",
+                color: "text.primary",
                 lineHeight: 1,
               }}
             >
@@ -150,7 +141,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
             <Box
               sx={{
                 fontSize: "13px",
-                color: "#6B6B6B",
+                color: "text.secondary",
                 letterSpacing: "0.08em",
               }}
             >
@@ -183,7 +174,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
           <Box
             sx={{
               fontSize: "14.5px",
-              color: "#2A2A2A",
+              color: "secondary.main",
               lineHeight: 1.9,
               whiteSpace: "pre-wrap",
               mb: 3,
@@ -201,10 +192,11 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                   sx={{
                     px: 1.5,
                     py: 0.5,
-                    border: "1px solid #E5E5E0",
+                    border: "1px solid",
+                    borderColor: "divider",
                     borderRadius: "999px",
                     fontSize: "11px",
-                    color: "#6B6B6B",
+                    color: "text.secondary",
                     letterSpacing: "0.05em",
                   }}
                 >
@@ -218,7 +210,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
           <Box
             sx={{
               fontSize: "12px",
-              color: "#6B6B6B",
+              color: "text.secondary",
               mb: 4,
               p: 2,
               border: "1px solid #EFEFEA",
@@ -246,7 +238,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                       alignItems: "center",
                       justifyContent: "center",
                       gap: 1.25,
-                      bgcolor: "#B45309",
+                      bgcolor: "primary.main",
                       color: "#FFFFFF",
                       width: "100%",
                       px: 3,
@@ -256,13 +248,13 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                       fontWeight: 600,
                       cursor: "pointer",
                       transition: "background-color 0.2s, transform 0.2s",
-                      "&:hover": { bgcolor: "#8C3E07", transform: "translateY(-1px)" },
+                      "&:hover": { bgcolor: "primary.dark", transform: "translateY(-1px)" },
                     }}
                   >
                     BASE で購入する <span>→</span>
                   </Box>
                 </a>
-                <Box sx={{ fontSize: "11px", color: "#6B6B6B", mt: 1, textAlign: "center" }}>
+                <Box sx={{ fontSize: "11px", color: "text.secondary", mt: 1, textAlign: "center" }}>
                   外部サイト（BASE）に移動します
                 </Box>
               </Box>
@@ -277,9 +269,10 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 1.25,
-                  bgcolor: product.purchaseUrl ? "#FFFFFF" : "#0A0A0A",
-                  color: product.purchaseUrl ? "#0A0A0A" : "#FFFFFF",
-                  border: product.purchaseUrl ? "1px solid #E5E5E0" : "none",
+                  bgcolor: product.purchaseUrl ? "#FFFFFF" : "background.dark",
+                  color: product.purchaseUrl ? "text.primary" : "#FFFFFF",
+                  border: product.purchaseUrl ? "1px solid" : "none",
+                  borderColor: "divider",
                   width: "100%",
                   px: 3,
                   py: 2,
@@ -289,8 +282,8 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
                   cursor: "pointer",
                   transition: "background-color 0.2s, transform 0.2s",
                   "&:hover": product.purchaseUrl
-                    ? { bgcolor: "#F6F6F4", transform: "translateY(-1px)" }
-                    : { bgcolor: "#B45309", transform: "translateY(-1px)" },
+                    ? { bgcolor: "background.alt", transform: "translateY(-1px)" }
+                    : { bgcolor: "primary.main", transform: "translateY(-1px)" },
                 }}
               >
                 この商品について問い合わせる <span>→</span>
@@ -305,11 +298,11 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
               pt: 4,
               borderTop: "1px solid #EFEFEA",
               fontSize: "12px",
-              color: "#6B6B6B",
+              color: "text.secondary",
               lineHeight: 1.7,
             }}
           >
-            <Box sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: "13px", color: "#0A0A0A", mb: 1, letterSpacing: "-0.01em" }}>
+            <Box sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: "13px", color: "text.primary", mb: 1, letterSpacing: "-0.01em" }}>
               Made-to-order
             </Box>
             一品から制作します。サイズや形状のカスタマイズも可能ですので、お気軽にご相談ください。

@@ -1,5 +1,7 @@
+import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
 import { normalizeImageUrl } from "@/lib/images";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 // トップの「ラインナップ」カードに表示する商品データ。
 export type CatalogueProduct = {
@@ -12,8 +14,10 @@ export type CatalogueProduct = {
 /**
  * 商品管理で登録した公開商品を新しい順に取得し、トップのラインナップ用に整形して返す。
  * メイン画像(image)が無ければ images[0] を使用。DBエラー時は空配列を返してトップが落ちないようにする。
+ * unstable_cache でキャッシュし、商品の書き込み時（products タグ）に無効化される。
  */
-export async function getCatalogueProducts(): Promise<CatalogueProduct[]> {
+export const getCatalogueProducts = unstable_cache(
+  async (): Promise<CatalogueProduct[]> => {
   try {
     const prisma = getPrismaClient();
     const products = await prisma.product.findMany({
@@ -39,4 +43,7 @@ export async function getCatalogueProducts(): Promise<CatalogueProduct[]> {
     console.error("カタログ商品の取得に失敗:", error);
     return [];
   }
-}
+  },
+  ["catalogue-products"],
+  { revalidate: 3600, tags: [CACHE_TAGS.products] }
+);

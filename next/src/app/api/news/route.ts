@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { parsePagination } from "@/lib/pagination";
-import { isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
-import { Prisma } from "@prisma/client";
+import { badRequestResponse } from "@/lib/api-response";
+import { handleApiError, isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
 import xss from "xss";
 
 /** "Invalid Date" によるPrismaエラーを防ぐための日付検証 */
@@ -29,8 +29,7 @@ export async function GET(req: NextRequest) {
     ]);
     return NextResponse.json({ news, total, page, limit });
   } catch (error) {
-    console.error("お知らせ取得エラー:", error);
-    return NextResponse.json({ error: "お知らせの取得に失敗しました" }, { status: 500 });
+    return handleApiError(error, { log: "お知らせ取得エラー", message: "お知らせの取得に失敗しました" });
   }
 }
 
@@ -46,12 +45,12 @@ export async function POST(req: NextRequest) {
     const { title, contents, date, url } = body;
 
     if (!title || !contents || !date) {
-      return NextResponse.json({ error: "タイトル、内容、日付は必須です" }, { status: 400 });
+      return badRequestResponse("タイトル、内容、日付は必須です");
     }
 
     const parsedDate = parseValidDate(date);
     if (!parsedDate) {
-      return NextResponse.json({ error: "日付の形式が正しくありません" }, { status: 400 });
+      return badRequestResponse("日付の形式が正しくありません");
     }
 
     const sanitizedContents = typeof contents === "string" ? xss(contents) : contents;
@@ -67,8 +66,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: "お知らせを作成しました", news });
   } catch (error) {
-    console.error("お知らせ作成エラー:", error);
-    return NextResponse.json({ error: "お知らせの作成に失敗しました" }, { status: 500 });
+    return handleApiError(error, { log: "お知らせ作成エラー", message: "お知らせの作成に失敗しました" });
   }
 }
 
@@ -84,14 +82,14 @@ export async function PUT(req: NextRequest) {
     const { id, title, contents, date, url } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
+      return badRequestResponse("IDは必須です");
     }
 
     let parsedDate: Date | undefined;
     if (date) {
       const valid = parseValidDate(date);
       if (!valid) {
-        return NextResponse.json({ error: "日付の形式が正しくありません" }, { status: 400 });
+        return badRequestResponse("日付の形式が正しくありません");
       }
       parsedDate = valid;
     }
@@ -112,11 +110,11 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ message: "お知らせを更新しました", news });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      return NextResponse.json({ error: "指定されたお知らせが見つかりません" }, { status: 404 });
-    }
-    console.error("お知らせ更新エラー:", error);
-    return NextResponse.json({ error: "お知らせの更新に失敗しました" }, { status: 500 });
+    return handleApiError(error, {
+      log: "お知らせ更新エラー",
+      message: "お知らせの更新に失敗しました",
+      notFoundMessage: "指定されたお知らせが見つかりません",
+    });
   }
 }
 
@@ -132,7 +130,7 @@ export async function DELETE(req: NextRequest) {
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
+      return badRequestResponse("IDは必須です");
     }
 
     await prisma.news.delete({
@@ -141,10 +139,10 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: "お知らせを削除しました" });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      return NextResponse.json({ error: "指定されたお知らせが見つかりません" }, { status: 404 });
-    }
-    console.error("お知らせ削除エラー:", error);
-    return NextResponse.json({ error: "お知らせの削除に失敗しました" }, { status: 500 });
+    return handleApiError(error, {
+      log: "お知らせ削除エラー",
+      message: "お知らせの削除に失敗しました",
+      notFoundMessage: "指定されたお知らせが見つかりません",
+    });
   }
 }

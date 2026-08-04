@@ -9,6 +9,9 @@ import FeaturesSection from "./_home/FeaturesSection";
 import QuizTeaserSection from "./_home/QuizTeaserSection";
 import CTASection from "./_home/CTASection";
 
+// ヒーロー画像の抽選をリクエスト毎に行うため動的レンダリングとする。
+// 表示データ自体は unstable_cache（products タグ）でキャッシュ済みのため、DBアクセスは発生しない。
+// ※ CIビルド時はDBに到達できないため、静的生成（ISR）にはしない。
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {

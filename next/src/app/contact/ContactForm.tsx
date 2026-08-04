@@ -6,11 +6,11 @@ import {
   Box,
   Button,
   CircularProgress,
-  Container,
   Modal,
   TextField,
   Typography
 } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { useTheme } from "@mui/material/styles";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReCaptcha } from "next-recaptcha-v3";
@@ -26,11 +26,11 @@ interface FormErrors {
 const FIELD_SX = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "6px",
-    "& fieldset": { borderColor: "#E5E5E0" },
-    "&:hover fieldset": { borderColor: "#0A0A0A" },
-    "&.Mui-focused fieldset": { borderColor: "#B45309", borderWidth: 1 },
+    "& fieldset": { borderColor: "divider" },
+    "&:hover fieldset": { borderColor: "text.primary" },
+    "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: 1 },
   },
-  "& .MuiInputLabel-root.Mui-focused": { color: "#B45309" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "primary.main" },
 };
 
 interface FieldProps {
@@ -56,12 +56,12 @@ const Field: React.FC<FieldProps> = ({ label, labelEn, required, children }) => 
           fontWeight: 600,
           letterSpacing: "0.18em",
           textTransform: "uppercase",
-          color: "#6B6B6B",
+          color: "text.secondary",
         }}
       >
-        {labelEn} {required && <Box component="span" sx={{ color: "#B45309" }}>*</Box>}
+        {labelEn} {required && <Box component="span" sx={{ color: "primary.main" }}>*</Box>}
       </Box>
-      <Box sx={{ fontSize: "12px", color: "#9A9A9A" }}>
+      <Box sx={{ fontSize: "12px", color: "text.disabled" }}>
         {label}
       </Box>
     </Box>
@@ -166,7 +166,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF", py: { xs: 6, md: 10 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box sx={{ maxWidth: 720, mx: "auto" }}>
           <Box
             component="form"
@@ -227,11 +227,11 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                   }}
                   sx={{
                     fontSize: "12px",
-                    borderColor: "#E5E5E0",
-                    color: "#6B6B6B",
+                    borderColor: "divider",
+                    color: "text.secondary",
                     borderRadius: "999px",
                     px: 2,
-                    "&:hover": { borderColor: "#B45309", color: "#B45309" },
+                    "&:hover": { borderColor: "primary.main", color: "primary.main" },
                   }}
                 >
                   カスタム対応テンプレート
@@ -262,7 +262,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                 gap: 2,
               }}
             >
-              <Box sx={{ fontSize: "12px", color: "#9A9A9A", lineHeight: 1.6 }}>
+              <Box sx={{ fontSize: "12px", color: "text.disabled", lineHeight: 1.6 }}>
                 {recaptchaEnabled ? "送信前に reCAPTCHA による自動判定を行います。" : "現在は reCAPTCHA 無効で送信されます。"}
                 <br />
                 内容によっては数日以内にメールでご返信します。
@@ -272,7 +272,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                 variant="contained"
                 disabled={(recaptchaEnabled && !recaptchaLoaded) || isModalOpen}
                 sx={{
-                  bgcolor: "#0A0A0A",
+                  bgcolor: "background.dark",
                   color: "#FFFFFF",
                   px: 3.5,
                   py: 1.75,
@@ -282,8 +282,8 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                   boxShadow: "none",
                   fontFamily: fontDisplay,
                   letterSpacing: "0.02em",
-                  "&:hover": { bgcolor: "#B45309", boxShadow: "none", transform: "translateY(-1px)" },
-                  "&:disabled": { bgcolor: "#E5E5E0", color: "#FFFFFF" },
+                  "&:hover": { bgcolor: "primary.main", boxShadow: "none", transform: "translateY(-1px)" },
+                  "&:disabled": { bgcolor: "divider", color: "#FFFFFF" },
                   transition: "background-color 0.2s, transform 0.2s",
                 }}
               >
@@ -292,7 +292,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
             </Box>
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
 
       <Modal open={isModalOpen} onClose={closeModal}>
         <Box
@@ -311,13 +311,13 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
         >
           {modalContent === "loading" && (
             <>
-              <CircularProgress sx={{ color: "#B45309" }} />
-              <Typography sx={{ mt: 2, color: "#2A2A2A" }}>送信中…</Typography>
+              <CircularProgress sx={{ color: "primary.main" }} />
+              <Typography sx={{ mt: 2, color: "secondary.main" }}>送信中…</Typography>
             </>
           )}
           {modalContent === "success" && (
             <>
-              <CheckCircle sx={{ color: "#B45309", fontSize: 50 }} />
+              <CheckCircle sx={{ color: "primary.main", fontSize: 50 }} />
               <Typography
                 sx={{
                   mt: 2,
@@ -325,12 +325,12 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                   fontWeight: 700,
                   fontSize: "22px",
                   letterSpacing: "-0.02em",
-                  color: "#0A0A0A",
+                  color: "text.primary",
                 }}
               >
                 送信完了
               </Typography>
-              <Typography sx={{ mt: 1, fontSize: "13.5px", color: "#6B6B6B", lineHeight: 1.7 }}>
+              <Typography sx={{ mt: 1, fontSize: "13.5px", color: "text.secondary", lineHeight: 1.7 }}>
                 お問い合わせありがとうございました。
                 <br />
                 内容を確認次第、メールでご返信します。
@@ -339,7 +339,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                 onClick={closeModal}
                 sx={{
                   mt: 3,
-                  bgcolor: "#0A0A0A",
+                  bgcolor: "background.dark",
                   color: "#FFFFFF",
                   px: 3,
                   py: 1.25,
@@ -347,7 +347,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                   fontSize: "13px",
                   fontWeight: 600,
                   boxShadow: "none",
-                  "&:hover": { bgcolor: "#B45309", boxShadow: "none" },
+                  "&:hover": { bgcolor: "primary.main", boxShadow: "none" },
                 }}
               >
                 閉じる
@@ -364,12 +364,12 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                   fontWeight: 700,
                   fontSize: "22px",
                   letterSpacing: "-0.02em",
-                  color: "#0A0A0A",
+                  color: "text.primary",
                 }}
               >
                 送信に失敗しました
               </Typography>
-              <Typography sx={{ mt: 1, fontSize: "13.5px", color: "#6B6B6B", lineHeight: 1.7 }}>
+              <Typography sx={{ mt: 1, fontSize: "13.5px", color: "text.secondary", lineHeight: 1.7 }}>
                 時間をおいて再度お試しください。
                 <br />
                 解決しない場合は管理者にご連絡ください。
@@ -378,14 +378,15 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                 onClick={closeModal}
                 sx={{
                   mt: 3,
-                  color: "#0A0A0A",
-                  border: "1px solid #E5E5E0",
+                  color: "text.primary",
+                  border: "1px solid",
+                  borderColor: "divider",
                   px: 3,
                   py: 1.25,
                   borderRadius: "999px",
                   fontSize: "13px",
                   fontWeight: 600,
-                  "&:hover": { borderColor: "#0A0A0A", bgcolor: "transparent" },
+                  "&:hover": { borderColor: "text.primary", bgcolor: "transparent" },
                 }}
               >
                 閉じる

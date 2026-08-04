@@ -11,6 +11,7 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
+import { uploadImage } from "@/lib/api-client";
 
 interface ImageUploadProps {
   value: string;
@@ -31,23 +32,9 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
     setUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        onChange(data.url);
-      } else {
-        setError(data.error || "アップロードに失敗しました");
-      }
-    } catch {
-      setError("通信エラーが発生しました");
+      onChange(await uploadImage(file));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "通信エラーが発生しました");
     } finally {
       setUploading(false);
       if (fileInputRef.current) {

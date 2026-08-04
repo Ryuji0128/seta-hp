@@ -1,26 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Container, Dialog, IconButton } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { Box, Dialog, IconButton } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import CloseIcon from "@mui/icons-material/Close";
+import EmptyState from "@/components/EmptyState";
+import SectionContainer from "@/components/SectionContainer";
 import { getGalleryCategoryLabel } from "@/lib/constants/categories";
-
-interface Work {
-  id: number;
-  title: string;
-  category: string;
-  image: string | null;
-  createdAt: Date | string;
-}
+import { formatRefNumber } from "@/lib/format";
+import type { WorkGridItem } from "@/lib/types/work";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
-  works: Work[];
+  works: WorkGridItem[];
 }
-
-const formatRefNumber = (id: number) => String(id).padStart(3, "0");
 const FALLBACK_IMAGE_BG = "rgb(246, 246, 244)";
 
 // カード余白（contain のレターボックス部）は静的な淡いグレー背景＋微グラデで統一する。
@@ -48,60 +42,19 @@ function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
 }
 
 const GalleryGrid: React.FC<Props> = ({ works }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
-  const [selectedWork, setSelectedWork] = useState<Work | null>(null);
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
+  const [selectedWork, setSelectedWork] = useState<WorkGridItem | null>(null);
 
   if (works.length === 0) {
     return (
-      <Box component="section" sx={{ py: { xs: 8, md: 12 }, bgcolor: "#F6F6F4" }}>
-        <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
-          <Box
-            sx={{
-              border: "1px solid #E5E5E0",
-              borderRadius: "6px",
-              p: { xs: 5, md: 10 },
-              textAlign: "center",
-              bgcolor: "#FFFFFF",
-            }}
-          >
-            <Box
-              sx={{
-                fontFamily: fontItalic,
-                fontStyle: "italic",
-                color: "#B45309",
-                fontSize: "14px",
-                letterSpacing: "0.1em",
-                mb: 1,
-              }}
-            >
-              Coming Soon
-            </Box>
-            <Box
-              sx={{
-                fontFamily: fontDisplay,
-                fontSize: "28px",
-                fontWeight: 700,
-                letterSpacing: "-0.025em",
-                color: "#0A0A0A",
-                mb: 1.5,
-              }}
-            >
-              作品を準備中
-            </Box>
-            <Box sx={{ fontSize: "14px", color: "#6B6B6B" }}>
-              撮影が完了次第、順次掲載していきます。
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+      <EmptyState title="作品を準備中" description="撮影が完了次第、順次掲載していきます。" />
     );
   }
 
   return (
     <Box component="section" sx={{ py: { xs: 8, md: 12 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "grid",
@@ -132,7 +85,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                 transition: "transform 0.4s",
                 "&:hover": { transform: "translateY(-4px)" },
                 "&:hover .gallery-img": {
-                  borderColor: "#0A0A0A",
+                  borderColor: "text.primary",
                 },
                 "&:focus-visible": {
                   outline: "2px solid #0A0A0A",
@@ -148,7 +101,8 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                   bgcolor: FALLBACK_IMAGE_BG,
                   overflow: "hidden",
                   borderRadius: "4px",
-                  border: "1px solid #E5E5E0",
+                  border: "1px solid",
+                  borderColor: "divider",
                   transition: "border-color 0.3s",
                 }}
               >
@@ -162,7 +116,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#9A9A9A",
+                      color: "text.disabled",
                       fontFamily: fontItalic,
                       fontStyle: "italic",
                       fontSize: "14px",
@@ -187,7 +141,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                     sx={{
                       fontFamily: fontItalic,
                       fontStyle: "italic",
-                      color: "#B45309",
+                      color: "primary.main",
                       fontSize: "13px",
                       letterSpacing: "0.05em",
                     }}
@@ -199,7 +153,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                       fontSize: "11px",
                       letterSpacing: "0.12em",
                       textTransform: "uppercase",
-                      color: "#6B6B6B",
+                      color: "text.secondary",
                       fontWeight: 500,
                     }}
                   >
@@ -212,7 +166,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                     fontSize: "18px",
                     fontWeight: 700,
                     letterSpacing: "-0.015em",
-                    color: "#0A0A0A",
+                    color: "text.primary",
                     lineHeight: 1.4,
                     mb: 2,
                   }}
@@ -231,8 +185,9 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                     px: 2,
                     py: 1,
                     borderRadius: "999px",
-                    border: "1px solid #E5E5E0",
-                    color: "#0A0A0A",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    color: "text.primary",
                     textDecoration: "none",
                     fontSize: "12px",
                     fontWeight: 600,
@@ -240,8 +195,8 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                     textTransform: "uppercase",
                     transition: "all 0.2s ease",
                     "&:hover": {
-                      borderColor: "#B45309",
-                      color: "#B45309",
+                      borderColor: "primary.main",
+                      color: "primary.main",
                       bgcolor: "rgba(180,83,9,0.04)",
                     },
                   }}
@@ -252,7 +207,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
             </Box>
           ))}
         </Box>
-      </Container>
+      </SectionContainer>
 
       <Dialog
         open={Boolean(selectedWork)}
@@ -304,7 +259,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                 height: "min(78vh, 1100px)",
                 borderRadius: "10px",
                 overflow: "hidden",
-                bgcolor: "#F6F6F4",
+                bgcolor: "background.alt",
                 border: "1px solid rgba(255,255,255,0.12)",
               }}
             >

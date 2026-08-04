@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const COLLECTION = [
@@ -13,14 +14,15 @@ const AboutCollector = () => {
   const fontItalic = FONT_ITALIC;
 
   return (
-    <Box component="section" sx={{ bgcolor: "#F6F6F4", py: { xs: 10, md: 15 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+    <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "flex",
             alignItems: "baseline",
             gap: 3,
-            borderTop: "1px solid #0A0A0A",
+            borderTop: "1px solid",
+            borderTopColor: "text.primary",
             pt: 3.5,
             mb: 8,
             fontFamily: fontItalic,
@@ -29,9 +31,9 @@ const AboutCollector = () => {
             letterSpacing: "0.05em",
           }}
         >
-          <Box sx={{ color: "#B45309" }}>— 02</Box>
-          <Box sx={{ color: "#0A0A0A" }}>Collector</Box>
-          <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　コレクターとして</Box>
+          <Box sx={{ color: "primary.main" }}>— 02</Box>
+          <Box sx={{ color: "text.primary" }}>Collector</Box>
+          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　コレクターとして</Box>
         </Box>
 
         <Box
@@ -48,21 +50,21 @@ const AboutCollector = () => {
               fontSize: "clamp(32px, 3.8vw, 56px)",
               lineHeight: 1.2,
               letterSpacing: "-0.025em",
-              color: "#0A0A0A",
+              color: "text.primary",
             }}
           >
             同じ熱量の
             <br />
-            <Box component="span" sx={{ color: "#B45309" }}>仲間として。</Box>
+            <Box component="span" sx={{ color: "primary.main" }}>仲間として。</Box>
           </Box>
 
           <Box sx={{ pt: 2 }}>
-            <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2, mb: 3 }}>
+            <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 3 }}>
               私自身、MLBカードのコレクターです。きっかけは大谷翔平選手のドジャース移籍。
               ニュースで見た Topps NOW のカードに惹かれて1枚買ったら、
               気づけばコレクションが壁一面に広がっていました。
             </Box>
-            <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2, mb: 4 }}>
+            <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 4 }}>
               集めるほどに「もっとカッコよく飾りたい」という想いが強くなり、
               それが飾Love を始めた原点です。
               同じ熱量でカードを愛する方に使ってもらえたら、これほど嬉しいことはありません。
@@ -77,14 +79,15 @@ const AboutCollector = () => {
                     gridTemplateColumns: { xs: "120px 1fr", sm: "160px 1fr" },
                     gap: 2,
                     py: 2,
-                    borderTop: "1px solid #E5E5E0",
-                    ...(i === COLLECTION.length - 1 && { borderBottom: "1px solid #E5E5E0" }),
+                    borderTop: "1px solid",
+                    borderTopColor: "divider",
+                    ...(i === COLLECTION.length - 1 && { borderBottom: "1px solid", borderBottomColor: "divider" }),
                   }}
                 >
-                  <Box sx={{ fontSize: "13px", color: "#6B6B6B", fontWeight: 500 }}>
+                  <Box sx={{ fontSize: "13px", color: "text.secondary", fontWeight: 500 }}>
                     {item.label}
                   </Box>
-                  <Box sx={{ fontSize: "14.5px", color: "#0A0A0A", lineHeight: 1.7 }}>
+                  <Box sx={{ fontSize: "14.5px", color: "text.primary", lineHeight: 1.7 }}>
                     {item.value}
                   </Box>
                 </Box>
@@ -92,7 +95,7 @@ const AboutCollector = () => {
             </Box>
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

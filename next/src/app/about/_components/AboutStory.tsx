@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const AboutStory = () => {
@@ -7,7 +8,7 @@ const AboutStory = () => {
 
   return (
     <Box component="section" sx={{ py: { xs: 10, md: 15 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "grid",
@@ -22,7 +23,8 @@ const AboutStory = () => {
               display: "flex",
               alignItems: "baseline",
               gap: 3,
-              borderTop: "1px solid #0A0A0A",
+              borderTop: "1px solid",
+              borderTopColor: "text.primary",
               pt: 3.5,
               fontFamily: fontItalic,
               fontStyle: "italic",
@@ -30,9 +32,9 @@ const AboutStory = () => {
               letterSpacing: "0.05em",
             }}
           >
-            <Box sx={{ color: "#B45309" }}>— 01</Box>
-            <Box sx={{ color: "#0A0A0A" }}>Story</Box>
-            <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　はじまり</Box>
+            <Box sx={{ color: "primary.main" }}>— 01</Box>
+            <Box sx={{ color: "text.primary" }}>Story</Box>
+            <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　はじまり</Box>
           </Box>
           <Box />
         </Box>
@@ -51,37 +53,37 @@ const AboutStory = () => {
               fontSize: "clamp(32px, 3.8vw, 56px)",
               lineHeight: 1.2,
               letterSpacing: "-0.025em",
-              color: "#0A0A0A",
+              color: "text.primary",
             }}
           >
             欲しいものが
             <br />
             なかったから、
             <br />
-            <Box component="span" sx={{ color: "#B45309" }}>作った。</Box>
+            <Box component="span" sx={{ color: "primary.main" }}>作った。</Box>
           </Box>
 
           <Box sx={{ pt: 2 }}>
-            <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2, mb: 3 }}>
+            <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 3 }}>
               飾Love は、カード好きが営む小さな個人工房です。
             </Box>
-            <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2, mb: 3 }}>
+            <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 3 }}>
               MLBカードを集めていると、「お気に入りのカードをもっとちゃんと飾りたい」
               「コレクションを見やすく整理したい」という気持ちが少しずつ強くなっていきました。
               けれど、いざ探してみると、自分が本当に納得できるディスプレイにはなかなか出会えません。
             </Box>
-            <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2, mb: 3 }}>
+            <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 3 }}>
               ないなら、作ってみよう。
               <br />
               そう思って始めたのが、この工房です。
             </Box>
-            <Box sx={{ fontSize: "15.5px", color: "#2A2A2A", lineHeight: 2 }}>
+            <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2 }}>
               レーザー加工で、自分が「これだ」と思える一品仕立てを、
               一つずつ手作業で組み立てています。同じカード好きの方に届くと嬉しいです。
             </Box>
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

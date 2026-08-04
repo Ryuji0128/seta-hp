@@ -1,21 +1,31 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import { getPrismaClient } from "@/lib/db";
 import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data";
 import ProductDetail from "./_components/ProductDetail";
 import RelatedProducts from "./_components/RelatedProducts";
+import SectionContainer from "@/components/SectionContainer";
 
-export const dynamic = "force-dynamic";
+// ISR: ビルド時は生成せず（CIビルドはDB到達不可のため generateStaticParams は空）、
+// 初回アクセス時に生成してキャッシュする。商品の作成・更新・削除時は
+// API 側の revalidateProductPages() が全詳細ページを即時再生成対象にする。
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  return [];
+}
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getProduct(id: number) {
+// React cache() で generateMetadata とページ本体の二重クエリを1回に集約
+const getProduct = cache(async (id: number) => {
   const prisma = getPrismaClient();
   return prisma.product.findUnique({ where: { id } });
-}
+});
 
 async function getRelatedProducts(category: string, excludeId: number) {
   const prisma = getPrismaClient();
@@ -78,9 +88,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Box sx={{ bgcolor: "#FFFFFF" }}>
-        <Container maxWidth="xl" sx={{ maxWidth: "1320px !important", py: { xs: 4, md: 8 } }}>
+        <SectionContainer sx={{ py: { xs: 4, md: 8 } }}>
           <ProductDetail product={product} />
-        </Container>
+        </SectionContainer>
         {relatedProducts.length > 0 && <RelatedProducts products={relatedProducts} />}
       </Box>
     </>

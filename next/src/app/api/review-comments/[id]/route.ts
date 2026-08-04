@@ -6,7 +6,7 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { isRateLimited } from "@/lib/rate-limit";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import {
   parseReviewId as parseId,
   reviewCommentsDisabledResponse,
@@ -22,9 +22,8 @@ export async function PATCH(
   const disabled = reviewCommentsDisabledResponse();
   if (disabled) return disabled;
 
-  if (await isRateLimited(req, { windowMs: 60_000, max: 60 })) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
+  const { limited } = await enforceRateLimit(req, `review:${req.nextUrl.pathname}`, RATE_LIMITS.reviewUpdate);
+  if (limited) return limited;
 
   const { id: rawId } = await params;
   const id = parseId(rawId);
@@ -53,9 +52,8 @@ export async function DELETE(
   const disabled = reviewCommentsDisabledResponse();
   if (disabled) return disabled;
 
-  if (await isRateLimited(req, { windowMs: 60_000, max: 30 })) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
+  const { limited } = await enforceRateLimit(req, `review:${req.nextUrl.pathname}`, RATE_LIMITS.review);
+  if (limited) return limited;
 
   const { id: rawId } = await params;
   const id = parseId(rawId);

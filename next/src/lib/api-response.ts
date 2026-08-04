@@ -11,31 +11,24 @@ export interface ApiResponse<T = unknown> {
 }
 
 /**
- * 成功レスポンスを作成
+ * 400 Bad Request（`{ error }` 形式・各ルートの直書きレスポンスと同形）
  */
-export function successResponse<T>(
-  data: T,
-  status: number = 200,
-  headers?: HeadersInit
-): NextResponse<ApiResponse<T>> {
-  return NextResponse.json(
-    { success: true, data },
-    { status, headers }
-  );
+export function badRequestResponse(message: string): NextResponse {
+  return NextResponse.json({ error: message }, { status: 400 });
 }
 
 /**
- * エラーレスポンスを作成
+ * 404 Not Found（`{ error }` 形式）
  */
-export function errorResponse(
-  error: string,
-  status: number = 400,
-  headers?: HeadersInit
-): NextResponse<ApiResponse> {
-  return NextResponse.json(
-    { success: false, error },
-    { status, headers }
-  );
+export function notFoundResponse(message: string): NextResponse {
+  return NextResponse.json({ error: message }, { status: 404 });
+}
+
+/**
+ * 500 Internal Server Error（`{ error }` 形式）
+ */
+export function internalErrorResponse(message: string): NextResponse {
+  return NextResponse.json({ error: message }, { status: 500 });
 }
 
 /**
@@ -96,14 +89,3 @@ export function forbiddenResponse(
   );
 }
 
-/**
- * サーバーエラーレスポンスを作成
- */
-export function serverErrorResponse(
-  message: string = "サーバーエラーが発生しました"
-): NextResponse<ApiResponse> {
-  return NextResponse.json(
-    { success: false, error: message },
-    { status: 500 }
-  );
-}

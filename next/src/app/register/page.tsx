@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { isGoogleAuthEnabled } from "@/lib/runtime-config";
 import { redirect } from "next/navigation";
+import { Box, Container } from "@mui/material";
 import RegisterForm from "./RegisterForm";
 
 export const metadata: Metadata = {
@@ -16,5 +17,11 @@ export default async function RegisterPage() {
     redirect("/");
   }
 
-  return <RegisterForm isGoogleEnabled={isGoogleAuthEnabled()} />;
+  return (
+    <Box sx={{ bgcolor: "white", minHeight: "100vh", py: { xs: 4, md: 8 } }}>
+      <Container maxWidth="sm">
+        <RegisterForm isGoogleEnabled={isGoogleAuthEnabled()} />
+      </Container>
+    </Box>
+  );
 }

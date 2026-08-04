@@ -1,10 +1,9 @@
 import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
-import { rateLimitResponse, validationErrorResponse } from "@/lib/api-response";
-import { isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
-import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
+import { badRequestResponse, validationErrorResponse } from "@/lib/api-response";
+import { handleApiError, isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateInquiry } from "@/lib/validation";
-import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
@@ -36,12 +35,8 @@ function getTransporter(): Transporter {
 export async function POST(req: NextRequest) {
   try {
     // レート制限チェック
-    const clientIp = getClientIp(req);
-    const rateLimitResult = await checkRateLimit(`contact:${clientIp}`, RATE_LIMITS.contact);
-    if (!rateLimitResult.success) {
-      const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
-      return rateLimitResponse(retryAfter, rateLimitResult.resetAt);
-    }
+    const { limited } = await enforceRateLimit(req, "contact", RATE_LIMITS.contact);
+    if (limited) return limited;
 
     const inquiryData = await parseJsonBody(req);
     if (isErrorResponse(inquiryData)) return inquiryData;
@@ -157,11 +152,7 @@ export async function GET(req: NextRequest) {
     ]);
     return NextResponse.json({ inquiries, total, page, limit });
   } catch (error) {
-    console.error("問い合わせ取得エラー:", error);
-    return NextResponse.json(
-      { error: "問い合わせ一覧の取得に失敗しました" },
-      { status: 500 }
-    );
+    return handleApiError(error, { log: "問い合わせ取得エラー", message: "問い合わせ一覧の取得に失敗しました" });
   }
 }
 
@@ -179,10 +170,7 @@ export async function DELETE(req: NextRequest) {
     const id = Number(body.id);
 
     if (!Number.isInteger(id) || id <= 0) {
-      return NextResponse.json(
-        { error: "IDが正しく指定されていません" },
-        { status: 400 }
-      );
+      return badRequestResponse("IDが正しく指定されていません");
     }
 
     await prisma.inquiry.delete({
@@ -191,14 +179,11 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    // 存在しないIDの削除は404として返す
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      return NextResponse.json({ error: "指定された問い合わせが見つかりません" }, { status: 404 });
-    }
-    console.error("問い合わせ削除エラー:", error);
-    return NextResponse.json(
-      { error: "削除に失敗しました" },
-      { status: 500 }
-    );
+    // 存在しないIDの削除は handleApiError が P2025 → 404 に変換する
+    return handleApiError(error, {
+      log: "問い合わせ削除エラー",
+      message: "削除に失敗しました",
+      notFoundMessage: "指定された問い合わせが見つかりません",
+    });
   }
 }

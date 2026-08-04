@@ -1,25 +1,14 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  Modal,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box, Button, TextField, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import "dayjs/locale/ja";
 import { Session } from "next-auth";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
+import FormDialog from "@/components/manage/FormDialog";
+import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
+import { useCrudResource } from "@/lib/hooks/useCrudResource";
 
 interface News {
   id: number;
@@ -36,13 +25,16 @@ interface NewsManagementProps {
 }
 
 const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
-  const [newsList, setNewsList] = useState<News[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [newsToDelete, setNewsToDelete] = useState<number | null>(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const { items: newsList, loading, save, remove } = useCrudResource<News>({
+    endpoint: "/api/news",
+    listKey: "news",
+    label: "お知らせ",
+  });
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
+  const [newsToDelete, setNewsToDelete] = useState<number | null>(null);
 
   // フォーム用
   const [formTitle, setFormTitle] = useState("");
@@ -50,100 +42,9 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
   const [formDate, setFormDate] = useState("");
   const [formUrl, setFormUrl] = useState("");
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.sm}px)`);
-
   const userRole = session?.user?.role;
   const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
   const canDelete = userRole === "ADMIN";
-
-  const ITEMS_PER_PAGE = 10;
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const totalPages = Math.ceil(newsList.length / ITEMS_PER_PAGE);
-  const paginatedData = newsList.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  const fetchNews = useCallback(async () => {
-    try {
-      const res = await fetch("/api/news");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: { news: News[] } = await res.json();
-      setNewsList(data.news);
-    } catch (error) {
-      console.error("お知らせ一覧の取得に失敗:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchNews();
-  }, [fetchNews]);
-
-  const deleteNews = async () => {
-    if (!newsToDelete) return;
-
-    try {
-      const res = await fetch("/api/news", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: newsToDelete }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setDeleteModalOpen(false);
-      fetchNews();
-    } catch (error) {
-      console.error("お知らせの削除に失敗:", error);
-    }
-  };
-
-  const createNews = async () => {
-    try {
-      const res = await fetch("/api/news", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: formTitle,
-          contents: { text: formContents },
-          date: formDate,
-          url: formUrl || null,
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setCreateModalOpen(false);
-      resetForm();
-      fetchNews();
-    } catch (error) {
-      console.error("お知らせの作成に失敗:", error);
-    }
-  };
-
-  const updateNews = async () => {
-    if (!selectedNews) return;
-
-    try {
-      const res = await fetch("/api/news", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: selectedNews.id,
-          title: formTitle,
-          contents: { text: formContents },
-          date: formDate,
-          url: formUrl || null,
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setEditModalOpen(false);
-      resetForm();
-      fetchNews();
-    } catch (error) {
-      console.error("お知らせの更新に失敗:", error);
-    }
-  };
 
   const resetForm = () => {
     setFormTitle("");
@@ -153,282 +54,166 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
     setSelectedNews(null);
   };
 
-  const openEditModal = (news: News) => {
+  const openCreateDialog = () => {
+    resetForm();
+    setFormDate(dayjs().format("YYYY-MM-DD"));
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (news: News) => {
     setSelectedNews(news);
     setFormTitle(news.title);
     setFormContents(news.contents?.text || "");
     setFormDate(dayjs(news.date).format("YYYY-MM-DD"));
     setFormUrl(news.url || "");
-    setEditModalOpen(true);
+    setDialogOpen(true);
   };
 
-  const openCreateModal = () => {
-    resetForm();
-    setFormDate(dayjs().format("YYYY-MM-DD"));
-    setCreateModalOpen(true);
-  };
+  const handleSave = async () => {
+    const payload = {
+      title: formTitle,
+      contents: { text: formContents },
+      date: formDate,
+      url: formUrl || null,
+    };
 
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+    const ok = await save(payload, selectedNews?.id);
+    if (ok) {
+      setDialogOpen(false);
+      resetForm();
     }
   };
 
-  return (
-    <Box sx={{ maxWidth: "1000px", margin: "0 auto", padding: 2 }}>
-      {/* 新規作成ボタン */}
-      {canEdit && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Button variant="contained" onClick={openCreateModal}>
-            新規作成
-          </Button>
-        </Box>
-      )}
+  const handleDelete = async () => {
+    if (!newsToDelete) return;
+    const ok = await remove(newsToDelete);
+    if (ok) {
+      setDeleteDialogOpen(false);
+      setNewsToDelete(null);
+    }
+  };
 
-      {/* ページネーション */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-        <Button
-          variant="outlined"
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          前へ
-        </Button>
-        <Typography sx={{ fontSize: { xs: "12px", md: "14px" }, alignSelf: "center" }}>
-          {currentPage} / {totalPages || 1}
+  const columns: ResourceColumn<News>[] = [
+    {
+      header: "日付",
+      align: "center",
+      render: (news) => dayjs(news.date).format("YYYY/MM/DD"),
+    },
+    {
+      header: "タイトル",
+      render: (news) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {news.title}
         </Typography>
-        <Button
-          variant="outlined"
-          disabled={currentPage === totalPages || totalPages === 0}
-          onClick={() => handlePageChange(currentPage + 1)}
+      ),
+    },
+    {
+      header: "内容",
+      hideOnMobile: true,
+      render: (news) => (
+        <Box
+          sx={{
+            maxWidth: "200px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
         >
-          次へ
-        </Button>
-      </Box>
+          {news.contents?.text || ""}
+        </Box>
+      ),
+    },
+  ];
 
-      {loading ? (
-        <Typography>読み込み中...</Typography>
-      ) : newsList.length === 0 ? (
-        <Typography>お知らせはありません。</Typography>
-      ) : (
-        <TableContainer component={Paper} sx={{ maxHeight: "600px" }}>
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: "bold", width: "120px", textAlign: "center" }}>
-                  日付
-                </TableCell>
-                <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
-                  タイトル
-                </TableCell>
-                {!isMobile && (
-                  <TableCell sx={{ fontWeight: "bold", width: "200px", textAlign: "center" }}>
-                    内容
-                  </TableCell>
-                )}
-                <TableCell sx={{ fontWeight: "bold", width: "160px", textAlign: "center" }}>
-                  操作
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedData.map((news) => (
-                <TableRow key={news.id}>
-                  <TableCell sx={{ textAlign: "center" }}>
-                    {dayjs(news.date).format("YYYY/MM/DD")}
-                  </TableCell>
-                  <TableCell sx={{ textAlign: "left" }}>
-                    {news.title}
-                  </TableCell>
-                  {!isMobile && (
-                    <TableCell
-                      sx={{
-                        maxWidth: "200px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
+  return (
+    <Box>
+      <ResourceTable
+        items={newsList}
+        columns={columns}
+        loading={loading}
+        emptyMessage="お知らせはありません"
+        pageSize={10}
+        onCreate={canEdit ? openCreateDialog : undefined}
+        actions={
+          canEdit
+            ? (news) => (
+                <>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => openEditDialog(news)}
+                    sx={{ m: "2px" }}
+                  >
+                    編集
+                  </Button>
+                  {canDelete && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => {
+                        setNewsToDelete(news.id);
+                        setDeleteDialogOpen(true);
                       }}
+                      sx={{ m: "2px" }}
                     >
-                      {news.contents?.text || ""}
-                    </TableCell>
+                      削除
+                    </Button>
                   )}
-                  <TableCell sx={{ textAlign: "center" }}>
-                    {canEdit && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => openEditModal(news)}
-                        sx={{ m: "2px" }}
-                      >
-                        編集
-                      </Button>
-                    )}
-                    {canDelete && (
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={() => {
-                          setNewsToDelete(news.id);
-                          setDeleteModalOpen(true);
-                        }}
-                        sx={{ m: "2px" }}
-                      >
-                        削除
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+                </>
+              )
+            : undefined
+        }
+      />
 
-      <Box sx={{ marginBottom: "100px" }} />
+      {/* 作成/編集ダイアログ */}
+      <FormDialog
+        open={dialogOpen}
+        title={selectedNews ? "お知らせ編集" : "お知らせ新規作成"}
+        submitLabel={selectedNews ? "更新" : "作成"}
+        submitDisabled={!formTitle || !formContents || !formDate}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={handleSave}
+      >
+        <TextField
+          label="日付"
+          type="date"
+          value={formDate}
+          onChange={(e) => setFormDate(e.target.value)}
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+        />
+        <TextField
+          label="タイトル"
+          value={formTitle}
+          onChange={(e) => setFormTitle(e.target.value)}
+          fullWidth
+          required
+        />
+        <TextField
+          label="内容"
+          value={formContents}
+          onChange={(e) => setFormContents(e.target.value)}
+          fullWidth
+          multiline
+          rows={4}
+          required
+        />
+        <TextField
+          label="リンクURL（任意）"
+          value={formUrl}
+          onChange={(e) => setFormUrl(e.target.value)}
+          fullWidth
+        />
+      </FormDialog>
 
-      {/* 新規作成モーダル */}
-      <Modal open={createModalOpen} onClose={() => setCreateModalOpen(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: "500px",
-            backgroundColor: "white",
-            padding: 3,
-            borderRadius: "8px",
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            お知らせ新規作成
-          </Typography>
-          <TextField
-            label="日付"
-            type="date"
-            value={formDate}
-            onChange={(e) => setFormDate(e.target.value)}
-            fullWidth
-            sx={{ mb: 2 }}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            label="タイトル"
-            value={formTitle}
-            onChange={(e) => setFormTitle(e.target.value)}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="内容"
-            value={formContents}
-            onChange={(e) => setFormContents(e.target.value)}
-            fullWidth
-            multiline
-            rows={4}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="リンクURL（任意）"
-            value={formUrl}
-            onChange={(e) => setFormUrl(e.target.value)}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-            <Button onClick={() => setCreateModalOpen(false)}>キャンセル</Button>
-            <Button variant="contained" onClick={createNews}>
-              作成
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* 編集モーダル */}
-      <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: "500px",
-            backgroundColor: "white",
-            padding: 3,
-            borderRadius: "8px",
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            お知らせ編集
-          </Typography>
-          <TextField
-            label="日付"
-            type="date"
-            value={formDate}
-            onChange={(e) => setFormDate(e.target.value)}
-            fullWidth
-            sx={{ mb: 2 }}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            label="タイトル"
-            value={formTitle}
-            onChange={(e) => setFormTitle(e.target.value)}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="内容"
-            value={formContents}
-            onChange={(e) => setFormContents(e.target.value)}
-            fullWidth
-            multiline
-            rows={4}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="リンクURL（任意）"
-            value={formUrl}
-            onChange={(e) => setFormUrl(e.target.value)}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-            <Button onClick={() => setEditModalOpen(false)}>キャンセル</Button>
-            <Button variant="contained" onClick={updateNews}>
-              更新
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* 削除確認モーダル */}
-      <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "300px",
-            backgroundColor: "white",
-            padding: 3,
-            borderRadius: "8px",
-            textAlign: "center",
-          }}
-        >
-          <Typography>本当に削除してよろしいですか？</Typography>
-          <Box sx={{ mt: 2, display: "flex", gap: 2, justifyContent: "center" }}>
-            <Button onClick={() => setDeleteModalOpen(false)}>キャンセル</Button>
-            <Button color="error" variant="contained" onClick={deleteNews}>
-              削除
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
+      {/* 削除確認ダイアログ */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        title="お知らせを削除"
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+      />
     </Box>
   );
 };
