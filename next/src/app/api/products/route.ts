@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { VALID_PRODUCT_CATEGORIES, VALID_STOCK_OPTIONS } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
-import { isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
+import { badRequestResponse, notFoundResponse } from "@/lib/api-response";
+import { handleApiError, isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
+import { ProductCreateSchema, ProductUpdateSchema } from "@/lib/validation";
 import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
+import { revalidateProductPages } from "@/lib/cache-tags";
 import xss from "xss";
 
 // 商品一覧取得（公開用）
@@ -35,8 +37,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ products, total, page, limit });
   } catch (error) {
-    console.error("商品取得エラー:", error);
-    return NextResponse.json({ error: "商品の取得に失敗しました" }, { status: 500 });
+    return handleApiError(error, { log: "商品取得エラー", message: "商品の取得に失敗しました" });
   }
 }
 
@@ -49,42 +50,20 @@ export async function POST(req: NextRequest) {
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
     if (isErrorResponse(body)) return body;
-    const { name, description, price, category, tags, image, images, stock, isPublished, isHeroImage, purchaseUrl } = body;
 
-    if (!name || !description || price === undefined || !category) {
-      return NextResponse.json({ error: "名前、説明、価格、カテゴリは必須です" }, { status: 400 });
+    // バリデーションは Zod スキーマに集約（価格の整数チェック・カテゴリ/在庫/URL検証を含む）
+    const parsed = ProductCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return badRequestResponse(parsed.error.errors[0].message);
     }
-
-    // 価格の検証（DBのInt型カラムに合わせて整数のみ許可）
-    const priceNum = Number(price);
-    if (!Number.isInteger(priceNum) || priceNum < 0) {
-      return NextResponse.json({ error: "価格は0以上の整数を指定してください" }, { status: 400 });
-    }
-
-    // カテゴリの検証
-    if (!VALID_PRODUCT_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_PRODUCT_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
-    }
-
-    // 在庫状況の検証
-    if (stock && !VALID_STOCK_OPTIONS.includes(stock)) {
-      return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
-    }
-
-    // 購入URLの検証
-    if (purchaseUrl) {
-      try {
-        new URL(purchaseUrl);
-      } catch {
-        return NextResponse.json({ error: "購入URLは有効なURLを指定してください" }, { status: 400 });
-      }
-    }
+    const { name, description, price, category, stock, purchaseUrl } = parsed.data;
+    const { tags, image, images, isPublished, isHeroImage } = body;
 
     const product = await prisma.product.create({
       data: {
         name: xss(name),
         description: xss(description),
-        price: priceNum,
+        price,
         category,
         tags: sanitizeTags(tags),
         image: image || null,
@@ -96,10 +75,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    revalidateProductPages();
+
     return NextResponse.json({ message: "商品を作成しました", product });
   } catch (error) {
-    console.error("商品作成エラー:", error);
-    return NextResponse.json({ error: "商品の作成に失敗しました" }, { status: 500 });
+    return handleApiError(error, { log: "商品作成エラー", message: "商品の作成に失敗しました" });
   }
 }
 
@@ -112,44 +92,19 @@ export async function PUT(req: NextRequest) {
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
     if (isErrorResponse(body)) return body;
-    const { id, name, description, price, category, tags, image, images, stock, isPublished, isHeroImage, purchaseUrl } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
+    // バリデーションは Zod スキーマに集約（POST と共通・全フィールド任意 + ID 必須）
+    const parsed = ProductUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return badRequestResponse(parsed.error.errors[0].message);
     }
+    const { id, name, description, price, category, stock, purchaseUrl } = parsed.data;
+    const { tags, image, images, isPublished, isHeroImage } = body;
 
     // 存在確認
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "指定された商品が見つかりません" }, { status: 404 });
-    }
-
-    // 価格の検証（DBのInt型カラムに合わせて整数のみ許可）
-    let priceNum: number | undefined;
-    if (price !== undefined) {
-      priceNum = Number(price);
-      if (!Number.isInteger(priceNum) || priceNum < 0) {
-        return NextResponse.json({ error: "価格は0以上の整数を指定してください" }, { status: 400 });
-      }
-    }
-
-    // カテゴリの検証
-    if (category && !VALID_PRODUCT_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_PRODUCT_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
-    }
-
-    // 在庫状況の検証
-    if (stock && !VALID_STOCK_OPTIONS.includes(stock)) {
-      return NextResponse.json({ error: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください` }, { status: 400 });
-    }
-
-    // 購入URLの検証
-    if (purchaseUrl) {
-      try {
-        new URL(purchaseUrl);
-      } catch {
-        return NextResponse.json({ error: "購入URLは有効なURLを指定してください" }, { status: 400 });
-      }
+      return notFoundResponse("指定された商品が見つかりません");
     }
 
     const product = await prisma.product.update({
@@ -157,7 +112,7 @@ export async function PUT(req: NextRequest) {
       data: {
         name: name ? xss(name) : undefined,
         description: description ? xss(description) : undefined,
-        price: priceNum,
+        price,
         category,
         tags: tags !== undefined ? sanitizeTags(tags) : undefined,
         image: image !== undefined ? (image || null) : undefined,
@@ -171,10 +126,15 @@ export async function PUT(req: NextRequest) {
 
     await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
+    revalidateProductPages();
+
     return NextResponse.json({ message: "商品を更新しました", product });
   } catch (error) {
-    console.error("商品更新エラー:", error);
-    return NextResponse.json({ error: "商品の更新に失敗しました" }, { status: 500 });
+    return handleApiError(error, {
+      log: "商品更新エラー",
+      message: "商品の更新に失敗しました",
+      notFoundMessage: "指定された商品が見つかりません",
+    });
   }
 }
 
@@ -190,13 +150,13 @@ export async function DELETE(req: NextRequest) {
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
+      return badRequestResponse("IDは必須です");
     }
 
     // 存在確認
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "指定された商品が見つかりません" }, { status: 404 });
+      return notFoundResponse("指定された商品が見つかりません");
     }
 
     await prisma.product.delete({
@@ -205,9 +165,14 @@ export async function DELETE(req: NextRequest) {
 
     await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
+    revalidateProductPages();
+
     return NextResponse.json({ message: "商品を削除しました" });
   } catch (error) {
-    console.error("商品削除エラー:", error);
-    return NextResponse.json({ error: "商品の削除に失敗しました" }, { status: 500 });
+    return handleApiError(error, {
+      log: "商品削除エラー",
+      message: "商品の削除に失敗しました",
+      notFoundMessage: "指定された商品が見つかりません",
+    });
   }
 }

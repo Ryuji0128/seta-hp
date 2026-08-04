@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import type { Session } from "next-auth";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 import xss from "xss";
 import { auth } from "@/lib/auth";
-import { forbiddenResponse, unauthorizedResponse } from "@/lib/api-response";
+import {
+  badRequestResponse,
+  forbiddenResponse,
+  internalErrorResponse,
+  notFoundResponse,
+  unauthorizedResponse,
+} from "@/lib/api-response";
 
 type UserRole = "ADMIN" | "EDITOR" | "VIEWER";
 
@@ -52,4 +60,24 @@ export function sanitizeTags(tags: unknown): string {
     return tags.map((t) => xss(String(t))).join(",");
   }
   return xss(typeof tags === "string" ? tags : "");
+}
+
+/**
+ * API ルート共通の catch ハンドラ。
+ * - Zod バリデーションエラー → 400（先頭メッセージ）
+ * - Prisma P2025（更新・削除対象なし） → 404
+ * - その他 → ログ出力して 500
+ */
+export function handleApiError(
+  error: unknown,
+  options: { log: string; message: string; notFoundMessage?: string }
+): NextResponse {
+  if (error instanceof z.ZodError) {
+    return badRequestResponse(error.errors[0].message);
+  }
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+    return notFoundResponse(options.notFoundMessage ?? "対象が見つかりません");
+  }
+  console.error(`${options.log}:`, error);
+  return internalErrorResponse(options.message);
 }

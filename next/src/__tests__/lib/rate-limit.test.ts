@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.stubEnv("NODE_ENV", "test");
 vi.useFakeTimers();
 
-const { checkRateLimit, getClientIp, isRateLimited } = await import("@/lib/rate-limit");
+const { checkRateLimit, getClientIp, enforceRateLimit } = await import("@/lib/rate-limit");
 
 describe("checkRateLimit", () => {
   const config = { limit: 3, windowMs: 60_000 };
@@ -57,15 +57,46 @@ describe("checkRateLimit", () => {
   });
 });
 
-describe("isRateLimited", () => {
-  it("Requestからキーを作って制限判定できる", async () => {
+describe("enforceRateLimit", () => {
+  const config = { limit: 2, windowMs: 60_000 };
+
+  it("制限内はlimitedがnullで結果を返す", async () => {
     const request = new Request("http://localhost/api/test", {
       headers: { "x-forwarded-for": "203.0.113.5" },
     });
 
-    expect(await isRateLimited(request, { max: 2, windowMs: 60_000 })).toBe(false);
-    expect(await isRateLimited(request, { max: 2, windowMs: 60_000 })).toBe(false);
-    expect(await isRateLimited(request, { max: 2, windowMs: 60_000 })).toBe(true);
+    const { limited, result } = await enforceRateLimit(request, "test-enforce", config);
+    expect(limited).toBeNull();
+    expect(result.success).toBe(true);
+    expect(result.remaining).toBe(1);
+  });
+
+  it("制限超過で429レスポンスを返す", async () => {
+    const request = new Request("http://localhost/api/test", {
+      headers: { "x-forwarded-for": "203.0.113.6" },
+    });
+
+    await enforceRateLimit(request, "test-enforce-over", config);
+    await enforceRateLimit(request, "test-enforce-over", config);
+    const { limited } = await enforceRateLimit(request, "test-enforce-over", config);
+
+    expect(limited).not.toBeNull();
+    expect(limited?.status).toBe(429);
+    expect(limited?.headers.get("Retry-After")).toBeTruthy();
+  });
+
+  it("IPごとに独立してカウントされる", async () => {
+    const requestA = new Request("http://localhost/api/test", {
+      headers: { "x-forwarded-for": "203.0.113.7" },
+    });
+    const requestB = new Request("http://localhost/api/test", {
+      headers: { "x-forwarded-for": "203.0.113.8" },
+    });
+
+    await enforceRateLimit(requestA, "test-enforce-ip", config);
+    await enforceRateLimit(requestA, "test-enforce-ip", config);
+    expect((await enforceRateLimit(requestA, "test-enforce-ip", config)).limited).not.toBeNull();
+    expect((await enforceRateLimit(requestB, "test-enforce-ip", config)).limited).toBeNull();
   });
 });
 

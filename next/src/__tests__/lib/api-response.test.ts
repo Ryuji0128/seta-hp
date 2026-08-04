@@ -1,41 +1,38 @@
 import { describe, it, expect } from "vitest";
 import {
-  successResponse,
-  errorResponse,
+  badRequestResponse,
+  notFoundResponse,
+  internalErrorResponse,
   validationErrorResponse,
   rateLimitResponse,
   unauthorizedResponse,
   forbiddenResponse,
-  serverErrorResponse,
 } from "@/lib/api-response";
 
-describe("successResponse", () => {
-  it("200ステータスでdataを含む", async () => {
-    const res = successResponse({ items: [1, 2, 3] });
-    expect(res.status).toBe(200);
+describe("badRequestResponse", () => {
+  it("400ステータスで{ error }形式を返す", async () => {
+    const res = badRequestResponse("入力が不正です");
+    expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.success).toBe(true);
-    expect(json.data).toEqual({ items: [1, 2, 3] });
-  });
-
-  it("カスタムステータスコードを指定可能", async () => {
-    const res = successResponse("created", 201);
-    expect(res.status).toBe(201);
+    expect(json.error).toBe("入力が不正です");
   });
 });
 
-describe("errorResponse", () => {
-  it("400ステータスでエラーメッセージを含む", async () => {
-    const res = errorResponse("入力が不正です");
-    expect(res.status).toBe(400);
-    const json = await res.json();
-    expect(json.success).toBe(false);
-    expect(json.error).toBe("入力が不正です");
-  });
-
-  it("カスタムステータスコードを指定可能", async () => {
-    const res = errorResponse("not found", 404);
+describe("notFoundResponse", () => {
+  it("404ステータスで{ error }形式を返す", async () => {
+    const res = notFoundResponse("対象が見つかりません");
     expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toBe("対象が見つかりません");
+  });
+});
+
+describe("internalErrorResponse", () => {
+  it("500ステータスで{ error }形式を返す", async () => {
+    const res = internalErrorResponse("サーバーエラーが発生しました");
+    expect(res.status).toBe(500);
+    const json = await res.json();
+    expect(json.error).toBe("サーバーエラーが発生しました");
   });
 });
 
@@ -82,14 +79,5 @@ describe("forbiddenResponse", () => {
     expect(res.status).toBe(403);
     const json = await res.json();
     expect(json.error).toBe("権限がありません");
-  });
-});
-
-describe("serverErrorResponse", () => {
-  it("500ステータスを返す", async () => {
-    const res = serverErrorResponse();
-    expect(res.status).toBe(500);
-    const json = await res.json();
-    expect(json.error).toBe("サーバーエラーが発生しました");
   });
 });

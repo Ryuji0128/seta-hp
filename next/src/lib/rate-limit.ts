@@ -1,4 +1,6 @@
+import type { NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
+import { rateLimitResponse } from "@/lib/api-response";
 
 interface RateLimitEntry {
   count: number;
@@ -176,16 +178,29 @@ export function getClientIp(request: Request): string {
   return "unknown";
 }
 
-export async function isRateLimited(
+/**
+ * レート制限の適用を1箇所に集約したヘルパ。
+ * 超過時は 429 レスポンス、通過時は null と結果（成功ヘッダ用）を返す。
+ *
+ * 使い方:
+ *   const { limited, result } = await enforceRateLimit(req, "contact", RATE_LIMITS.contact);
+ *   if (limited) return limited;
+ */
+export async function enforceRateLimit(
   request: Request,
-  options: { max?: number; windowMs?: number } = {}
-): Promise<boolean> {
-  const { max = 60, windowMs = 60_000 } = options;
-  const ip = getClientIp(request);
-  const url = new URL(request.url);
-  const key = `${ip}:${url.pathname}`;
-  const result = await checkRateLimit(key, { limit: max, windowMs });
-  return !result.success;
+  keyPrefix: string,
+  config: RateLimitConfig,
+  message?: string
+): Promise<{ limited: NextResponse | null; result: RateLimitResult }> {
+  const clientIp = getClientIp(request);
+  const result = await checkRateLimit(`${keyPrefix}:${clientIp}`, config);
+
+  if (result.success) {
+    return { limited: null, result };
+  }
+
+  const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
+  return { limited: rateLimitResponse(retryAfter, result.resetAt, message), result };
 }
 
 export const RATE_LIMITS = {
@@ -203,6 +218,16 @@ export const RATE_LIMITS = {
   },
   recaptcha: {
     limit: 5,
+    windowMs: 60 * 1000,
+  },
+  // 社内レビューコメント（書き込み系）
+  review: {
+    limit: 30,
+    windowMs: 60 * 1000,
+  },
+  // 社内レビューコメント（ステータス切替は頻度が高め）
+  reviewUpdate: {
+    limit: 60,
     windowMs: 60 * 1000,
   },
 } as const;

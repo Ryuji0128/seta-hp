@@ -3,9 +3,8 @@ import { getPrismaClient } from "@/lib/db";
 import bcryptjs from "bcryptjs";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { rateLimitResponse } from "@/lib/api-response";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
-import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { RegistrationSchema } from "@/lib/validation";
 
 const prisma = getPrismaClient();
@@ -13,22 +12,13 @@ const prisma = getPrismaClient();
 export async function POST(request: NextRequest) {
   try {
     // レートリミットチェック
-    const clientIp = getClientIp(request);
-    const rateLimitResult = await checkRateLimit(
-      `register:${clientIp}`,
-      RATE_LIMITS.register
+    const { limited, result: rateLimitResult } = await enforceRateLimit(
+      request,
+      "register",
+      RATE_LIMITS.register,
+      "登録の試行回数が上限に達しました。しばらく時間をおいてからお試しください。"
     );
-
-    if (!rateLimitResult.success) {
-      const retryAfter = Math.ceil(
-        (rateLimitResult.resetAt - Date.now()) / 1000
-      );
-      return rateLimitResponse(
-        retryAfter,
-        rateLimitResult.resetAt,
-        "登録の試行回数が上限に達しました。しばらく時間をおいてからお試しください。"
-      );
-    }
+    if (limited) return limited;
 
     const body = await parseJsonBody(request);
     if (isErrorResponse(body)) return body;

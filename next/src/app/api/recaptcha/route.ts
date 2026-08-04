@@ -1,17 +1,12 @@
 import { NextResponse, NextRequest } from "next/server";
 import { fetchSecret } from "@/lib/fetchSecrets";
-import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
-import { rateLimitResponse } from "@/lib/api-response";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
   // レート制限チェック
-  const clientIp = getClientIp(req);
-  const rateLimitResult = await checkRateLimit(`recaptcha:${clientIp}`, RATE_LIMITS.recaptcha);
-  if (!rateLimitResult.success) {
-    const retryAfter = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
-    return rateLimitResponse(retryAfter, rateLimitResult.resetAt);
-  }
+  const { limited } = await enforceRateLimit(req, "recaptcha", RATE_LIMITS.recaptcha);
+  if (limited) return limited;
 
   const body = await parseJsonBody(req);
   if (isErrorResponse(body)) return body;

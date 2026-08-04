@@ -8,7 +8,7 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { isRateLimited } from "@/lib/rate-limit";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import {
   cleanReviewInput as clean,
   REVIEW_MAX_CONTENT as MAX_CONTENT,
@@ -47,9 +47,8 @@ export async function POST(req: NextRequest) {
   const disabled = reviewCommentsDisabledResponse();
   if (disabled) return disabled;
 
-  if (await isRateLimited(req, { windowMs: 60_000, max: 30 })) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
+  const { limited } = await enforceRateLimit(req, `review:${req.nextUrl.pathname}`, RATE_LIMITS.review);
+  if (limited) return limited;
 
   try {
     const body = await req.json();
