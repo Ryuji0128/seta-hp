@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import { uploadImage } from "@/lib/api-client";
 interface MultiImageUploadProps {
   value: string[];
   onChange: (urls: string[]) => void;
@@ -44,20 +45,12 @@ export default function MultiImageUpload({
         }
 
         const file = files[i];
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          newUrls.push(data.url);
-        } else {
-          setError(data.error || `${file.name}のアップロードに失敗しました`);
+        try {
+          newUrls.push(await uploadImage(file));
+        } catch (error) {
+          setError(
+            error instanceof Error ? error.message : `${file.name}のアップロードに失敗しました`
+          );
           break;
         }
       }
@@ -65,8 +58,6 @@ export default function MultiImageUpload({
       if (newUrls.length > 0) {
         onChange([...value, ...newUrls]);
       }
-    } catch {
-      setError("通信エラーが発生しました");
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
