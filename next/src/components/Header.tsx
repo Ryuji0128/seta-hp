@@ -1,7 +1,7 @@
 "use client";
 
-import UserAuthButton from "@/components/UserAuthButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import {
   AppBar,
   Box,
@@ -12,11 +12,20 @@ import {
   MenuItem,
   Toolbar,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { SessionProvider } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import React, { useState } from "react";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
+
+// next-auth のクライアントJSは遅延チャンクに分離（初期バンドル削減 #245）
+const UserAuthMenu = dynamic(() => import("@/components/UserAuthMenu"), {
+  ssr: false,
+  loading: () => (
+    <IconButton disabled>
+      <PersonOutlineIcon sx={{ color: "#CCC" }} />
+    </IconButton>
+  ),
+});
 
 const NAV_LINKS = [
   { title: "カタログ", href: "/products" },
@@ -25,10 +34,14 @@ const NAV_LINKS = [
   { title: "お問い合わせ", href: "/contact" },
 ];
 
+const X_ICON = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
 export default function Header() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const theme = useTheme();
-  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -71,7 +84,7 @@ export default function Header() {
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  fontFamily: theme.custom.fonts.display,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: { xs: "16px", md: "19px" },
                   fontWeight: 800,
                   letterSpacing: "-0.02em",
@@ -94,64 +107,17 @@ export default function Header() {
               </Box>
             </Link>
 
-            {/* Nav */}
-            {isTablet ? (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box
-                  component="a"
-                  href="https://x.com/kaza_love_"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#0A0A0A",
-                    p: 0.5,
-                    transition: "color 0.2s",
-                    "&:hover": { color: "#B45309" },
-                  }}
-                  aria-label="X (Twitter)"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </Box>
-                <SessionProvider>
-                  <UserAuthButton />
-                </SessionProvider>
-                <IconButton
-                  edge="end"
-                  aria-label="menu"
-                  onClick={handleMenuOpen}
-                >
-                  <MenuIcon sx={{ color: "#0A0A0A" }} />
-                </IconButton>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                  sx={{ mt: 1 }}
-                >
-                  {NAV_LINKS.map((item) => (
-                    <MenuItem key={item.href} onClick={handleMenuClose}>
-                      <Link
-                        href={item.href}
-                        passHref
-                        style={{
-                          textDecoration: "none",
-                          color: "inherit",
-                          width: "100%",
-                        }}
-                      >
-                        {item.title}
-                      </Link>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Box>
-            ) : (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>
+            {/* Nav（CSSブレークポイントで出し分け。useMediaQuery による
+                ハイドレーション後のちらつきを避ける #245） */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 4 } }}>
+              {/* Desktop: ナビリンク */}
+              <Box
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
                 {NAV_LINKS.map((item) => (
                   <Link
                     key={item.href}
@@ -173,25 +139,30 @@ export default function Header() {
                     </Box>
                   </Link>
                 ))}
-                <Box
-                  component="a"
-                  href="https://x.com/kaza_love_"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#0A0A0A",
-                    transition: "color 0.2s",
-                    "&:hover": { color: "#B45309" },
-                  }}
-                  aria-label="X (Twitter)"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </Box>
+              </Box>
+
+              {/* X (Twitter) */}
+              <Box
+                component="a"
+                href="https://x.com/kaza_love_"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#0A0A0A",
+                  p: { xs: 0.5, md: 0 },
+                  transition: "color 0.2s",
+                  "&:hover": { color: "#B45309" },
+                }}
+                aria-label="X (Twitter)"
+              >
+                {X_ICON}
+              </Box>
+
+              {/* Desktop: 購入CTA */}
+              <Box sx={{ display: { xs: "none", md: "block" } }}>
                 <Link href="/products" passHref style={{ textDecoration: "none" }}>
                   <Button
                     variant="contained"
@@ -208,11 +179,43 @@ export default function Header() {
                     購入する →
                   </Button>
                 </Link>
-                <SessionProvider>
-                  <UserAuthButton />
-                </SessionProvider>
               </Box>
-            )}
+
+              {/* 認証ボタン（遅延読み込み） */}
+              <UserAuthMenu />
+
+              {/* Mobile: ハンバーガーメニュー */}
+              <IconButton
+                edge="end"
+                aria-label="menu"
+                onClick={handleMenuOpen}
+                sx={{ display: { xs: "inline-flex", md: "none" } }}
+              >
+                <MenuIcon sx={{ color: "#0A0A0A" }} />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                sx={{ mt: 1 }}
+              >
+                {NAV_LINKS.map((item) => (
+                  <MenuItem key={item.href} onClick={handleMenuClose}>
+                    <Link
+                      href={item.href}
+                      passHref
+                      style={{
+                        textDecoration: "none",
+                        color: "inherit",
+                        width: "100%",
+                      }}
+                    >
+                      {item.title}
+                    </Link>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
           </Toolbar>
         </Container>
       </AppBar>
