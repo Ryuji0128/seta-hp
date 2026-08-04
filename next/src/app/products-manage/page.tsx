@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireAdminOrEditor } from "@/lib/admin-auth";
+import AdminPageShell from "@/components/manage/AdminPageShell";
 import ProductManagement from "./ProductManagement";
-import BaseContainer from "@/components/BaseContainer";
-import { Box, Typography } from "@mui/material";
 
 export const metadata: Metadata = {
   title: "商品管理",
@@ -11,28 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ProductsPage() {
-  const session = await auth();
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
-    redirect("/");
-  }
+  const session = await requireAdminOrEditor();
 
   return (
-    <BaseContainer>
-      <Box sx={{ py: 4 }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          sx={{ textAlign: "center", mb: 4, fontWeight: 600 }}
-        >
-          商品管理
-        </Typography>
-        <ProductManagement session={session} />
-      </Box>
-    </BaseContainer>
+    <AdminPageShell title="商品管理">
+      <ProductManagement session={session} />
+    </AdminPageShell>
   );
 }
