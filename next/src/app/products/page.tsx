@@ -1,10 +1,14 @@
 import { Box } from "@mui/material";
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import ProductsHero from "./_components/ProductsHero";
 import ProductsGrid from "./_components/ProductsGrid";
 import ProductsBespokeCta from "./_components/ProductsBespokeCta";
 
+// searchParams（カテゴリ・ソート）に依存するため動的レンダリング。
+// 公開商品の取得は unstable_cache（products タグ）でキャッシュし、絞り込みはメモリ上で行う。
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -14,16 +18,26 @@ export const metadata: Metadata = {
   alternates: { canonical: "/products" },
 };
 
+// 公開商品の全件取得（新着順）。商品の書き込み時に products タグで無効化される。
+const getPublishedProducts = unstable_cache(
+  async () => {
+    const prisma = getPrismaClient();
+    return prisma.product.findMany({
+      where: { isPublished: true },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+  ["published-products"],
+  { revalidate: 3600, tags: [CACHE_TAGS.products] }
+);
+
 async function getProducts(category?: string, sort?: string) {
-  const prisma = getPrismaClient();
-  const where: { isPublished: boolean; category?: string } = { isPublished: true };
-  if (category) where.category = category;
+  const products = await getPublishedProducts();
+  const filtered = category ? products.filter((p) => p.category === category) : products;
 
-  let orderBy: { createdAt?: "desc" | "asc"; price?: "desc" | "asc" } = { createdAt: "desc" };
-  if (sort === "price-asc") orderBy = { price: "asc" };
-  else if (sort === "price-desc") orderBy = { price: "desc" };
-
-  return prisma.product.findMany({ where, orderBy });
+  if (sort === "price-asc") return [...filtered].sort((a, b) => a.price - b.price);
+  if (sort === "price-desc") return [...filtered].sort((a, b) => b.price - a.price);
+  return filtered; // 取得時点で新着順
 }
 
 interface ProductsPageProps {
