@@ -2,23 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Alert,
-  InputAdornment,
-  IconButton,
-  Divider,
-} from "@mui/material";
-import Link from "next/link";
+import { Box, TextField, Button, InputAdornment, IconButton } from "@mui/material";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import GoogleIcon from "@mui/icons-material/Google";
 import { signIn } from "next-auth/react";
+import AuthCard from "@/components/auth/AuthCard";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+import { AUTH_SUBMIT_BUTTON_SX } from "@/components/auth/authStyles";
 
 interface LoginFormProps {
   isGoogleEnabled: boolean;
@@ -57,74 +49,17 @@ export default function LoginForm({ isGoogleEnabled }: LoginFormProps) {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/" });
-  };
-
   return (
-    <Box
-      sx={{
-        p: { xs: 3, md: 4 },
-        border: "1px solid #EAEAEA",
-        borderRadius: 2,
-      }}
+    <AuthCard
+      title="ログイン"
+      subtitle="アカウントにログインしてください"
+      error={error}
+      footerText="アカウントをお持ちでないですか？"
+      footerLinkHref="/register"
+      footerLinkLabel="新規登録"
     >
-      <Typography
-        variant="h1"
-        sx={{
-          fontWeight: 700,
-          fontSize: { xs: "1.5rem", md: "1.8rem" },
-          color: "#333",
-          textAlign: "center",
-          mb: 1,
-        }}
-      >
-        ログイン
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{ color: "#666", textAlign: "center", mb: 4 }}
-      >
-        アカウントにログインしてください
-      </Typography>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
       {/* Googleログインボタン（環境変数が設定されている場合のみ表示） */}
-      {isGoogleEnabled && (
-        <>
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<GoogleIcon />}
-            onClick={handleGoogleSignIn}
-            sx={{
-              py: 1.5,
-              color: "#333",
-              borderColor: "#DDD",
-              borderRadius: "50px",
-              fontWeight: 500,
-              mb: 3,
-              "&:hover": {
-                borderColor: "#333",
-                bgcolor: "transparent",
-              },
-            }}
-          >
-            Googleでログイン
-          </Button>
-
-          <Divider sx={{ mb: 3 }}>
-            <Typography variant="body2" sx={{ color: "#999", px: 2 }}>
-              または
-            </Typography>
-          </Divider>
-        </>
-      )}
+      {isGoogleEnabled && <GoogleSignInButton label="Googleでログイン" />}
 
       <Box component="form" onSubmit={handleSubmit}>
         <TextField
@@ -163,10 +98,7 @@ export default function LoginForm({ isGoogleEnabled }: LoginFormProps) {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
@@ -180,37 +112,11 @@ export default function LoginForm({ isGoogleEnabled }: LoginFormProps) {
           fullWidth
           variant="contained"
           disabled={isLoading}
-          sx={{
-            py: 1.5,
-            bgcolor: "#FF5722",
-            color: "white",
-            fontWeight: 600,
-            borderRadius: "50px",
-            boxShadow: "none",
-            "&:hover": {
-              bgcolor: "#E64A19",
-            },
-            "&:disabled": {
-              bgcolor: "#CCC",
-            },
-          }}
+          sx={AUTH_SUBMIT_BUTTON_SX}
         >
           {isLoading ? "ログイン中..." : "ログイン"}
         </Button>
       </Box>
-
-      <Typography
-        variant="body2"
-        sx={{ color: "#666", textAlign: "center", mt: 3 }}
-      >
-        アカウントをお持ちでないですか？{" "}
-        <Link
-          href="/register"
-          style={{ color: "#FF5722", fontWeight: 500, textDecoration: "none" }}
-        >
-          新規登録
-        </Link>
-      </Typography>
-    </Box>
+    </AuthCard>
   );
 }

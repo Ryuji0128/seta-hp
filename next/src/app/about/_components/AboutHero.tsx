@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const AboutHero = () => {
@@ -9,12 +10,12 @@ const AboutHero = () => {
     <Box
       component="section"
       sx={{
-        bgcolor: "#0A0A0A",
+        bgcolor: "background.dark",
         color: "#FFFFFF",
         py: { xs: 10, md: 16 },
       }}
     >
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box sx={{ maxWidth: 800 }}>
           <Box
             sx={{
@@ -76,7 +77,7 @@ const AboutHero = () => {
             「ただ飾る」ためのアクリルディスプレイを、一つずつ手作りでお届けしています。
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

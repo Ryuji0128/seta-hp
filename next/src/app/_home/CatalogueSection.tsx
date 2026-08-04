@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,7 +44,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
 
   return (
     <Box component="section" id="products" sx={{ py: { xs: 10, md: 15 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         {/* Heading */}
         <Box
           sx={{
@@ -61,15 +62,15 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
               fontSize: "clamp(40px, 4.6vw, 64px)",
               lineHeight: 1,
               letterSpacing: "-0.035em",
-              color: "#0A0A0A",
-              "& em": { fontStyle: "normal", color: "#B45309" },
+              color: "text.primary",
+              "& em": { fontStyle: "normal", color: "primary.main" },
             }}
           >
             ライン
             <br />
             <em>ナップ。</em>
           </Box>
-          <Box sx={{ fontSize: "16px", color: "#2A2A2A", lineHeight: 1.7, maxWidth: 540 }}>
+          <Box sx={{ fontSize: "16px", color: "secondary.main", lineHeight: 1.7, maxWidth: 540 }}>
             アクリルから一つずつレーザー切削、手仕上げ。
             <br />
             MLBカード・トレカを美しく飾るためのディスプレイを、全国送料無料でお届けします。
@@ -77,7 +78,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
               sx={{
                 display: "block",
                 mt: 1.5,
-                color: "#6B6B6B",
+                color: "text.secondary",
                 fontFamily: fontItalic,
                 fontStyle: "italic",
               }}
@@ -107,7 +108,8 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
               >
                 <Box
                   sx={{
-                    border: "1px solid #E5E5E0",
+                    border: "1px solid",
+                    borderColor: "divider",
                     borderRadius: "6px",
                     overflow: "hidden",
                     cursor: "pointer",
@@ -116,7 +118,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                       "transform 0.4s, border-color 0.3s, box-shadow 0.3s",
                     "&:hover": {
                       transform: "translateY(-4px)",
-                      borderColor: "#0A0A0A",
+                      borderColor: "text.primary",
                       boxShadow: "0 22px 40px -22px rgba(10,10,10,0.2)",
                     },
                   }}
@@ -168,7 +170,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                           top: "16px",
                           left: "16px",
                           bgcolor: "#FFFFFF",
-                          color: "#0A0A0A",
+                          color: "text.primary",
                           px: "10px",
                           py: "5px",
                           borderRadius: "999px",
@@ -199,7 +201,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                           sx={{
                             fontFamily: fontItalic,
                             fontStyle: "italic",
-                            color: "#B45309",
+                            color: "primary.main",
                             fontSize: "14px",
                             letterSpacing: "0.05em",
                           }}
@@ -210,7 +212,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                           component="span"
                           sx={{
                             fontSize: "11px",
-                            color: "#6B6B6B",
+                            color: "text.secondary",
                             letterSpacing: "0.15em",
                             textTransform: "uppercase",
                             fontWeight: 500,
@@ -226,7 +228,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                         fontSize: "22px",
                         fontWeight: 700,
                         letterSpacing: "-0.02em",
-                        color: "#0A0A0A",
+                        color: "text.primary",
                         mb: "6px",
                       }}
                     >
@@ -236,7 +238,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                       <Box
                         sx={{
                           fontSize: "12px",
-                          color: "#6B6B6B",
+                          color: "text.secondary",
                           letterSpacing: "0.08em",
                           mb: "20px",
                         }}
@@ -259,7 +261,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                           fontSize: "22px",
                           fontWeight: 700,
                           letterSpacing: "-0.02em",
-                          color: "#0A0A0A",
+                          color: "text.primary",
                         }}
                       >
                         ¥{p.price.toLocaleString()}
@@ -267,7 +269,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                       <Box
                         sx={{
                           fontSize: "11px",
-                          color: "#6B6B6B",
+                          color: "text.secondary",
                           letterSpacing: "0.12em",
                           textTransform: "uppercase",
                         }}
@@ -281,7 +283,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
             );
           })}
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

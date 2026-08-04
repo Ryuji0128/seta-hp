@@ -1,9 +1,10 @@
-import { Box, Container, Skeleton } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 
 export default function ProductDetailLoading() {
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important", py: { xs: 4, md: 8 } }}>
+      <SectionContainer sx={{ py: { xs: 4, md: 8 } }}>
         <Skeleton variant="text" width={200} height={16} sx={{ mb: 4 }} />
         <Box
           sx={{
@@ -24,7 +25,7 @@ export default function ProductDetailLoading() {
             <Skeleton variant="rectangular" height={48} sx={{ borderRadius: "999px" }} />
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 }

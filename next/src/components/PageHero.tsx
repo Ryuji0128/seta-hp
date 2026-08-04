@@ -1,5 +1,6 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import type { ReactNode } from "react";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface HeroStat {
@@ -35,7 +36,7 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
           "radial-gradient(ellipse at 80% 30%, rgba(180,83,9,0.05), transparent 50%), #FFFFFF",
       }}
     >
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box sx={{ maxWidth: 800 }}>
           <Box
             sx={{
@@ -47,10 +48,10 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
               fontWeight: 600,
               letterSpacing: "0.15em",
               textTransform: "uppercase",
-              color: "#B45309",
+              color: "primary.main",
             }}
           >
-            <Box sx={{ width: 28, height: "1px", bgcolor: "#B45309" }} />
+            <Box sx={{ width: 28, height: "1px", bgcolor: "primary.main" }} />
             {eyebrow}
           </Box>
 
@@ -62,10 +63,10 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
               fontSize: "clamp(40px, 5.5vw, 84px)",
               lineHeight: 1,
               letterSpacing: "-0.04em",
-              color: "#0A0A0A",
+              color: "text.primary",
               mt: 0,
               mb: 3,
-              "& em": { fontStyle: "normal", color: "#B45309" },
+              "& em": { fontStyle: "normal", color: "primary.main" },
             }}
           >
             {heading}
@@ -76,7 +77,7 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
               fontFamily: FONT_ITALIC,
               fontStyle: "italic",
               fontSize: "20px",
-              color: "#6B6B6B",
+              color: "text.secondary",
               mb: 4,
               letterSpacing: "0.02em",
             }}
@@ -102,7 +103,7 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
                       fontSize: "26px",
                       fontWeight: 700,
                       letterSpacing: "-0.02em",
-                      color: "#0A0A0A",
+                      color: "text.primary",
                       mb: 0.5,
                     }}
                   >
@@ -113,7 +114,7 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
                       fontSize: "11px",
                       letterSpacing: "0.15em",
                       textTransform: "uppercase",
-                      color: "#6B6B6B",
+                      color: "text.secondary",
                     }}
                   >
                     {stat.label}
@@ -123,7 +124,7 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
             </Box>
           )}
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 }

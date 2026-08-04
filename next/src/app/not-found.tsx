@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Button, Typography, Box, useMediaQuery } from "@mui/material";
 import Link from "next/link";
 import { useTheme } from "@mui/material";
-import { useSimpleBar } from "@/components/SimpleBarWrapper";
 
 // ランダムな値を生成する関数
 const getRandomValue = (min: number, max: number): number =>
@@ -24,7 +23,6 @@ const generateTriangles = (count: number) => {
 export default function NotFound() {
   const theme = useTheme();
   const [scrollY, setScrollY] = useState(0);
-  const { scrollContainerRef } = useSimpleBar();
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const appBarHeight = isMobile
@@ -47,19 +45,15 @@ export default function NotFound() {
   }, []);
 
   useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-
-    if (!scrollContainer) return;
-
-    // スクロールイベントのリスナー
+    // ネイティブスクロールに連動（SimpleBar 撤去 #245）
     const handleScroll = () => {
-      setScrollY(scrollContainer.scrollTop);
+      setScrollY(window.scrollY);
     };
 
-    scrollContainer.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll);
 
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, [scrollContainerRef]);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // 線形補間（Lerp）関数
   const lerp = (start: number, end: number, t: number): number =>

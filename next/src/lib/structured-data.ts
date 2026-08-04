@@ -1,15 +1,9 @@
 import { parseProductImages, type Product } from "@/lib/types/product";
+import { getStockMeta } from "@/lib/constants/categories";
+import { formatRefNumber } from "@/lib/format";
 
 const SITE_URL = "https://kaza-love.com";
 const SITE_NAME = "飾Love";
-
-// 在庫表示文字列 → schema.org の availability URL へマッピング。
-// 未知の値は「在庫あり」とみなす（InStock）。
-const STOCK_TO_AVAILABILITY: Record<string, string> = {
-  在庫あり: "https://schema.org/InStock",
-  残りわずか: "https://schema.org/LimitedAvailability",
-  売り切れ: "https://schema.org/OutOfStock",
-};
 
 // 相対パス（/uploads/...）を絶対URLに変換する。外部URLはそのまま。
 function toAbsoluteUrl(path: string): string {
@@ -24,8 +18,8 @@ function toAbsoluteUrl(path: string): string {
 export function buildProductJsonLd(product: Product): Record<string, unknown> {
   const images = parseProductImages(product.images, product.image).map(toAbsoluteUrl);
   const url = `${SITE_URL}/products/${product.id}`;
-  const availability =
-    STOCK_TO_AVAILABILITY[product.stock] ?? "https://schema.org/InStock";
+  // 在庫表示文字列 → schema.org availability。未知の値は「在庫あり」とみなす（InStock）。
+  const availability = getStockMeta(product.stock)?.schemaUrl ?? "https://schema.org/InStock";
 
   return {
     "@context": "https://schema.org",
@@ -33,7 +27,7 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
     name: product.name,
     description: product.description,
     ...(images.length > 0 ? { image: images } : {}),
-    sku: String(product.id).padStart(3, "0"),
+    sku: formatRefNumber(product.id),
     brand: { "@type": "Brand", name: SITE_NAME },
     offers: {
       "@type": "Offer",

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
-import { VALID_GALLERY_CATEGORIES } from "@/lib/constants/categories";
 import { parsePagination } from "@/lib/pagination";
-import { isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
+import { badRequestResponse, notFoundResponse } from "@/lib/api-response";
+import { handleApiError, isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
+import { WorkCreateSchema, WorkUpdateSchema } from "@/lib/validation";
 import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
+import { revalidateWorkPages } from "@/lib/cache-tags";
 import xss from "xss";
 
 // 制作事例一覧取得（公開用）
@@ -34,8 +36,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ works, total, page, limit });
   } catch (error) {
-    console.error("制作事例取得エラー:", error);
-    return NextResponse.json({ error: "制作事例の取得に失敗しました" }, { status: 500 });
+    return handleApiError(error, { log: "制作事例取得エラー", message: "制作事例の取得に失敗しました" });
   }
 }
 
@@ -48,16 +49,14 @@ export async function POST(req: NextRequest) {
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
     if (isErrorResponse(body)) return body;
-    const { title, description, category, tags, image, isPublished } = body;
 
-    if (!title || !description || !category) {
-      return NextResponse.json({ error: "タイトル、説明、カテゴリは必須です" }, { status: 400 });
+    // バリデーションは Zod スキーマに集約
+    const parsed = WorkCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return badRequestResponse(parsed.error.errors[0].message);
     }
-
-    // カテゴリの検証
-    if (!VALID_GALLERY_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_GALLERY_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
-    }
+    const { title, description, category } = parsed.data;
+    const { tags, image, isPublished } = body;
 
     const work = await prisma.work.create({
       data: {
@@ -70,10 +69,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    revalidateWorkPages();
+
     return NextResponse.json({ message: "制作事例を作成しました", work });
   } catch (error) {
-    console.error("制作事例作成エラー:", error);
-    return NextResponse.json({ error: "制作事例の作成に失敗しました" }, { status: 500 });
+    return handleApiError(error, { log: "制作事例作成エラー", message: "制作事例の作成に失敗しました" });
   }
 }
 
@@ -86,21 +86,19 @@ export async function PUT(req: NextRequest) {
     const prisma = getPrismaClient();
     const body = await parseJsonBody(req);
     if (isErrorResponse(body)) return body;
-    const { id, title, description, category, tags, image, isPublished } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
+    // バリデーションは Zod スキーマに集約（POST と共通・全フィールド任意 + ID 必須）
+    const parsed = WorkUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return badRequestResponse(parsed.error.errors[0].message);
     }
+    const { id, title, description, category } = parsed.data;
+    const { tags, image, isPublished } = body;
 
     // 存在確認
     const existing = await prisma.work.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "指定された制作事例が見つかりません" }, { status: 404 });
-    }
-
-    // カテゴリの検証
-    if (category && !VALID_GALLERY_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: `カテゴリは${VALID_GALLERY_CATEGORIES.join(", ")}のいずれかを指定してください` }, { status: 400 });
+      return notFoundResponse("指定された制作事例が見つかりません");
     }
 
     const work = await prisma.work.update({
@@ -117,10 +115,15 @@ export async function PUT(req: NextRequest) {
 
     await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
+    revalidateWorkPages();
+
     return NextResponse.json({ message: "制作事例を更新しました", work });
   } catch (error) {
-    console.error("制作事例更新エラー:", error);
-    return NextResponse.json({ error: "制作事例の更新に失敗しました" }, { status: 500 });
+    return handleApiError(error, {
+      log: "制作事例更新エラー",
+      message: "制作事例の更新に失敗しました",
+      notFoundMessage: "指定された制作事例が見つかりません",
+    });
   }
 }
 
@@ -136,13 +139,13 @@ export async function DELETE(req: NextRequest) {
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "IDは必須です" }, { status: 400 });
+      return badRequestResponse("IDは必須です");
     }
 
     // 存在確認
     const existing = await prisma.work.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "指定された制作事例が見つかりません" }, { status: 404 });
+      return notFoundResponse("指定された制作事例が見つかりません");
     }
 
     await prisma.work.delete({
@@ -151,9 +154,14 @@ export async function DELETE(req: NextRequest) {
 
     await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
+    revalidateWorkPages();
+
     return NextResponse.json({ message: "制作事例を削除しました" });
   } catch (error) {
-    console.error("制作事例削除エラー:", error);
-    return NextResponse.json({ error: "制作事例の削除に失敗しました" }, { status: 500 });
+    return handleApiError(error, {
+      log: "制作事例削除エラー",
+      message: "制作事例の削除に失敗しました",
+      notFoundMessage: "指定された制作事例が見つかりません",
+    });
   }
 }

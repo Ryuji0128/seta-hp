@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
@@ -21,7 +22,7 @@ const ContactPageHero: React.FC<Props> = ({ titleJa, titleEn, lead }) => {
           "radial-gradient(ellipse at 20% 30%, rgba(180,83,9,0.04), transparent 50%), #FFFFFF",
       }}
     >
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box sx={{ maxWidth: 720 }}>
           <Box
             sx={{
@@ -33,10 +34,10 @@ const ContactPageHero: React.FC<Props> = ({ titleJa, titleEn, lead }) => {
               fontWeight: 600,
               letterSpacing: "0.15em",
               textTransform: "uppercase",
-              color: "#B45309",
+              color: "primary.main",
             }}
           >
-            <Box sx={{ width: 28, height: "1px", bgcolor: "#B45309" }} />
+            <Box sx={{ width: 28, height: "1px", bgcolor: "primary.main" }} />
             Contact · お問い合わせ
           </Box>
 
@@ -48,7 +49,7 @@ const ContactPageHero: React.FC<Props> = ({ titleJa, titleEn, lead }) => {
               fontSize: "clamp(40px, 5vw, 72px)",
               lineHeight: 1,
               letterSpacing: "-0.035em",
-              color: "#0A0A0A",
+              color: "text.primary",
               mt: 0,
               mb: 2,
             }}
@@ -61,7 +62,7 @@ const ContactPageHero: React.FC<Props> = ({ titleJa, titleEn, lead }) => {
               fontFamily: fontItalic,
               fontStyle: "italic",
               fontSize: "20px",
-              color: "#6B6B6B",
+              color: "text.secondary",
               mb: 4,
               letterSpacing: "0.02em",
             }}
@@ -69,11 +70,11 @@ const ContactPageHero: React.FC<Props> = ({ titleJa, titleEn, lead }) => {
             — {titleEn}
           </Box>
 
-          <Box sx={{ fontSize: "16px", color: "#2A2A2A", lineHeight: 1.8, maxWidth: 560 }}>
+          <Box sx={{ fontSize: "16px", color: "secondary.main", lineHeight: 1.8, maxWidth: 560 }}>
             {lead}
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

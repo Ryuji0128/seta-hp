@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const VALUES = [
@@ -27,14 +28,15 @@ const AboutValues = () => {
   const fontItalic = FONT_ITALIC;
 
   return (
-    <Box component="section" sx={{ bgcolor: "#F6F6F4", py: { xs: 10, md: 15 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+    <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "flex",
             alignItems: "baseline",
             gap: 3,
-            borderTop: "1px solid #0A0A0A",
+            borderTop: "1px solid",
+            borderTopColor: "text.primary",
             pt: 3.5,
             mb: 8,
             fontFamily: fontItalic,
@@ -43,9 +45,9 @@ const AboutValues = () => {
             letterSpacing: "0.05em",
           }}
         >
-          <Box sx={{ color: "#B45309" }}>— 03</Box>
-          <Box sx={{ color: "#0A0A0A" }}>Values</Box>
-          <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　大切にしていること</Box>
+          <Box sx={{ color: "primary.main" }}>— 03</Box>
+          <Box sx={{ color: "text.primary" }}>Values</Box>
+          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　大切にしていること</Box>
         </Box>
 
         <Box
@@ -62,7 +64,7 @@ const AboutValues = () => {
                   fontFamily: fontItalic,
                   fontStyle: "italic",
                   fontSize: "14px",
-                  color: "#B45309",
+                  color: "primary.main",
                   letterSpacing: "0.1em",
                   mb: 3,
                 }}
@@ -75,7 +77,7 @@ const AboutValues = () => {
                   fontSize: "26px",
                   fontWeight: 700,
                   letterSpacing: "-0.02em",
-                  color: "#0A0A0A",
+                  color: "text.primary",
                   mb: 0.75,
                 }}
               >
@@ -86,20 +88,20 @@ const AboutValues = () => {
                   fontSize: "11px",
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
-                  color: "#6B6B6B",
+                  color: "text.secondary",
                   fontWeight: 500,
                   mb: 2,
                 }}
               >
                 {v.titleEn}
               </Box>
-              <Box sx={{ fontSize: "14px", color: "#2A2A2A", lineHeight: 1.85 }}>
+              <Box sx={{ fontSize: "14px", color: "secondary.main", lineHeight: 1.85 }}>
                 {v.body}
               </Box>
             </Box>
           ))}
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

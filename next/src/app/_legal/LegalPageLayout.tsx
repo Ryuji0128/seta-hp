@@ -1,8 +1,6 @@
-"use client";
-
 import { Box, Container } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
+import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
   titleJa: string;
@@ -15,6 +13,7 @@ interface Props {
 /**
  * 規約系ページ用の共通レイアウト
  * /shipping, /legal, /privacy-policy, /company で共有
+ * サーバーコンポーネント（フォントは themeConstants から直接参照）
  */
 const LegalPageLayout: React.FC<Props> = ({
   titleJa,
@@ -23,9 +22,8 @@ const LegalPageLayout: React.FC<Props> = ({
   children,
   showFooterCta = true,
 }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
-  const fontItalic = theme.custom.fonts.italic;
+  const fontDisplay = FONT_DISPLAY;
+  const fontItalic = FONT_ITALIC;
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
@@ -51,10 +49,10 @@ const LegalPageLayout: React.FC<Props> = ({
                 fontWeight: 600,
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
-                color: "#B45309",
+                color: "primary.main",
               }}
             >
-              <Box sx={{ width: 24, height: "1px", bgcolor: "#B45309" }} />
+              <Box sx={{ width: 24, height: "1px", bgcolor: "primary.main" }} />
               {eyebrow}
             </Box>
           )}
@@ -66,7 +64,7 @@ const LegalPageLayout: React.FC<Props> = ({
               fontSize: "clamp(32px, 4vw, 56px)",
               lineHeight: 1.1,
               letterSpacing: "-0.03em",
-              color: "#0A0A0A",
+              color: "text.primary",
               mt: 0,
               mb: 1.5,
             }}
@@ -78,7 +76,7 @@ const LegalPageLayout: React.FC<Props> = ({
               fontFamily: fontItalic,
               fontStyle: "italic",
               fontSize: "16px",
-              color: "#6B6B6B",
+              color: "text.secondary",
               letterSpacing: "0.02em",
             }}
           >
@@ -98,11 +96,12 @@ const LegalPageLayout: React.FC<Props> = ({
                 fontWeight: 700,
                 fontSize: "20px",
                 letterSpacing: "-0.015em",
-                color: "#0A0A0A",
+                color: "text.primary",
                 mt: 5,
                 mb: 1.5,
                 pl: 2,
-                borderLeft: "3px solid #B45309",
+                borderLeft: "3px solid",
+                borderColor: "primary.main",
                 lineHeight: 1.4,
               },
               "& h3": {
@@ -110,13 +109,13 @@ const LegalPageLayout: React.FC<Props> = ({
                 fontWeight: 600,
                 fontSize: "15px",
                 letterSpacing: "-0.005em",
-                color: "#0A0A0A",
+                color: "text.primary",
                 mt: 3,
                 mb: 1,
               },
               "& p": {
                 fontSize: "14.5px",
-                color: "#2A2A2A",
+                color: "secondary.main",
                 lineHeight: 1.9,
                 mb: 2,
               },
@@ -126,16 +125,16 @@ const LegalPageLayout: React.FC<Props> = ({
               },
               "& li": {
                 fontSize: "14.5px",
-                color: "#2A2A2A",
+                color: "secondary.main",
                 lineHeight: 1.9,
                 mb: 0.75,
               },
               "& a": {
-                color: "#B45309",
+                color: "primary.main",
                 textDecoration: "none",
                 "&:hover": { textDecoration: "underline" },
               },
-              "& strong": { color: "#0A0A0A", fontWeight: 600 },
+              "& strong": { color: "text.primary", fontWeight: 600 },
             }}
           >
             {children}
@@ -147,7 +146,7 @@ const LegalPageLayout: React.FC<Props> = ({
       {showFooterCta && (
         <Box
           component="section"
-          sx={{ bgcolor: "#F6F6F4", py: { xs: 7, md: 10 } }}
+          sx={{ bgcolor: "background.alt", py: { xs: 7, md: 10 } }}
         >
           <Container maxWidth="md" sx={{ maxWidth: "880px !important" }}>
             <Box
@@ -165,13 +164,13 @@ const LegalPageLayout: React.FC<Props> = ({
                     fontSize: "22px",
                     fontWeight: 700,
                     letterSpacing: "-0.02em",
-                    color: "#0A0A0A",
+                    color: "text.primary",
                     mb: 0.75,
                   }}
                 >
                   ご不明な点はお気軽に。
                 </Box>
-                <Box sx={{ fontSize: "13.5px", color: "#6B6B6B" }}>
+                <Box sx={{ fontSize: "13.5px", color: "text.secondary" }}>
                   記載内容について質問・確認したいことがあれば、お問い合わせください。
                 </Box>
               </Box>
@@ -181,7 +180,7 @@ const LegalPageLayout: React.FC<Props> = ({
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 1.25,
-                    bgcolor: "#0A0A0A",
+                    bgcolor: "background.dark",
                     color: "#FFFFFF",
                     px: 3,
                     py: 1.5,
@@ -190,7 +189,7 @@ const LegalPageLayout: React.FC<Props> = ({
                     fontWeight: 600,
                     cursor: "pointer",
                     transition: "background-color 0.2s, transform 0.2s",
-                    "&:hover": { bgcolor: "#B45309", transform: "translateY(-1px)" },
+                    "&:hover": { bgcolor: "primary.main", transform: "translateY(-1px)" },
                   }}
                 >
                   お問い合わせ <span>→</span>

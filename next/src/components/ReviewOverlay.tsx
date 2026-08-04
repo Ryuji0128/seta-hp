@@ -11,7 +11,6 @@
  * - 名前は localStorage に保存(初回入力 / 後から変更可)
  */
 
-import { useSimpleBar } from "@/components/SimpleBarWrapper";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -30,14 +29,10 @@ import {
 
 export default function ReviewOverlay() {
   const pathname = usePathname();
-  const { scrollContainerRef } = useSimpleBar();
+  // ネイティブスクロール（SimpleBar 撤去 #245）
   const getScrollEl = useCallback((): HTMLElement => {
-    return (
-      scrollContainerRef.current ??
-      (document.scrollingElement as HTMLElement | null) ??
-      document.documentElement
-    );
-  }, [scrollContainerRef]);
+    return (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
+  }, []);
 
   const [comments, setComments] = useState<ReviewComment[]>([]);
   const [pinning, setPinning] = useState(false);

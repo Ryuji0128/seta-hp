@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 const FEATURES = [
@@ -32,8 +33,8 @@ const FeaturesSection = () => {
   const fontDisplay = FONT_DISPLAY;
 
   return (
-    <Box component="section" sx={{ bgcolor: "#F6F6F4", py: { xs: 10, md: 15 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+    <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "grid",
@@ -50,13 +51,13 @@ const FeaturesSection = () => {
               fontSize: "clamp(40px, 4.6vw, 64px)",
               lineHeight: 1,
               letterSpacing: "-0.035em",
-              color: "#0A0A0A",
-              "& em": { fontStyle: "normal", color: "#B45309" },
+              color: "text.primary",
+              "& em": { fontStyle: "normal", color: "primary.main" },
             }}
           >
             長く、<em>共に。</em>
           </Box>
-          <Box sx={{ fontSize: "16px", color: "#2A2A2A", lineHeight: 1.7, maxWidth: 540 }}>
+          <Box sx={{ fontSize: "16px", color: "secondary.main", lineHeight: 1.7, maxWidth: 540 }}>
             飾るカードの方が長持ちするくらい、ディスプレイ側もしっかり作る。
             <br />
             手を抜かないことが、飾Love のスタンダードです。
@@ -68,8 +69,9 @@ const FeaturesSection = () => {
             display: "grid",
             gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(4, 1fr)" },
             gap: "1px",
-            bgcolor: "#E5E5E0",
-            border: "1px solid #E5E5E0",
+            bgcolor: "divider",
+            border: "1px solid",
+            borderColor: "divider",
             borderRadius: "6px",
             overflow: "hidden",
           }}
@@ -81,7 +83,7 @@ const FeaturesSection = () => {
                   fontFamily: fontDisplay,
                   fontSize: "13px",
                   fontWeight: 700,
-                  color: "#B45309",
+                  color: "primary.main",
                   mb: 3,
                   letterSpacing: "0.1em",
                 }}
@@ -95,7 +97,7 @@ const FeaturesSection = () => {
                   fontWeight: 700,
                   letterSpacing: "-0.02em",
                   mb: 1.25,
-                  color: "#0A0A0A",
+                  color: "text.primary",
                 }}
               >
                 {f.title}
@@ -103,19 +105,19 @@ const FeaturesSection = () => {
               <Box
                 sx={{
                   fontSize: "12px",
-                  color: "#6B6B6B",
+                  color: "text.secondary",
                   mb: 1.75,
                 }}
               >
                 {f.titleEn}
               </Box>
-              <Box sx={{ fontSize: "13.5px", color: "#2A2A2A", lineHeight: 1.7 }}>
+              <Box sx={{ fontSize: "13.5px", color: "secondary.main", lineHeight: 1.7 }}>
                 {f.body}
               </Box>
             </Box>
           ))}
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

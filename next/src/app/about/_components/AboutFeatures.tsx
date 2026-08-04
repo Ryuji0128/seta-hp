@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const FEATURES = [
@@ -15,13 +16,14 @@ const AboutFeatures = () => {
 
   return (
     <Box component="section" sx={{ py: { xs: 10, md: 15 } }}>
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "flex",
             alignItems: "baseline",
             gap: 3,
-            borderTop: "1px solid #0A0A0A",
+            borderTop: "1px solid",
+            borderTopColor: "text.primary",
             pt: 3.5,
             mb: 6,
             fontFamily: fontItalic,
@@ -30,9 +32,9 @@ const AboutFeatures = () => {
             letterSpacing: "0.05em",
           }}
         >
-          <Box sx={{ color: "#B45309" }}>— 04</Box>
-          <Box sx={{ color: "#0A0A0A" }}>Features</Box>
-          <Box sx={{ color: "#6B6B6B", fontSize: "14px" }}>／　飾Love の特徴</Box>
+          <Box sx={{ color: "primary.main" }}>— 04</Box>
+          <Box sx={{ color: "text.primary" }}>Features</Box>
+          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　飾Love の特徴</Box>
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1.4fr" }, gap: { xs: 0, md: 10 } }}>
@@ -42,13 +44,13 @@ const AboutFeatures = () => {
               fontSize: "clamp(28px, 3.4vw, 48px)",
               fontWeight: 700,
               letterSpacing: "-0.025em",
-              color: "#0A0A0A",
+              color: "text.primary",
               lineHeight: 1.15,
               mb: { xs: 5, md: 0 },
             }}
           >
             5つの<br />
-            <Box component="span" sx={{ color: "#B45309" }}>こだわり。</Box>
+            <Box component="span" sx={{ color: "primary.main" }}>こだわり。</Box>
           </Box>
 
           <Box>
@@ -60,8 +62,9 @@ const AboutFeatures = () => {
                   gridTemplateColumns: { xs: "1fr", sm: "160px 1fr" },
                   gap: { xs: 0.5, sm: 4 },
                   py: 3,
-                  borderTop: "1px solid #E5E5E0",
-                  ...(i === FEATURES.length - 1 && { borderBottom: "1px solid #E5E5E0" }),
+                  borderTop: "1px solid",
+                  borderTopColor: "divider",
+                  ...(i === FEATURES.length - 1 && { borderBottom: "1px solid", borderBottomColor: "divider" }),
                 }}
               >
                 <Box
@@ -70,19 +73,19 @@ const AboutFeatures = () => {
                     fontWeight: 700,
                     fontSize: "16px",
                     letterSpacing: "-0.01em",
-                    color: "#0A0A0A",
+                    color: "text.primary",
                   }}
                 >
                   {f.en}
                 </Box>
-                <Box sx={{ fontSize: "14.5px", color: "#2A2A2A", lineHeight: 1.7 }}>
+                <Box sx={{ fontSize: "14.5px", color: "secondary.main", lineHeight: 1.7 }}>
                   {f.ja}
                 </Box>
               </Box>
             ))}
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

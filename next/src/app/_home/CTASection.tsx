@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
 import Link from "next/link";
 
@@ -9,13 +10,13 @@ const CTASection = () => {
     <Box
       component="section"
       sx={{
-        bgcolor: "#0A0A0A",
+        bgcolor: "background.dark",
         color: "#FFFFFF",
         py: { xs: 10, md: 15 },
         textAlign: "center",
       }}
     >
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box
           component="h2"
           sx={{
@@ -60,7 +61,7 @@ const CTASection = () => {
                 alignItems: "center",
                 gap: 1.25,
                 bgcolor: "#FFFFFF",
-                color: "#0A0A0A",
+                color: "text.primary",
                 px: 4,
                 py: 2,
                 borderRadius: "999px",
@@ -96,7 +97,7 @@ const CTASection = () => {
             </Box>
           </Link>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

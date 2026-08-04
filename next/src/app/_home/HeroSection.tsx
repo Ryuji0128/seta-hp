@@ -1,4 +1,5 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
+import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,7 +22,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
           "radial-gradient(ellipse at 80% 20%, rgba(180, 83, 9, 0.04), transparent 50%), #FFFFFF",
       }}
     >
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "grid",
@@ -42,10 +43,10 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                 fontWeight: 600,
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
-                color: "#B45309",
+                color: "primary.main",
               }}
             >
-              <Box sx={{ width: 28, height: "1px", bgcolor: "#B45309" }} />
+              <Box sx={{ width: 28, height: "1px", bgcolor: "primary.main" }} />
               Catalogue 2026 · Edition I
             </Box>
 
@@ -57,9 +58,9 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                 fontSize: "clamp(56px, 7.2vw, 108px)",
                 lineHeight: 0.96,
                 letterSpacing: "-0.04em",
-                color: "#0A0A0A",
+                color: "text.primary",
                 mb: 4,
-                "& em": { fontStyle: "normal", color: "#B45309" },
+                "& em": { fontStyle: "normal", color: "primary.main" },
               }}
             >
               カードは、
@@ -74,7 +75,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                 fontFamily: fontItalic,
                 fontStyle: "italic",
                 fontSize: "20px",
-                color: "#B45309",
+                color: "primary.main",
                 mb: 2.5,
                 letterSpacing: "0.02em",
               }}
@@ -86,7 +87,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
               sx={{
                 fontSize: "18px",
                 lineHeight: 1.6,
-                color: "#2A2A2A",
+                color: "secondary.main",
                 mb: 1.5,
                 maxWidth: 480,
               }}
@@ -97,7 +98,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
             <Box
               sx={{
                 fontSize: "13.5px",
-                color: "#6B6B6B",
+                color: "text.secondary",
                 letterSpacing: "0.04em",
                 lineHeight: 1.85,
                 maxWidth: 460,
@@ -117,7 +118,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 1.25,
-                    bgcolor: "#0A0A0A",
+                    bgcolor: "background.dark",
                     color: "#FFFFFF",
                     px: 3.5,
                     py: 2,
@@ -126,7 +127,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                     fontWeight: 600,
                     cursor: "pointer",
                     transition: "background-color 0.2s, transform 0.2s",
-                    "&:hover": { bgcolor: "#B45309", transform: "translateY(-1px)" },
+                    "&:hover": { bgcolor: "primary.main", transform: "translateY(-1px)" },
                   }}
                 >
                   カタログを見る <span>→</span>
@@ -157,7 +158,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                       fontSize: "26px",
                       fontWeight: 700,
                       letterSpacing: "-0.02em",
-                      color: "#0A0A0A",
+                      color: "text.primary",
                       mb: 0.5,
                     }}
                   >
@@ -166,7 +167,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                   <Box
                     sx={{
                       fontSize: "11px",
-                      color: "#6B6B6B",
+                      color: "text.secondary",
                       letterSpacing: "0.12em",
                       textTransform: "uppercase",
                     }}
@@ -199,7 +200,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
             />
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 };

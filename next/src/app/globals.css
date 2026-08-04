@@ -28,6 +28,26 @@ body {
 
 .grecaptcha-badge { visibility: hidden; }
 
+/* ネイティブスクロールバーの装飾（simplebar-react 撤去に伴う代替 #245） */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-soft) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gray-soft);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray);
+}
+
 /* Marquee animation for site-wide use */
 @keyframes seta-marquee {
   from { transform: translateX(0); }

@@ -1,7 +1,5 @@
-"use client";
-
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 export interface LegalInfoRow {
   label: string;
@@ -15,15 +13,16 @@ interface Props {
 /**
  * label / value の縦並びテーブル(規約・会社情報用)
  * 細罫線スタイルの label / value テーブル
+ * サーバーコンポーネント（フォントは themeConstants から直接参照）
  */
 const LegalInfoTable: React.FC<Props> = ({ rows }) => {
-  const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
+  const fontDisplay = FONT_DISPLAY;
 
   return (
     <Box
       sx={{
-        border: "1px solid #E5E5E0",
+        border: "1px solid",
+        borderColor: "divider",
         borderRadius: "6px",
         overflow: "hidden",
       }}
@@ -35,22 +34,24 @@ const LegalInfoTable: React.FC<Props> = ({ rows }) => {
             display: "grid",
             gridTemplateColumns: { xs: "1fr", sm: "200px 1fr" },
             ...(i < rows.length - 1 && {
-              borderBottom: "1px solid #E5E5E0",
+              borderBottom: "1px solid",
+              borderColor: "divider",
             }),
           }}
         >
           <Box
             sx={{
-              bgcolor: "#F6F6F4",
+              bgcolor: "background.alt",
               px: { xs: 2, sm: 3 },
               py: { xs: 1.75, sm: 2.5 },
               fontFamily: fontDisplay,
               fontWeight: 600,
               fontSize: "13.5px",
               letterSpacing: "-0.01em",
-              color: "#0A0A0A",
-              borderRight: { xs: "none", sm: "1px solid #E5E5E0" },
-              borderBottom: { xs: "1px solid #E5E5E0", sm: "none" },
+              color: "text.primary",
+              borderRight: { xs: "none", sm: "1px solid" },
+              borderBottom: { xs: "1px solid", sm: "none" },
+              borderColor: "divider",
               display: "flex",
               alignItems: "flex-start",
             }}
@@ -62,7 +63,7 @@ const LegalInfoTable: React.FC<Props> = ({ rows }) => {
               px: { xs: 2, sm: 3 },
               py: { xs: 1.75, sm: 2.5 },
               fontSize: "14px",
-              color: "#2A2A2A",
+              color: "secondary.main",
               lineHeight: 1.8,
               whiteSpace: "pre-line",
             }}

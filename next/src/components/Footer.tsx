@@ -1,9 +1,10 @@
 "use client";
 
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SectionContainer from "@/components/SectionContainer";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -47,14 +48,14 @@ export default function Footer() {
     <Box
       component="footer"
       sx={{
-        backgroundColor: "#0A0A0A",
+        backgroundColor: "background.dark",
         color: "rgba(255,255,255,0.55)",
         pt: { xs: 8, md: 10 },
         pb: 5,
         borderTop: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      <Container maxWidth="xl" sx={{ maxWidth: "1320px !important" }}>
+      <SectionContainer>
         <Box
           sx={{
             display: "grid",
@@ -184,7 +185,7 @@ export default function Footer() {
           <span suppressHydrationWarning>© {new Date().getFullYear()} 飾Love</span>
           <span>Made in Japan</span>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 }
