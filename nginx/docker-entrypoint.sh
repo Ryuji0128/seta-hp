@@ -73,8 +73,10 @@ server {
 
     # --- 管理エリアのIP制限（#248） ---
     # ADMIN_ALLOWED_IPS 未設定時は admin_allow.inc が "allow all;" となり制限なし。
-    # 管理ページ（UI）。アプリ側 middleware / requireAdminOrEditor と併せて三層防御。
-    location ~ ^/(products-manage|gallery-manage|news)(/|\$) {
+    # 管理ページ＋ログイン/登録ページ（#251: 一般ユーザーのログイン運用が無いため
+    # 認証エリアごと制限し、攻撃者はログイン試行自体が不可能）。
+    # アプリ側 middleware / requireAdminOrEditor と併せて三層防御。
+    location ~ ^/(products-manage|gallery-manage|news|login|register)(/|\$) {
         include /etc/nginx/conf.d/admin_allow.inc;
         limit_req zone=general burst=20 nodelay;
         proxy_pass http://next_app:3000;
@@ -121,6 +123,47 @@ server {
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
+    }
+
+    # 認証APIのIP制限（#251）。signin/callback/csrf 等を許可IPに限定し
+    # ログイン試行自体を遮断する。/api/auth/session のみ公開
+    # （全ページのヘッダが参照する読み取り専用。未ログインは null 応答のみ）。
+    # ※ designer の auth_request(verify-admin) は nginx 内部で next_app へ直接
+    #   proxy するためこの制限の影響を受けない。
+    location = /api/auth/session {
+        limit_req zone=api burst=10 nodelay;
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /api/auth/ {
+        include /etc/nginx/conf.d/admin_allow.inc;
+        limit_req zone=api burst=10 nodelay;
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    # ユーザー登録APIもIP制限（#251: ログインと同じく一般利用なし）
+    location = /api/register {
+        include /etc/nginx/conf.d/admin_allow.inc;
+        limit_req zone=api burst=10 nodelay;
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
     # 商品/制作事例/お知らせAPI: GET(公開)以外の書込メソッドのみIP制限（#248）
