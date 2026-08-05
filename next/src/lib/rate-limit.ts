@@ -212,6 +212,11 @@ export const RATE_LIMITS = {
     limit: 10,
     windowMs: 15 * 60 * 1000,
   },
+  // 単一IPから多数アカウントを試すパスワードスプレー対策（アカウント単位より緩め）
+  loginIp: {
+    limit: 30,
+    windowMs: 15 * 60 * 1000,
+  },
   contact: {
     limit: 3,
     windowMs: 60 * 1000,

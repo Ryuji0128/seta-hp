@@ -1,6 +1,6 @@
 // src/auth.config.ts
 import { getPrismaClient } from "@/lib/db";
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import bcryptjs from "bcryptjs";
 import { isGoogleAuthEnabled } from "@/lib/runtime-config";
 import { NextAuthConfig } from "next-auth";
@@ -36,12 +36,19 @@ const authConfig = {
         email: { label: "メールアドレス", type: "text" },
         password: { label: "パスワード", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = String(credentials?.email || "");
         const password = String(credentials?.password || "");
 
         if (!email || !password) {
           throw new Error("メールアドレス若しくはパスワードが入力されていません。");
+        }
+
+        // 単一IPから多数アカウントを試すパスワードスプレー対策（#248）
+        const clientIp = getClientIp(request);
+        const ipRateLimit = await checkRateLimit(`login-ip:${clientIp}`, RATE_LIMITS.loginIp);
+        if (!ipRateLimit.success) {
+          throw new Error("ログイン試行回数が上限に達しました。しばらくお待ちください。");
         }
 
         // 同一アカウントへのパスワード総当たり対策
