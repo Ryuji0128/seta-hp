@@ -113,7 +113,7 @@ npx prisma db seed    # シードデータ投入
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: Google OAuth（任意）
 - `RECAPTCHA_SECRET_KEY`: reCAPTCHA検証用
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`: メール送信
-- `ADMIN_ALLOWED_IPS`: 管理エリア（管理ページ・管理API書込）を許可するIP/CIDR（スペース区切り、Nginx層で制限）。未設定なら制限なし
+- `ADMIN_ALLOWED_IPS`: 管理エリア（管理ページ・管理API書込・ログイン/登録・認証API）を許可するIP/CIDR（スペース区切り、Nginx層で制限）。未設定なら制限なし。`/api/auth/session` のみ常時公開
 
 ## Critical Patterns
 
