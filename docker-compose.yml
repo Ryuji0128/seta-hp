@@ -16,7 +16,9 @@ services:
       - ./next/.env
     environment:
       - DATABASE_URL=mysql://app_user:${MYSQL_PASSWORD:-app_pass}@mysql:3306/app_db
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      # compose直下の .env から解決される（next/.env ではない。environment は env_file より優先）。
+      # 未設定でも本番が安全側に倒れるよう既定は本番URL。ローカル開発は .env で上書きする（#255）。
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-https://kaza-love.com}
       - NEXTAUTH_TRUST_HOST=true
       - HOSTNAME=0.0.0.0
       # --- SSO: designer.kaza-love.com を HP管理者ログインでゲートする ---
