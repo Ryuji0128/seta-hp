@@ -74,6 +74,9 @@ services:
       # Designer SSO の共有秘密（designer の Django と同値にする）。
       # 未設定なら空文字 → designer 側も非強制（後方互換）。設定時のみ偽装防止が有効。
       - PROXY_SSO_SECRET=${PROXY_SSO_SECRET:-}
+      # 管理エリア（管理ページ・管理API書込）を許可するIP/CIDR（スペース区切り）。
+      # 未設定なら制限なし（#248）。例: "203.0.113.10 198.51.100.0/24"
+      - ADMIN_ALLOWED_IPS=${ADMIN_ALLOWED_IPS:-}
     volumes:
       - ./nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template:ro
       - ./nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro

@@ -6,6 +6,24 @@ CERT_PATH="/etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem"
 # 環境変数を展開
 envsubst '${SERVER_NAME} ${OLD_SERVER_NAME}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
+# --- 管理エリアIP制限の allow リストを生成（#248） ---
+# ADMIN_ALLOWED_IPS: スペース区切りの IP/CIDR（例: "203.0.113.10 198.51.100.0/24"）。
+# 未設定なら "allow all" となり従来挙動（制限なし）。IP変更でロックアウトした場合は
+# VPS に SSH して .env の ADMIN_ALLOWED_IPS を更新 → nginx 再起動で復旧できる。
+# ※ 拡張子 .inc は conf.d/*.conf の自動読込対象外（include 専用）。
+ADMIN_ALLOW_CONF=/etc/nginx/conf.d/admin_allow.inc
+if [ -n "${ADMIN_ALLOWED_IPS:-}" ]; then
+    echo "# generated from ADMIN_ALLOWED_IPS" > "$ADMIN_ALLOW_CONF"
+    for ip in $ADMIN_ALLOWED_IPS; do
+        echo "allow $ip;" >> "$ADMIN_ALLOW_CONF"
+    done
+    echo "deny all;" >> "$ADMIN_ALLOW_CONF"
+    echo "Admin IP allowlist enabled: $ADMIN_ALLOWED_IPS"
+else
+    echo "allow all;" > "$ADMIN_ALLOW_CONF"
+    echo "ADMIN_ALLOWED_IPS is not set. Admin area is NOT IP-restricted."
+fi
+
 # SSL証明書が存在する場合、HTTPS設定を追加
 if [ -f "$CERT_PATH" ]; then
     echo "SSL certificate found. Enabling HTTPS..."
@@ -53,6 +71,25 @@ server {
 
     client_max_body_size 10M;
 
+    # --- 管理エリアのIP制限（#248） ---
+    # ADMIN_ALLOWED_IPS 未設定時は admin_allow.inc が "allow all;" となり制限なし。
+    # 管理ページ（UI）。アプリ側 middleware / requireAdminOrEditor と併せて三層防御。
+    location ~ ^/(products-manage|gallery-manage|news)(/|\$) {
+        include /etc/nginx/conf.d/admin_allow.inc;
+        limit_req zone=general burst=20 nodelay;
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
     location / {
         limit_req zone=general burst=20 nodelay;
         proxy_pass http://next_app:3000;
@@ -86,7 +123,67 @@ server {
         proxy_read_timeout 60s;
     }
 
+    # 商品/制作事例/お知らせAPI: GET(公開)以外の書込メソッドのみIP制限（#248）
+    location = /api/products {
+        limit_req zone=api burst=10 nodelay;
+        limit_except GET {
+            include /etc/nginx/conf.d/admin_allow.inc;
+        }
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location = /api/works {
+        limit_req zone=api burst=10 nodelay;
+        limit_except GET {
+            include /etc/nginx/conf.d/admin_allow.inc;
+        }
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location = /api/news {
+        limit_req zone=api burst=10 nodelay;
+        limit_except GET {
+            include /etc/nginx/conf.d/admin_allow.inc;
+        }
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    # 問い合わせAPI: POST(フォーム送信)は公開、GET/DELETE(管理)のみIP制限（#248）
+    location = /api/email {
+        limit_req zone=api burst=10 nodelay;
+        limit_except POST {
+            include /etc/nginx/conf.d/admin_allow.inc;
+        }
+        proxy_pass http://next_app:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    # 画像アップロードは管理専用APIのため全体をIP制限（#248）
     location = /api/upload {
+        include /etc/nginx/conf.d/admin_allow.inc;
         limit_req zone=upload burst=20 nodelay;
         proxy_pass http://next_app:3000;
         proxy_http_version 1.1;
@@ -102,6 +199,7 @@ server {
     }
 
     location = /api/admin/upload {
+        include /etc/nginx/conf.d/admin_allow.inc;
         limit_req zone=upload burst=20 nodelay;
         proxy_pass http://next_app:3000;
         proxy_http_version 1.1;
