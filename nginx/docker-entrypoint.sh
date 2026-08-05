@@ -71,6 +71,16 @@ server {
 
     client_max_body_size 10M;
 
+    # IP制限（allow/deny）で拒否した際の案内ページ（#254）。
+    # error_page は nginx 自身が生成した 403 のみ差し替える
+    # （proxy_intercept_errors は使わないため、アプリが返す 403 はそのまま通る）。
+    # 制限理由（IP制限であること）は攻撃者へのヒントになるため文言に含めない。
+    error_page 403 = @access_denied;
+    location @access_denied {
+        default_type text/html;
+        return 403 "<!doctype html><html lang=ja><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>アクセスできません | 飾Love</title><body style='margin:0;font-family:\"Helvetica Neue\",Arial,\"Hiragino Kaku Gothic ProN\",Meiryo,sans-serif;background:#FFFFFF;color:#0A0A0A;display:flex;min-height:100vh;align-items:center;justify-content:center'><div style='max-width:32rem;padding:2rem;text-align:center'><div style='font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#B45309;margin-bottom:1rem'>Access Restricted</div><h1 style='font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin:0 0 1rem'>アクセスできません</h1><p style='font-size:.9rem;line-height:1.9;color:#6B6B6B;margin:0 0 2rem'>このページはご利用の環境からは表示できません。<br>お探しの商品・情報はトップページからご覧いただけます。</p><a href='/' style='display:inline-block;background:#0A0A0A;color:#FFFFFF;padding:.75rem 1.75rem;border-radius:999px;font-size:.85rem;font-weight:600;text-decoration:none'>トップページへ →</a></div></body></html>";
+    }
+
     # --- 管理エリアのIP制限（#248） ---
     # ADMIN_ALLOWED_IPS 未設定時は admin_allow.inc が "allow all;" となり制限なし。
     # 管理ページ＋ログイン/登録ページ（#251: 一般ユーザーのログイン運用が無いため
