@@ -9,6 +9,11 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
+import {
+  badRequestResponse,
+  internalErrorResponse,
+  notFoundResponse,
+} from "@/lib/api-response";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import {
   cleanReviewInput as clean,
@@ -31,7 +36,7 @@ export async function POST(
   const { id: rawId } = await params;
   const commentId = parseId(rawId);
   if (!commentId)
-    return NextResponse.json({ error: "invalid id" }, { status: 400 });
+    return badRequestResponse("invalid id");
 
   try {
     const body = await parseJsonBody(req);
@@ -40,10 +45,7 @@ export async function POST(
     const content = clean(body.content, MAX_CONTENT);
 
     if (!authorName || !content) {
-      return NextResponse.json(
-        { error: "authorName / content は必須です" },
-        { status: 400 }
-      );
+      return badRequestResponse("authorName / content は必須です");
     }
 
     const reply = await prisma.reviewCommentReply.create({
@@ -52,7 +54,7 @@ export async function POST(
     return NextResponse.json({ reply }, { status: 201 });
   } catch (error) {
     console.error("レビュー返信作成エラー:", error);
-    return NextResponse.json({ error: "作成に失敗しました" }, { status: 500 });
+    return internalErrorResponse("作成に失敗しました");
   }
 }
 
@@ -66,22 +68,22 @@ export async function DELETE(
   const { id: rawId } = await params;
   const commentId = parseId(rawId);
   if (!commentId)
-    return NextResponse.json({ error: "invalid id" }, { status: 400 });
+    return badRequestResponse("invalid id");
 
   const replyId = parseId(req.nextUrl.searchParams.get("replyId"));
   if (!replyId)
-    return NextResponse.json({ error: "replyId is required" }, { status: 400 });
+    return badRequestResponse("replyId is required");
 
   try {
     const result = await prisma.reviewCommentReply.deleteMany({
       where: { id: replyId, commentId },
     });
     if (result.count === 0) {
-      return NextResponse.json({ error: "not found" }, { status: 404 });
+      return notFoundResponse("not found");
     }
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("レビュー返信削除エラー:", error);
-    return NextResponse.json({ error: "削除に失敗しました" }, { status: 500 });
+    return internalErrorResponse("削除に失敗しました");
   }
 }

@@ -39,6 +39,10 @@ jobs:
         working-directory: ./next
         run: yarn lint
 
+      - name: Run typecheck
+        working-directory: ./next
+        run: yarn typecheck
+
       - name: Run tests
         working-directory: ./next
         run: yarn test
@@ -123,10 +127,10 @@ jobs:
                 exit 1
               fi
             fi
-            for dir in nginx scripts .github; do
+            for dir in nginx scripts fail2ban logwatch; do
               rm -rf "${dir}"
             done
-            git checkout "${IMAGE_TAG}" -- docker-compose.yml nginx/ scripts/ .github/
+            git checkout "${IMAGE_TAG}" -- docker-compose.yml nginx/ scripts/ fail2ban/ logwatch/
 
             # 現在のIMAGE_TAGを保持（ロールバック用）
             PREV_TAG=$(grep '^IMAGE_TAG=' .env 2>/dev/null | cut -d= -f2 || echo "")
@@ -178,7 +182,7 @@ jobs:
             done
 
             # SSL証明書の確認・更新
-            CERT_PATH="./certbot/conf/live/${SERVER_NAME:-setaseisakusyo.com}/fullchain.pem"
+            CERT_PATH="./certbot/conf/live/${SERVER_NAME:-kaza-love.com}/fullchain.pem"
             if [ ! -f "$CERT_PATH" ]; then
               echo "SSL certificate not found. Obtaining..."
               docker compose --profile certbot run --rm certbot

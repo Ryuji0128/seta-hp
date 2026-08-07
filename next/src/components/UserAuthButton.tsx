@@ -15,6 +15,7 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { isAdminRole, isEditorRole } from "@/lib/roles";
 
 export default function UserAuthButton() {
   const { data: session, status } = useSession();
@@ -46,7 +47,7 @@ export default function UserAuthButton() {
   // 未ログイン時
   if (status === "unauthenticated") {
     return (
-      <Link href="/login" passHref>
+      <Link href="/login">
         <Button
           variant="outlined"
           size="small"
@@ -70,9 +71,9 @@ export default function UserAuthButton() {
   }
 
   // ログイン済み
-  const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
+  const isAdmin = isEditorRole(session?.user?.role);
   // 飾Love Designer は ADMIN のみアクセス可（verify-admin が ADMIN 限定のため）。
-  const isDesignerAdmin = session?.user?.role === "ADMIN";
+  const isDesignerAdmin = isAdminRole(session?.user?.role);
   const designerUrl =
     process.env.NEXT_PUBLIC_DESIGNER_URL || "https://designer.kaza-love.com";
 

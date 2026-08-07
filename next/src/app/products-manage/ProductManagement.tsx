@@ -13,7 +13,7 @@ import {
   Box,
 } from "@mui/material";
 import { Session } from "next-auth";
-import { useState } from "react";
+import { useCallback } from "react";
 import MultiImageUpload from "@/components/MultiImageUpload";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
 import ResourceActions from "@/components/manage/ResourceActions";
@@ -21,6 +21,7 @@ import FormDialog from "@/components/manage/FormDialog";
 import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
 import { useCrudResource } from "@/lib/hooks/useCrudResource";
 import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
+import { useResourceEditor } from "@/lib/hooks/useResourceEditor";
 import { getManagementPermissions } from "@/lib/management-permissions";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
@@ -29,11 +30,50 @@ import {
   getProductCategoryLabel,
   getStockMeta,
 } from "@/lib/constants/categories";
-import { type Product } from "@/lib/types/product";
+import { parseProductImages, type Product } from "@/lib/types/product";
 
 interface ProductManagementProps {
   session: Session;
 }
+
+interface ProductForm {
+  name: string;
+  description: string;
+  price: string;
+  category: string;
+  tags: string;
+  images: string[];
+  stock: string;
+  isPublished: boolean;
+  isHeroImage: boolean;
+  purchaseUrl: string;
+}
+
+const createProductForm = (): ProductForm => ({
+  name: "",
+  description: "",
+  price: "",
+  category: PRODUCT_CATEGORIES[0].value,
+  tags: "",
+  images: [],
+  stock: STOCK_OPTIONS[0].value,
+  isPublished: true,
+  isHeroImage: false,
+  purchaseUrl: "",
+});
+
+const editProductForm = (product: Product): ProductForm => ({
+  name: product.name,
+  description: product.description,
+  price: product.price.toString(),
+  category: product.category,
+  tags: product.tags,
+  images: parseProductImages(product.images, product.image),
+  stock: product.stock,
+  isPublished: product.isPublished,
+  isHeroImage: product.isHeroImage,
+  purchaseUrl: product.purchaseUrl || "",
+});
 
 const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const { items: products, loading, save, remove } = useCrudResource<Product>({
@@ -44,86 +84,28 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   });
   const isMobile = useIsMobile();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  // フォーム用
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
-  const [formPrice, setFormPrice] = useState("");
-  const [formCategory, setFormCategory] = useState<string>(PRODUCT_CATEGORIES[0].value);
-  const [formTags, setFormTags] = useState("");
-  const [formImages, setFormImages] = useState<string[]>([]);
-  const [formStock, setFormStock] = useState<string>(STOCK_OPTIONS[0].value);
-  const [formIsPublished, setFormIsPublished] = useState(true);
-  const [formIsHeroImage, setFormIsHeroImage] = useState(false);
-  const [formPurchaseUrl, setFormPurchaseUrl] = useState("");
-
   const { canEdit, canDelete } = getManagementPermissions(session?.user?.role);
   const { deleteDialogOpen, requestDelete, cancelDelete, confirmDelete } =
     useResourceDelete(remove);
 
-  const resetForm = () => {
-    setFormName("");
-    setFormDescription("");
-    setFormPrice("");
-    setFormCategory(PRODUCT_CATEGORIES[0].value);
-    setFormTags("");
-    setFormImages([]);
-    setFormStock(STOCK_OPTIONS[0].value);
-    setFormIsPublished(true);
-    setFormIsHeroImage(false);
-    setFormPurchaseUrl("");
-    setSelectedProduct(null);
-  };
-
-  const openCreateDialog = () => {
-    resetForm();
-    setDialogOpen(true);
-  };
-
-  const openEditDialog = (product: Product) => {
-    setSelectedProduct(product);
-    setFormName(product.name);
-    setFormDescription(product.description);
-    setFormPrice(product.price.toString());
-    setFormCategory(product.category);
-    setFormTags(product.tags);
-    // 後方互換性: imagesがあればそれを使い、なければimageから配列を作成
-    const existingImages = Array.isArray(product.images)
-      ? (product.images as string[])
-      : product.image
-        ? [product.image]
-        : [];
-    setFormImages(existingImages);
-    setFormStock(product.stock);
-    setFormIsPublished(product.isPublished);
-    setFormIsHeroImage(product.isHeroImage);
-    setFormPurchaseUrl(product.purchaseUrl || "");
-    setDialogOpen(true);
-  };
-
-  const handleSave = async () => {
-    const payload = {
-      name: formName,
-      description: formDescription,
-      price: Number(formPrice),
-      category: formCategory,
-      tags: formTags,
-      image: formImages[0] || null, // 最初の画像をメイン画像として保存（後方互換性）
-      images: formImages.length > 0 ? formImages : null,
-      stock: formStock,
-      isPublished: formIsPublished,
-      isHeroImage: formIsHeroImage,
-      purchaseUrl: formPurchaseUrl || null,
-    };
-
-    const ok = await save(payload, selectedProduct?.id);
-    if (ok) {
-      setDialogOpen(false);
-      resetForm();
-    }
-  };
+  const saveProduct = useCallback((form: ProductForm, id?: number) => save({
+    name: form.name,
+    description: form.description,
+    price: Number(form.price),
+    category: form.category,
+    tags: form.tags,
+    image: form.images[0] || null,
+    images: form.images.length > 0 ? form.images : null,
+    stock: form.stock,
+    isPublished: form.isPublished,
+    isHeroImage: form.isHeroImage,
+    purchaseUrl: form.purchaseUrl || null,
+  }, id), [save]);
+  const editor = useResourceEditor<Product, ProductForm>({
+    createForm: createProductForm,
+    editForm: editProductForm,
+    save: saveProduct,
+  });
 
   const columns: ResourceColumn<Product>[] = [
     {
@@ -186,14 +168,14 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         columns={columns}
         loading={loading}
         emptyMessage="商品がありません"
-        onCreate={canEdit ? openCreateDialog : undefined}
+        onCreate={canEdit ? editor.openCreate : undefined}
         actions={
           canEdit
             ? (product) => (
                 <ResourceActions
                   mode="icon"
                   primaryLabel="商品を編集"
-                  onPrimary={() => openEditDialog(product)}
+                  onPrimary={() => editor.openEdit(product)}
                   onDelete={canDelete ? () => requestDelete(product.id) : undefined}
                 />
               )
@@ -203,24 +185,24 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
 
       {/* 作成/編集ダイアログ */}
       <FormDialog
-        open={dialogOpen}
-        title={selectedProduct ? "商品を編集" : "商品を作成"}
-        submitLabel={selectedProduct ? "更新" : "作成"}
-        submitDisabled={!formName || !formDescription || !formPrice}
-        onClose={() => setDialogOpen(false)}
-        onSubmit={handleSave}
+        open={editor.dialogOpen}
+        title={editor.selectedResource ? "商品を編集" : "商品を作成"}
+        submitLabel={editor.selectedResource ? "更新" : "作成"}
+        submitDisabled={!editor.form.name || !editor.form.description || !editor.form.price}
+        onClose={editor.close}
+        onSubmit={editor.submit}
       >
         <TextField
           label="商品名"
-          value={formName}
-          onChange={(e) => setFormName(e.target.value)}
+          value={editor.form.name}
+          onChange={(e) => editor.setField("name", e.target.value)}
           fullWidth
           required
         />
         <TextField
           label="説明"
-          value={formDescription}
-          onChange={(e) => setFormDescription(e.target.value)}
+          value={editor.form.description}
+          onChange={(e) => editor.setField("description", e.target.value)}
           fullWidth
           multiline
           rows={3}
@@ -229,8 +211,8 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         <TextField
           label="価格（税込）"
           type="number"
-          value={formPrice}
-          onChange={(e) => setFormPrice(e.target.value)}
+          value={editor.form.price}
+          onChange={(e) => editor.setField("price", e.target.value)}
           fullWidth
           required
           InputProps={{ startAdornment: <Typography sx={{ mr: 1 }}>¥</Typography> }}
@@ -238,9 +220,9 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         <FormControl fullWidth>
           <InputLabel>カテゴリ</InputLabel>
           <Select
-            value={formCategory}
+            value={editor.form.category}
             label="カテゴリ"
-            onChange={(e) => setFormCategory(e.target.value)}
+            onChange={(e) => editor.setField("category", e.target.value)}
           >
             {PRODUCT_CATEGORIES.map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -251,8 +233,8 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         </FormControl>
         <TextField
           label="タグ（カンマ区切り）"
-          value={formTags}
-          onChange={(e) => setFormTags(e.target.value)}
+          value={editor.form.tags}
+          onChange={(e) => editor.setField("tags", e.target.value)}
           fullWidth
           placeholder="例: PLA, 実用品, セット"
         />
@@ -260,14 +242,18 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
           <Typography variant="body2" sx={{ mb: 1 }}>
             商品画像（最初の画像がメイン画像になります）
           </Typography>
-          <MultiImageUpload value={formImages} onChange={setFormImages} maxImages={10} />
+          <MultiImageUpload
+            value={editor.form.images}
+            onChange={(images) => editor.setField("images", images)}
+            maxImages={10}
+          />
         </Box>
         <FormControl fullWidth>
           <InputLabel>在庫状況</InputLabel>
           <Select
-            value={formStock}
+            value={editor.form.stock}
             label="在庫状況"
-            onChange={(e) => setFormStock(e.target.value)}
+            onChange={(e) => editor.setField("stock", e.target.value)}
           >
             {STOCK_OPTIONS.map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -278,16 +264,16 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         </FormControl>
         <TextField
           label="購入URL（BASE等の外部ショップURL）"
-          value={formPurchaseUrl}
-          onChange={(e) => setFormPurchaseUrl(e.target.value)}
+          value={editor.form.purchaseUrl}
+          onChange={(e) => editor.setField("purchaseUrl", e.target.value)}
           fullWidth
           placeholder="https://example.thebase.in/items/..."
         />
         <FormControlLabel
           control={
             <Switch
-              checked={formIsPublished}
-              onChange={(e) => setFormIsPublished(e.target.checked)}
+              checked={editor.form.isPublished}
+              onChange={(e) => editor.setField("isPublished", e.target.checked)}
             />
           }
           label="公開する"
@@ -295,8 +281,8 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         <FormControlLabel
           control={
             <Switch
-              checked={formIsHeroImage}
-              onChange={(e) => setFormIsHeroImage(e.target.checked)}
+              checked={editor.form.isHeroImage}
+              onChange={(e) => editor.setField("isHeroImage", e.target.checked)}
             />
           }
           label="TOPヒーロー画像に使用"

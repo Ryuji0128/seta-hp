@@ -6,7 +6,8 @@ interface ManagementPermissions {
 /** 管理画面とAPIで共有するロールの意味をUI向けに変換する。 */
 export function getManagementPermissions(role?: string | null): ManagementPermissions {
   return {
-    canEdit: role === "ADMIN" || role === "EDITOR",
-    canDelete: role === "ADMIN",
+    canEdit: isEditorRole(role),
+    canDelete: isAdminRole(role),
   };
 }
+import { isAdminRole, isEditorRole } from "@/lib/roles";

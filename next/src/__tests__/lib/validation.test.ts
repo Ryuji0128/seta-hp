@@ -3,6 +3,8 @@ import {
   InquirySchema,
   RegistrationSchema,
   LoginSchema,
+  NewsCreateSchema,
+  NewsUpdateSchema,
   ProductCreateSchema,
   ProductUpdateSchema,
   RequiredIdSchema,
@@ -179,5 +181,39 @@ describe("管理APIスキーマ", () => {
     expect(RequiredIdSchema.safeParse({ id: 1 }).success).toBe(true);
     expect(RequiredIdSchema.safeParse({ id: 0 }).success).toBe(false);
     expect(RequiredIdSchema.safeParse({ id: "1" }).success).toBe(false);
+  });
+
+  it("お知らせ日付をDateへ変換し、不正な日付を拒否する", () => {
+    const valid = NewsCreateSchema.safeParse({
+      title: "公開日",
+      contents: { text: "本文" },
+      date: "2026-08-07",
+    });
+    expect(valid.success).toBe(true);
+    if (valid.success) expect(valid.data.date).toBeInstanceOf(Date);
+
+    const invalid = NewsCreateSchema.safeParse({
+      title: "公開日",
+      contents: { text: "本文" },
+      date: "not-a-date",
+    });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success) {
+      expect(invalid.error.errors[0].message).toBe("日付の形式が正しくありません");
+    }
+  });
+
+  it("お知らせの必須項目不足は従来の共通メッセージを返す", () => {
+    const result = NewsCreateSchema.safeParse({ title: "公開日", date: "2026-08-07" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.errors[0].message).toBe("タイトル、内容、日付は必須です");
+    }
+  });
+
+  it("お知らせ更新は正の整数IDを必須にする", () => {
+    expect(NewsUpdateSchema.safeParse({ id: 1, title: "更新" }).success).toBe(true);
+    expect(NewsUpdateSchema.safeParse({ title: "更新" }).success).toBe(false);
+    expect(NewsUpdateSchema.safeParse({ id: 0, title: "更新" }).success).toBe(false);
   });
 });

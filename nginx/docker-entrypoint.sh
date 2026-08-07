@@ -21,6 +21,29 @@ proxy_send_timeout 60s;
 proxy_read_timeout 60s;
 EOFINC
 
+# HTTPS/HTTP fallbackで共通の静的アセットlocation。serverコンテキストからincludeする。
+cat > /etc/nginx/conf.d/site_static_locations.inc <<'EOFINC'
+location /uploads/ {
+    alias /var/www/uploads/;
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000";
+    add_header X-Content-Type-Options "nosniff" always;
+}
+
+location /_next/static/ {
+    proxy_pass http://next_app:3000;
+    include /etc/nginx/conf.d/proxy_headers.inc;
+    proxy_cache_valid 200 60m;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+
+location /static/ {
+    proxy_pass http://next_app:3000;
+    include /etc/nginx/conf.d/proxy_headers.inc;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+EOFINC
+
 # --- 管理エリアIP制限の allow リストを生成（#248） ---
 # ADMIN_ALLOWED_IPS: スペース区切りの IP/CIDR（例: "203.0.113.10 198.51.100.0/24"）。
 # 未設定なら "allow all" となり従来挙動（制限なし）。IP変更でロックアウトした場合は
@@ -203,42 +226,21 @@ server {
         include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
-
-    location /uploads/ {
-        alias /var/www/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000";
-        add_header X-Content-Type-Options "nosniff" always;
-    }
-
-    location /_next/static/ {
-        proxy_pass http://next_app:3000;
-        proxy_cache_valid 200 60m;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    location /static/ {
-        proxy_pass http://next_app:3000;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
+    include /etc/nginx/conf.d/site_static_locations.inc;
 
     # next/image 最適化エンドポイント（#196）。多数のサムネイルを読み込むギャラリー等で
     # 一般レート制限(zone=general)に当たらないよう専用 location でプロキシする。
     # Cache-Control は Next 側が付与する（images.minimumCacheTTL）。
     location /_next/image {
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
     }
 
     # public/ 直下の静的アセット（ロゴ・favicon・og-image 等）に長期キャッシュを付与。
     # ルート直下のファイルのみに限定し、/uploads/ や /_next/static/ は侵さない。
     location ~* ^/[^/]+\.(?:png|jpg|jpeg|gif|svg|ico|webp|avif|woff2?)\$ {
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
         proxy_hide_header Cache-Control;
         add_header Cache-Control "public, max-age=604800" always;
         add_header X-Content-Type-Options "nosniff" always;
@@ -356,7 +358,7 @@ server {
         limit_req zone=designer burst=30 nodelay;
         auth_request /__auth;
         proxy_pass \$designer_back;
-        proxy_set_header Host \$host;
+        include /etc/nginx/conf.d/proxy_headers.inc;
         proxy_set_header Cookie "";
     }
 
@@ -404,25 +406,13 @@ server {
         include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
-    location /_next/static/ {
-        proxy_pass http://next_app:3000;
-        proxy_cache_valid 200 60m;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    location /static/ {
-        proxy_pass http://next_app:3000;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    location /uploads/ {
-        alias /var/www/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000";
-        add_header X-Content-Type-Options "nosniff" always;
-    }
+    include /etc/nginx/conf.d/site_static_locations.inc;
 }
 EOF
+fi
+
+if [ "${NGINX_TEST_ONLY:-0}" = "1" ]; then
+    exec nginx -t
 fi
 
 exec nginx -g 'daemon off;'

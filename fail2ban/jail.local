@@ -9,8 +9,8 @@ findtime = 600
 # 最大失敗回数
 maxretry = 5
 # BAN時の通知先メールアドレス
-destemail = admin@example.com
-sender = fail2ban@example.com
+destemail = k_ryuji@setaseisakusyo.com
+sender = fail2ban@kaza-love.com
 # アクション（メール通知 + iptables BAN）
 action = %(action_mwl)s
 

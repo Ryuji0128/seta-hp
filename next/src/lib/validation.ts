@@ -171,4 +171,38 @@ export const WorkUpdateSchema = WorkCreateSchema.partial().extend({
   id: idSchema,
 });
 
+const newsRequiredMessage = "タイトル、内容、日付は必須です";
+const newsDateSchema = z
+  .custom<string | number>(
+    (value) =>
+      (typeof value === "string" && value.length > 0) ||
+      (typeof value === "number" && value !== 0),
+    { message: newsRequiredMessage }
+  )
+  .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+    message: "日付の形式が正しくありません",
+  })
+  .transform((value) => new Date(value));
+
+const newsContentsSchema = z.custom<string | { text: string }>(
+  (value) =>
+    (typeof value === "string" && value.length > 0) ||
+    (typeof value === "object" &&
+      value !== null &&
+      "text" in value &&
+      typeof value.text === "string"),
+  { message: newsRequiredMessage }
+);
+
+export const NewsCreateSchema = z.object({
+  title: z.string({ required_error: newsRequiredMessage }).min(1, { message: newsRequiredMessage }),
+  contents: newsContentsSchema,
+  date: newsDateSchema,
+  url: z.string().optional().nullable(),
+});
+
+export const NewsUpdateSchema = NewsCreateSchema.partial().extend({
+  id: idSchema,
+});
+
 export const RequiredIdSchema = z.object({ id: idSchema });
