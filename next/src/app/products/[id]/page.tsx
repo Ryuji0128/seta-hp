@@ -8,6 +8,7 @@ import ProductDetail from "./_components/ProductDetail";
 import RelatedProducts from "./_components/RelatedProducts";
 import SectionContainer from "@/components/SectionContainer";
 import DarkCtaSection from "@/components/DarkCtaSection";
+import { getPrimaryProductImage } from "@/lib/types/product";
 
 // ISR: ビルド時は生成せず（CIビルドはDB到達不可のため generateStaticParams は空）、
 // 初回アクセス時に生成してキャッシュする。商品の作成・更新・削除時は
@@ -31,11 +32,18 @@ const getProduct = cache(async (id: number) => {
 
 async function getRelatedProducts(category: string, excludeId: number) {
   const prisma = getPrismaClient();
-  return prisma.product.findMany({
+  const products = await prisma.product.findMany({
     where: { category, isPublished: true, id: { not: excludeId } },
+    select: { id: true, name: true, price: true, images: true },
     take: 4,
     orderBy: { createdAt: "desc" },
   });
+  return products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: getPrimaryProductImage(product.images),
+  }));
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
@@ -57,7 +65,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title: product.name,
       description: product.description,
       url: `/products/${productId}`,
-      images: product.image ? [product.image] : ["/og-image.png"],
+      images: [getPrimaryProductImage(product.images) ?? "/og-image.png"],
     },
   };
 }

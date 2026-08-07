@@ -14,7 +14,7 @@ function toAbsoluteUrl(path: string): string {
  * 検索結果に価格・在庫を表示させ、リッチリザルトの対象にする。
  */
 export function buildProductJsonLd(product: Product): Record<string, unknown> {
-  const images = parseProductImages(product.images, product.image).map(toAbsoluteUrl);
+  const images = parseProductImages(product.images).map(toAbsoluteUrl);
   const url = `${SITE_URL}/products/${product.id}`;
   // 在庫表示文字列 → schema.org availability。未知の値は「在庫あり」とみなす（InStock）。
   const availability = getStockMeta(product.stock)?.schemaUrl ?? "https://schema.org/InStock";

@@ -6,7 +6,13 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import type { Metadata } from "next";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
+import {
+  CONTACT_EMAIL,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  X_PROFILE_URL,
+} from "@/lib/site-config";
 import { Cormorant_Garamond, Inter, Inter_Tight, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
@@ -127,8 +133,8 @@ const jsonLd = {
   url: SITE_URL,
   logo: `${SITE_URL}/kaza-love_logo.png`,
   description: SITE_DESCRIPTION,
-  email: "info@kaza-love.com",
-  sameAs: ["https://x.com/kaza_love_"],
+  email: CONTACT_EMAIL,
+  sameAs: [X_PROFILE_URL],
   address: {
     "@type": "PostalAddress",
     addressCountry: "JP",

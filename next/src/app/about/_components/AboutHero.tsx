@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
+import { COLOR_DARK_ACCENT, FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const AboutHero = () => {
   return (
@@ -24,10 +24,10 @@ const AboutHero = () => {
               fontWeight: 600,
               letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "#E5AC60",
+              color: COLOR_DARK_ACCENT,
             }}
           >
-            <Box sx={{ width: 28, height: "1px", bgcolor: "#E5AC60" }} />
+            <Box sx={{ width: 28, height: "1px", bgcolor: COLOR_DARK_ACCENT }} />
             The Workshop · 工房について
           </Box>
 
@@ -41,7 +41,7 @@ const AboutHero = () => {
               letterSpacing: "-0.04em",
               mt: 0,
               mb: 3,
-              "& em": { fontStyle: "normal", color: "#E5AC60" },
+              "& em": { fontStyle: "normal", color: COLOR_DARK_ACCENT },
             }}
           >
             個人工房で、

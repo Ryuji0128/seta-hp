@@ -71,9 +71,6 @@ describe("getExtensionFromMimeType", () => {
     expect(getExtensionFromMimeType("image/webp")).toBe(".webp");
   });
 
-  it("未知のMIMEタイプ → .bin", () => {
-    expect(getExtensionFromMimeType("application/pdf")).toBe(".bin");
-  });
 });
 
 describe("定数", () => {

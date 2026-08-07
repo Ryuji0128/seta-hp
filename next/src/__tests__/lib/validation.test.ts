@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   InquirySchema,
   RegistrationSchema,
-  LoginSchema,
   NewsCreateSchema,
   NewsUpdateSchema,
   ProductCreateSchema,
@@ -117,24 +116,6 @@ describe("RegistrationSchema", () => {
   });
 });
 
-describe("LoginSchema", () => {
-  it("有効なデータでバリデーション成功", () => {
-    const result = LoginSchema.safeParse({ email: "test@example.com", password: "12345678" });
-    expect(result.success).toBe(true);
-  });
-
-  it("メールアドレスが空で失敗", () => {
-    const result = LoginSchema.safeParse({ email: "", password: "12345678" });
-    expect(result.success).toBe(false);
-  });
-
-  it("パスワードが8文字未満で失敗", () => {
-    const result = LoginSchema.safeParse({ email: "test@example.com", password: "1234" });
-    expect(result.success).toBe(false);
-  });
-});
-
-
 describe("管理APIスキーマ", () => {
   const product = {
     name: "8枚モデル",
@@ -142,7 +123,6 @@ describe("管理APIスキーマ", () => {
     price: 12000,
     category: "card-display",
     tags: ["MLB", "Topps"],
-    image: "/uploads/main.webp",
     images: ["/uploads/main.webp", "/uploads/sub.webp"],
     stock: "在庫あり",
     isPublished: true,

@@ -8,7 +8,7 @@ export interface ResourceEditorState<T, FormState> {
   form: FormState;
 }
 
-export type ResourceEditorAction<T, FormState> =
+type ResourceEditorAction<T, FormState> =
   | { type: "create"; form: FormState }
   | { type: "edit"; resource: T; form: FormState }
   | { type: "set-field"; field: keyof FormState; value: FormState[keyof FormState] }

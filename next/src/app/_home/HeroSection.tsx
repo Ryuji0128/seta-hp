@@ -119,7 +119,8 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                 gap: { xs: 3, md: 4.5 },
                 mt: 7,
                 pt: 3.5,
-                borderTop: "1px solid #EFEFEA",
+                borderTop: "1px solid",
+                borderColor: "divider",
                 flexWrap: "wrap",
               }}
             >

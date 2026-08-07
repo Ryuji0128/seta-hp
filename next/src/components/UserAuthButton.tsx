@@ -83,7 +83,7 @@ export default function UserAuthButton() {
         <Avatar
           src={session?.user?.image || undefined}
           alt={session?.user?.name || "User"}
-          sx={{ width: 32, height: 32, bgcolor: "#FF5722" }}
+          sx={{ width: 32, height: 32, bgcolor: "primary.main" }}
         >
           {!session?.user?.image && session?.user?.name?.[0]?.toUpperCase()}
         </Avatar>
@@ -122,7 +122,7 @@ export default function UserAuthButton() {
               router.push("/products-manage");
             }}
           >
-            <Typography variant="body2" sx={{ color: "#FF5722" }}>
+            <Typography variant="body2" sx={{ color: "primary.main" }}>
               商品管理
             </Typography>
           </MenuItem>,
@@ -133,7 +133,7 @@ export default function UserAuthButton() {
               router.push("/gallery-manage");
             }}
           >
-            <Typography variant="body2" sx={{ color: "#FF5722" }}>
+            <Typography variant="body2" sx={{ color: "primary.main" }}>
               ギャラリー管理
             </Typography>
           </MenuItem>,
@@ -147,7 +147,7 @@ export default function UserAuthButton() {
               window.open(designerUrl, "_blank", "noopener,noreferrer");
             }}
           >
-            <Typography variant="body2" sx={{ color: "#FF5722" }}>
+            <Typography variant="body2" sx={{ color: "primary.main" }}>
               飾Love Designer ↗
             </Typography>
           </MenuItem>

@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY } from "@/theme/themeConstants";
+import { COLOR_DARK_ACCENT, FONT_DISPLAY } from "@/theme/themeConstants";
 import PillLink from "@/components/PillLink";
 
 const CTASection = () => {
@@ -25,7 +25,7 @@ const CTASection = () => {
             lineHeight: 1.05,
             mt: 0,
             mb: 3,
-            "& em": { fontStyle: "normal", color: "#E5AC60" },
+            "& em": { fontStyle: "normal", color: COLOR_DARK_ACCENT },
           }}
         >
           あなたのカードに、

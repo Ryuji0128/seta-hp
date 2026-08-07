@@ -13,6 +13,7 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { apiJson } from "@/lib/api-client";
 
 import CommentPopover from "./review/CommentPopover";
 import CommentsDrawer from "./review/CommentsDrawer";
@@ -22,7 +23,6 @@ import PinMarker from "./review/PinMarker";
 import ToolbarFab from "./review/ToolbarFab";
 import {
   type ReviewComment,
-  describeElement,
   readStoredName,
   writeStoredName,
 } from "./review/types";
@@ -46,7 +46,6 @@ export default function ReviewOverlay() {
   const [pendingPin, setPendingPin] = useState<{
     xRatio: number;
     yAbsolute: number;
-    elementSelector: string;
   } | null>(null);
   const [draftContent, setDraftContent] = useState("");
   const draftAnchorRef = useRef<HTMLDivElement>(null);
@@ -61,12 +60,10 @@ export default function ReviewOverlay() {
 
   const refetch = useCallback(async () => {
     try {
-      const res = await fetch(
+      const data = await apiJson<{ comments: ReviewComment[] }>(
         `/api/review-comments?page=${encodeURIComponent(pathname)}`,
         { cache: "no-store" }
       );
-      if (!res.ok) return;
-      const data = await res.json();
       setComments(Array.isArray(data.comments) ? data.comments : []);
     } catch (err) {
       console.error("review comments fetch error:", err);
@@ -93,17 +90,15 @@ export default function ReviewOverlay() {
       const containerWidth = rect.width || 1;
       const xRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / containerWidth));
       const yAbsolute = Math.max(0, e.clientY - rect.top + scrollEl.scrollTop);
-      const selector = describeElement(target);
-
       if (!authorName) {
-        setPendingPin({ xRatio, yAbsolute, elementSelector: selector });
+        setPendingPin({ xRatio, yAbsolute });
         setNameDraft("");
         setNameDialogOpen(true);
         setPinning(false);
         return;
       }
 
-      setPendingPin({ xRatio, yAbsolute, elementSelector: selector });
+      setPendingPin({ xRatio, yAbsolute });
       setDraftContent("");
       setPinning(false);
     };
@@ -124,20 +119,16 @@ export default function ReviewOverlay() {
   const submitNewComment = async () => {
     if (!pendingPin || !authorName || !draftContent.trim()) return;
     try {
-      const res = await fetch("/api/review-comments", {
+      const data = await apiJson<{ comment: ReviewComment }>("/api/review-comments", {
         method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
+        body: {
           pageUrl: pathname,
           authorName,
           content: draftContent.trim(),
           xRatio: pendingPin.xRatio,
           yAbsolute: pendingPin.yAbsolute,
-          elementSelector: pendingPin.elementSelector || null,
-        }),
+        },
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
       if (data.comment) setComments((prev) => [...prev, data.comment]);
     } catch (err) {
       console.error(err);
@@ -159,13 +150,10 @@ export default function ReviewOverlay() {
   const toggleStatus = async (c: ReviewComment) => {
     const next = c.status === "open" ? "resolved" : "open";
     try {
-      const res = await fetch(`/api/review-comments/${c.id}`, {
+      const data = await apiJson<{ comment: ReviewComment }>(`/api/review-comments/${c.id}`, {
         method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ status: next }),
+        body: { status: next },
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
       if (data.comment) {
         setComments((prev) => prev.map((x) => (x.id === c.id ? data.comment : x)));
       }
@@ -178,8 +166,7 @@ export default function ReviewOverlay() {
   const deleteComment = async (id: number) => {
     if (!confirm("このコメントを削除しますか？(返信もすべて消えます)")) return;
     try {
-      const res = await fetch(`/api/review-comments/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await apiJson(`/api/review-comments/${id}`, { method: "DELETE" });
       setComments((prev) => prev.filter((x) => x.id !== id));
       setOpenCommentId(null);
     } catch (err) {
@@ -192,13 +179,13 @@ export default function ReviewOverlay() {
     const text = replyDraft.trim();
     if (!text || !authorName) return;
     try {
-      const res = await fetch(`/api/review-comments/${commentId}/replies`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ authorName, content: text }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await apiJson<{ reply: ReviewComment["replies"][number] }>(
+        `/api/review-comments/${commentId}/replies`,
+        {
+          method: "POST",
+          body: { authorName, content: text },
+        }
+      );
       if (data.reply) {
         setComments((prev) =>
           prev.map((c) =>
@@ -216,11 +203,10 @@ export default function ReviewOverlay() {
   const deleteReply = async (commentId: number, replyId: number) => {
     if (!confirm("この返信を削除しますか？")) return;
     try {
-      const res = await fetch(
+      await apiJson(
         `/api/review-comments/${commentId}/replies?replyId=${replyId}`,
         { method: "DELETE" }
       );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setComments((prev) =>
         prev.map((c) =>
           c.id === commentId ? { ...c, replies: c.replies.filter((r) => r.id !== replyId) } : c

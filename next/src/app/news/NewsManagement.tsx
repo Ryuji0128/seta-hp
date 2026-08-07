@@ -2,7 +2,6 @@
 
 import { Box, TextField, Typography } from "@mui/material";
 import dayjs from "dayjs";
-import "dayjs/locale/ja";
 import { Session } from "next-auth";
 import { useCallback } from "react";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
@@ -41,10 +40,11 @@ const editNewsForm = (news: News): NewsForm => ({
 });
 
 const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
-  const { items: newsList, loading, save, remove } = useCrudResource<News>({
+  const { items: newsList, loading, save, remove, pagination } = useCrudResource<News>({
     endpoint: "/api/news",
     listKey: "news",
     label: "お知らせ",
+    pageSize: 10,
   });
 
   const { canEdit, canDelete } = getManagementPermissions(session?.user?.role);
@@ -102,7 +102,11 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
         columns={columns}
         loading={loading}
         emptyMessage="お知らせはありません"
-        pageSize={10}
+        pagination={{
+          page: pagination.page,
+          totalPages: pagination.totalPages,
+          onPageChange: pagination.setPage,
+        }}
         onCreate={canEdit ? editor.openCreate : undefined}
         actions={
           canEdit

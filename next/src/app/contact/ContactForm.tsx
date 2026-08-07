@@ -254,7 +254,8 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
             <Box
               sx={{
                 pt: 2,
-                borderTop: "1px solid #EFEFEA",
+                borderTop: "1px solid",
+                borderColor: "divider",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",

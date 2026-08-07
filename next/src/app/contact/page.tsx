@@ -1,4 +1,3 @@
-import React from "react";
 import type { Metadata } from "next";
 import { ReCaptchaProvider } from "next-recaptcha-v3";
 import ContactForm from "./ContactForm";

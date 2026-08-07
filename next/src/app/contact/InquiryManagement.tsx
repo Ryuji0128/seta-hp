@@ -10,7 +10,6 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import "dayjs/locale/ja";
 import { Session } from "next-auth";
 import { useState } from "react";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
@@ -26,10 +25,11 @@ interface InquiryManagementProps {
 }
 
 const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
-  const { items: inquiries, loading, remove } = useCrudResource<Inquiry>({
+  const { items: inquiries, loading, remove, pagination } = useCrudResource<Inquiry>({
     endpoint: "/api/email",
     listKey: "inquiries",
     label: "問い合わせ",
+    pageSize: 10,
   });
 
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -85,7 +85,11 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
         columns={columns}
         loading={loading}
         emptyMessage="問い合わせはありません"
-        pageSize={10}
+        pagination={{
+          page: pagination.page,
+          totalPages: pagination.totalPages,
+          onPageChange: pagination.setPage,
+        }}
         actions={(inquiry) => (
           <ResourceActions
             primaryLabel="詳細"

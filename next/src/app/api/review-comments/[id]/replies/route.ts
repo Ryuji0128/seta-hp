@@ -15,6 +15,7 @@ import {
   notFoundResponse,
 } from "@/lib/api-response";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { reviewReplySelect } from "@/lib/review-comment-query";
 import {
   cleanReviewInput as clean,
   parseReviewId as parseId,
@@ -50,6 +51,7 @@ export async function POST(
 
     const reply = await prisma.reviewCommentReply.create({
       data: { commentId, authorName, content },
+      select: reviewReplySelect,
     });
     return NextResponse.json({ reply }, { status: 201 });
   } catch (error) {

@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
-import { parseProductImages } from "@/lib/types/product";
+import { getPrimaryProductImage } from "@/lib/types/product";
 import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 
 // トップの「ラインナップ」カードに表示する商品データ。
@@ -11,34 +11,43 @@ export type CatalogueProduct = {
   image: string | null;
 };
 
+type HomeProductData = {
+  catalogueProducts: CatalogueProduct[];
+  heroImages: string[];
+};
+
 /**
  * 商品管理で登録した公開商品を新しい順に取得し、トップのラインナップ用に整形して返す。
- * メイン画像(image)が無ければ images[0] を使用。DBエラー時は空配列を返してトップが落ちないようにする。
+ * 商品一覧とヒーロー候補を同じクエリから構築する。DBエラー時は空配列を返してトップが落ちないようにする。
  * unstable_cache でキャッシュし、商品の書き込み時（products タグ）に無効化される。
  */
-export const getCatalogueProducts = unstable_cache(
-  async (): Promise<CatalogueProduct[]> => {
-  try {
-    const prisma = getPrismaClient();
-    const products = await prisma.product.findMany({
-      where: { isPublished: true },
-      select: { id: true, name: true, price: true, image: true, images: true },
-      orderBy: { createdAt: "desc" },
-    });
+export const getHomeProductData = unstable_cache(
+  async (): Promise<HomeProductData> => {
+    try {
+      const prisma = getPrismaClient();
+      const products = await prisma.product.findMany({
+        where: { isPublished: true },
+        select: { id: true, name: true, price: true, images: true, isHeroImage: true },
+        orderBy: { createdAt: "desc" },
+      });
 
-    return products.map((p) => {
-      return {
+      const catalogueProducts = products.map((p) => ({
         id: p.id,
         name: p.name,
         price: p.price,
-        image: parseProductImages(p.images, p.image)[0] ?? null,
-      };
-    });
-  } catch (error) {
-    console.error("カタログ商品の取得に失敗:", error);
-    return [];
-  }
+        image: getPrimaryProductImage(p.images),
+      }));
+      const heroImages = products
+        .filter((product) => product.isHeroImage)
+        .map((product) => getPrimaryProductImage(product.images))
+        .filter((image): image is string => Boolean(image));
+
+      return { catalogueProducts, heroImages };
+    } catch (error) {
+      console.error("カタログ商品の取得に失敗:", error);
+      return { catalogueProducts: [], heroImages: [] };
+    }
   },
-  ["catalogue-products"],
+  ["home-product-data"],
   { revalidate: CACHE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );

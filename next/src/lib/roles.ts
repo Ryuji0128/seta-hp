@@ -1,6 +1,4 @@
-export const USER_ROLES = ["ADMIN", "EDITOR", "VIEWER"] as const;
-
-export type UserRole = (typeof USER_ROLES)[number];
+export type UserRole = "ADMIN" | "EDITOR" | "VIEWER";
 
 export function isAdminRole(role: unknown): role is "ADMIN" {
   return role === "ADMIN";

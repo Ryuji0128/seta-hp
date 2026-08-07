@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import PillLink from "@/components/PillLink";
 import type { ReactNode } from "react";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY } from "@/theme/themeConstants";
+import { COLOR_DARK_ACCENT, FONT_DISPLAY } from "@/theme/themeConstants";
 
 interface DarkCtaSectionProps {
   /** 見出し（h2）。<em> は銅色アクセントになる */
@@ -12,7 +12,6 @@ interface DarkCtaSectionProps {
   /** 主ボタン（白背景）のラベル。末尾に矢印が付く */
   primaryLabel: ReactNode;
   /** 主ボタンのリンク先（既定: お問い合わせ） */
-  primaryHref?: string;
   /** 副ボタン（枠線）のラベル */
   secondaryLabel: ReactNode;
   /** 副ボタンのリンク先 */
@@ -28,7 +27,6 @@ export default function DarkCtaSection({
   heading,
   body,
   primaryLabel,
-  primaryHref = "/contact",
   secondaryLabel,
   secondaryHref,
 }: DarkCtaSectionProps) {
@@ -45,7 +43,7 @@ export default function DarkCtaSection({
               letterSpacing: "-0.035em",
               lineHeight: 1.1,
               m: 0,
-              "& em": { fontStyle: "normal", color: "#E5AC60" },
+              "& em": { fontStyle: "normal", color: COLOR_DARK_ACCENT },
             }}
           >
             {heading}
@@ -63,7 +61,7 @@ export default function DarkCtaSection({
               {body}
             </Box>
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-              <PillLink href={primaryHref} tone="light" showArrow>{primaryLabel}</PillLink>
+              <PillLink href="/contact" tone="light" showArrow>{primaryLabel}</PillLink>
               <PillLink href={secondaryHref} tone="outline">{secondaryLabel}</PillLink>
             </Box>
           </Box>

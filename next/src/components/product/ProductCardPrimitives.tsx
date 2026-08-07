@@ -117,7 +117,8 @@ export function ProductPriceRow({ price, variant = "full", paddingTop = 2 }: Pro
         justifyContent: "space-between",
         alignItems: "baseline",
         pt: paddingTop,
-        borderTop: "1px solid #EFEFEA",
+        borderTop: "1px solid",
+        borderColor: "divider",
       }}
     >
       <Box

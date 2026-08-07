@@ -10,12 +10,12 @@
 import { getPrismaClient } from "@/lib/db";
 import { badRequestResponse, internalErrorResponse } from "@/lib/api-response";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { reviewCommentSelect } from "@/lib/review-comment-query";
 import {
   cleanReviewInput as clean,
   REVIEW_MAX_CONTENT as MAX_CONTENT,
   REVIEW_MAX_NAME as MAX_NAME,
   REVIEW_MAX_PAGE_URL as MAX_PAGE_URL,
-  REVIEW_MAX_SELECTOR as MAX_SELECTOR,
   reviewCommentsDisabledResponse,
   reviewWriteGuard,
 } from "@/lib/reviewCommentsGuard";
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     const comments = await prisma.reviewComment.findMany({
       where: { pageUrl: page },
       orderBy: { createdAt: "asc" },
-      include: { replies: { orderBy: { createdAt: "asc" } } },
+      select: reviewCommentSelect,
     });
     return NextResponse.json({ comments });
   } catch (error) {
@@ -55,9 +55,6 @@ export async function POST(req: NextRequest) {
     const pageUrl = clean(body.pageUrl, MAX_PAGE_URL);
     const authorName = clean(body.authorName, MAX_NAME);
     const content = clean(body.content, MAX_CONTENT);
-    const elementSelector = body.elementSelector
-      ? clean(body.elementSelector, MAX_SELECTOR)
-      : null;
     const xRatio = Number(body.xRatio);
     const yAbsolute = Number(body.yAbsolute);
 
@@ -79,11 +76,10 @@ export async function POST(req: NextRequest) {
         pageUrl,
         authorName,
         content,
-        elementSelector,
         xRatio,
         yAbsolute,
       },
-      include: { replies: true },
+      select: reviewCommentSelect,
     });
 
     return NextResponse.json({ comment: created }, { status: 201 });

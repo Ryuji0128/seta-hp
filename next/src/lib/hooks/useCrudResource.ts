@@ -12,6 +12,13 @@ interface UseCrudResourceOptions {
   listKey: string;
   /** リソース表示名（エラーメッセージ用。例: "商品"） */
   label: string;
+  /** APIから1ページごとに取得する件数 */
+  pageSize?: number;
+}
+
+interface PaginatedResourceResponse {
+  [key: string]: unknown;
+  total?: number;
 }
 
 /**
@@ -24,20 +31,37 @@ export function useCrudResource<T extends { id: number }>({
   listUrl,
   listKey,
   label,
+  pageSize = 50,
 }: UseCrudResourceOptions) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const refetch = useCallback(async () => {
+    setLoading(true);
     try {
-      const data = await apiJson<Record<string, unknown>>(listUrl ?? endpoint);
-      setItems((data[listKey] as T[]) ?? []);
+      const baseUrl = listUrl ?? endpoint;
+      const separator = baseUrl.includes("?") ? "&" : "?";
+      const data = await apiJson<PaginatedResourceResponse>(
+        `${baseUrl}${separator}page=${page}&limit=${pageSize}`
+      );
+      const nextItems = (data[listKey] as T[]) ?? [];
+      const nextTotal = typeof data.total === "number" ? data.total : nextItems.length;
+      const lastPage = Math.max(1, Math.ceil(nextTotal / pageSize));
+
+      setTotal(nextTotal);
+      if (page > lastPage) {
+        setPage(lastPage);
+      } else {
+        setItems(nextItems);
+      }
     } catch (error) {
       console.error(`${label}一覧の取得に失敗:`, error);
     } finally {
       setLoading(false);
     }
-  }, [endpoint, listUrl, listKey, label]);
+  }, [endpoint, listUrl, listKey, label, page, pageSize]);
 
   useEffect(() => {
     refetch();
@@ -51,7 +75,11 @@ export function useCrudResource<T extends { id: number }>({
           method: id ? "PUT" : "POST",
           body: id ? { id, ...payload } : payload,
         });
-        await refetch();
+        if (!id && page !== 1) {
+          setPage(1);
+        } else {
+          await refetch();
+        }
         return true;
       } catch (error) {
         console.error(`${label}の保存に失敗:`, error);
@@ -59,7 +87,7 @@ export function useCrudResource<T extends { id: number }>({
         return false;
       }
     },
-    [endpoint, label, refetch]
+    [endpoint, label, page, refetch]
   );
 
   /** 削除。成功で true、失敗は alert 表示して false。 */
@@ -78,5 +106,17 @@ export function useCrudResource<T extends { id: number }>({
     [endpoint, label, refetch]
   );
 
-  return { items, loading, refetch, save, remove };
+  return {
+    items,
+    loading,
+    save,
+    remove,
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      setPage,
+    },
+  };
 }

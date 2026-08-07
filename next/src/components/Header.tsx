@@ -13,8 +13,10 @@ import {
 } from "@mui/material";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import SectionContainer from "@/components/SectionContainer";
+import XIcon from "@/components/XIcon";
+import { X_PROFILE_URL } from "@/lib/site-config";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 // next-auth のクライアントJSは遅延チャンクに分離（初期バンドル削減 #245）
@@ -34,16 +36,10 @@ const NAV_LINKS = [
   { title: "お問い合わせ", href: "/contact" },
 ];
 
-const X_ICON = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
-);
-
 export default function Header() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuOpen = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleMenuClose = () => {
@@ -58,7 +54,8 @@ export default function Header() {
           backgroundColor: "rgba(255, 255, 255, 0.92)",
           backdropFilter: "blur(14px)",
           WebkitBackdropFilter: "blur(14px)",
-          borderBottom: "1px solid #EFEFEA",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           boxShadow: "none",
           color: "text.primary",
         }}
@@ -142,7 +139,7 @@ export default function Header() {
               {/* X (Twitter) */}
               <Box
                 component="a"
-                href="https://x.com/kaza_love_"
+                href={X_PROFILE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
@@ -156,7 +153,7 @@ export default function Header() {
                 }}
                 aria-label="X (Twitter)"
               >
-                {X_ICON}
+                <XIcon />
               </Box>
 
               {/* Desktop: 購入CTA */}

@@ -26,18 +26,10 @@ cat > /etc/nginx/conf.d/site_static_locations.inc <<'EOFINC'
 location /uploads/ {
     alias /var/www/uploads/;
     expires 30d;
-    add_header Cache-Control "public, max-age=2592000";
     add_header X-Content-Type-Options "nosniff" always;
 }
 
 location /_next/static/ {
-    proxy_pass http://next_app:3000;
-    include /etc/nginx/conf.d/proxy_headers.inc;
-    proxy_cache_valid 200 60m;
-    add_header Cache-Control "public, max-age=31536000, immutable";
-}
-
-location /static/ {
     proxy_pass http://next_app:3000;
     include /etc/nginx/conf.d/proxy_headers.inc;
     add_header Cache-Control "public, max-age=31536000, immutable";
@@ -179,25 +171,7 @@ server {
     }
 
     # 商品/制作事例/お知らせAPI: GET(公開)以外の書込メソッドのみIP制限（#248）
-    location = /api/products {
-        limit_req zone=api burst=10 nodelay;
-        limit_except GET {
-            include /etc/nginx/conf.d/admin_allow.inc;
-        }
-        proxy_pass http://next_app:3000;
-        include /etc/nginx/conf.d/proxy_headers.inc;
-    }
-
-    location = /api/works {
-        limit_req zone=api burst=10 nodelay;
-        limit_except GET {
-            include /etc/nginx/conf.d/admin_allow.inc;
-        }
-        proxy_pass http://next_app:3000;
-        include /etc/nginx/conf.d/proxy_headers.inc;
-    }
-
-    location = /api/news {
+    location ~ ^/api/(products|works|news)\$ {
         limit_req zone=api burst=10 nodelay;
         limit_except GET {
             include /etc/nginx/conf.d/admin_allow.inc;
@@ -247,23 +221,10 @@ server {
     }
 }
 
-# www.kaza-love.com → kaza-love.com リダイレクト (HTTPS)
+# www・旧ドメイン → kaza-love.com リダイレクト (HTTPS)
 server {
     listen 443 ssl;
-    server_name www.${SERVER_NAME};
-
-    ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
-
-    ssl_protocols TLSv1.2 TLSv1.3;
-
-    return 301 https://${SERVER_NAME}\$request_uri;
-}
-
-# 旧ドメイン setaseisakusyo.com → kaza-love.com リダイレクト (HTTPS)
-server {
-    listen 443 ssl;
-    server_name ${OLD_SERVER_NAME} www.${OLD_SERVER_NAME};
+    server_name www.${SERVER_NAME} ${OLD_SERVER_NAME} www.${OLD_SERVER_NAME};
 
     ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
