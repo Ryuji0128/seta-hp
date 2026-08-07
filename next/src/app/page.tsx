@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import HeroSection from "./_home/HeroSection";
 import MarqueeSection from "./_home/MarqueeSection";
 import CatalogueSection from "./_home/CatalogueSection";
-import { getCatalogueProducts } from "./_home/getCatalogueProducts";
-import { getRandomHeroImage } from "./_home/getRandomHeroImage";
+import { getHomeProductData } from "./_home/getCatalogueProducts";
 import FeaturesSection from "./_home/FeaturesSection";
 import QuizTeaserSection from "./_home/QuizTeaserSection";
 import CTASection from "./_home/CTASection";
@@ -24,10 +23,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [catalogueProducts, heroImage] = await Promise.all([
-    getCatalogueProducts(),
-    getRandomHeroImage(),
-  ]);
+  const { catalogueProducts, heroImages } = await getHomeProductData();
+  const heroImage =
+    heroImages.length > 0
+      ? heroImages[Math.floor(Math.random() * heroImages.length)]
+      : null;
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>

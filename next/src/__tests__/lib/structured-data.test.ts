@@ -10,12 +10,10 @@ const baseProduct: Product = {
   category: "display",
   tags: "MLB,アクリル",
   stock: "在庫あり",
-  image: "/uploads/sample.png",
   images: ["/uploads/a.png", "/uploads/b.png"],
   isPublished: true,
   isHeroImage: false,
   purchaseUrl: null,
-  createdAt: "2026-01-01T00:00:00.000Z",
 };
 
 describe("buildProductJsonLd", () => {
@@ -64,7 +62,7 @@ describe("buildProductJsonLd", () => {
   });
 
   it("画像が無い場合は image キーを省く", () => {
-    const ld = buildProductJsonLd({ ...baseProduct, image: null, images: null });
+    const ld = buildProductJsonLd({ ...baseProduct, images: null });
     expect(ld).not.toHaveProperty("image");
   });
 });

@@ -7,10 +7,10 @@ export const PRODUCT_CATEGORIES = [
 ] as const;
 
 export const GALLERY_CATEGORIES = [
-  { value: "modeling", label: "3Dモデリング", color: "#1976d2" },
-  { value: "print", label: "3Dプリント製品", color: "#388e3c" },
-  { value: "laser", label: "レーザーカット", color: "#f57c00" },
-  { value: "mockup", label: "試作品", color: "#7b1fa2" },
+  { value: "modeling", label: "3Dモデリング" },
+  { value: "print", label: "3Dプリント製品" },
+  { value: "laser", label: "レーザーカット" },
+  { value: "mockup", label: "試作品" },
 ] as const;
 
 // 在庫ステータスの一元メタテーブル。

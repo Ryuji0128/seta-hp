@@ -7,7 +7,6 @@ interface Props {
   titleEn: string;
   eyebrow?: string;
   children: React.ReactNode;
-  showFooterCta?: boolean;
 }
 
 /**
@@ -20,7 +19,6 @@ const LegalPageLayout: React.FC<Props> = ({
   titleEn,
   eyebrow,
   children,
-  showFooterCta = true,
 }) => {
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
@@ -29,7 +27,8 @@ const LegalPageLayout: React.FC<Props> = ({
         component="section"
         sx={{
           py: { xs: 6, md: 9 },
-          borderBottom: "1px solid #EFEFEA",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           background:
             "radial-gradient(ellipse at 20% 30%, rgba(180,83,9,0.03), transparent 50%), #FFFFFF",
         }}
@@ -140,8 +139,7 @@ const LegalPageLayout: React.FC<Props> = ({
       </Box>
 
       {/* CTA */}
-      {showFooterCta && (
-        <Box
+      <Box
           component="section"
           sx={{ bgcolor: "background.alt", py: { xs: 7, md: 10 } }}
         >
@@ -174,8 +172,7 @@ const LegalPageLayout: React.FC<Props> = ({
               <PillLink href="/contact" compact showArrow>お問い合わせ</PillLink>
             </Box>
           </Container>
-        </Box>
-      )}
+      </Box>
     </Box>
   );
 };

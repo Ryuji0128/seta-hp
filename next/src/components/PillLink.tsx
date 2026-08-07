@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import Link from "next/link";
+import { COLOR_DARK_ACCENT } from "@/theme/themeConstants";
 import type { ReactNode } from "react";
 
 type PillLinkTone = "dark" | "light" | "outline";
@@ -25,7 +26,7 @@ const TONE_STYLES = {
     color: "text.primary",
     fontWeight: 600,
     transition: "background-color 0.2s, transform 0.2s",
-    "&:hover": { bgcolor: "#E5AC60", transform: "translateY(-1px)" },
+    "&:hover": { bgcolor: COLOR_DARK_ACCENT, transform: "translateY(-1px)" },
   },
   outline: {
     color: "#FFFFFF",

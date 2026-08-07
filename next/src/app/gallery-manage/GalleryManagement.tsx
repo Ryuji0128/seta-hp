@@ -59,11 +59,12 @@ const editWorkForm = (work: Work): WorkForm => ({
 });
 
 const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
-  const { items: works, loading, save, remove } = useCrudResource<Work>({
+  const { items: works, loading, save, remove, pagination } = useCrudResource<Work>({
     endpoint: "/api/works",
     listUrl: "/api/works?includeUnpublished=true",
     listKey: "works",
     label: "作品",
+    pageSize: 50,
   });
   const isMobile = useIsMobile();
 
@@ -127,6 +128,11 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
         columns={columns}
         loading={loading}
         emptyMessage="作品がありません"
+        pagination={{
+          page: pagination.page,
+          totalPages: pagination.totalPages,
+          onPageChange: pagination.setPage,
+        }}
         onCreate={canEdit ? editor.openCreate : undefined}
         actions={
           canEdit

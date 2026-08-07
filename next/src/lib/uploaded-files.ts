@@ -63,7 +63,7 @@ export function collectImageUrls(record: ImageRecord): string[] {
 
 async function getReferencedUploadUrls(prisma: PrismaClient): Promise<Set<string>> {
   const [products, works] = await Promise.all([
-    prisma.product.findMany({ select: { image: true, images: true } }),
+    prisma.product.findMany({ select: { images: true } }),
     prisma.work.findMany({ select: { image: true } }),
   ]);
 

@@ -7,15 +7,12 @@ interface Reply {
 
 export interface ReviewComment {
   id: number;
-  pageUrl: string;
   xRatio: number;
   yAbsolute: number;
-  elementSelector: string | null;
   authorName: string;
   content: string;
   status: "open" | "resolved";
   createdAt: string;
-  updatedAt: string;
   replies: Reply[];
 }
 
@@ -38,32 +35,6 @@ export function writeStoredName(value: string) {
   } catch {
     /* localStorage 不可環境では無視 */
   }
-}
-
-export function describeElement(el: Element | null): string {
-  if (!el || !(el instanceof HTMLElement)) return "";
-  const parts: string[] = [];
-  let current: Element | null = el;
-  let depth = 0;
-  while (current && depth < 4) {
-    const tag = current.tagName.toLowerCase();
-    const id = current.id ? `#${current.id}` : "";
-    const cls =
-      typeof current.className === "string" && current.className.trim()
-        ? "." +
-          current.className
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0, 2)
-            .join(".")
-        : "";
-    parts.unshift(`${tag}${id}${cls}`);
-    if (current.id) break;
-    current = current.parentElement;
-    depth += 1;
-  }
-  return parts.join(" > ").slice(0, 500);
 }
 
 export function formatDate(iso: string): string {

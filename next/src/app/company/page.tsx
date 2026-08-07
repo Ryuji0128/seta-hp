@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTACT_EMAIL } from "@/lib/site-config";
 import LegalPageLayout from "../_legal/LegalPageLayout";
 import LegalInfoTable, { LegalInfoRow } from "../_legal/LegalInfoTable";
 
@@ -19,7 +20,7 @@ const ROWS: LegalInfoRow[] = [
     value:
       "ハンドメイドアクリルディスプレイの製造販売(飾Love)",
   },
-  { label: "Email", value: "info@kaza-love.com" },
+  { label: "Email", value: CONTACT_EMAIL },
 ];
 
 export default function CompanyPage() {

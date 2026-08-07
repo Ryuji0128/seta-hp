@@ -40,9 +40,10 @@ Next.js 15 (App Router) + MUI + Prisma + MySQL で構成されたフルスタッ
 git clone https://github.com/Ryuji0128/seta-hp.git
 cd seta-hp
 
-# 2. 環境変数ファイルを配置
+# 2. Docker Compose用とアプリ用の環境変数ファイルを配置
+cp .env.example .env
 cp next/.env.example next/.env
-# .envファイルを編集して必要な値を設定
+# 各.envファイルを編集して必要な値を設定
 
 # 3. Docker環境を起動（ローカルビルド）
 docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
@@ -89,7 +90,22 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml down
 
 ## 環境変数の設定
 
-`next/.env.example` をコピーして `next/.env` を作成し、各値を設定：
+Docker Composeが展開する値はルートの `.env.example` を `.env` に、Next.jsが読む値は
+`next/.env.example` を `next/.env` にコピーして設定します。Composeの `environment` は
+`next/.env` より優先されます。
+
+ルート `.env` の主な変数：
+
+| 変数名 | 説明 |
+|--------|------|
+| `IMAGE_TAG` | デプロイするコンテナイメージのタグ |
+| `MYSQL_ROOT_PASSWORD` / `MYSQL_DATABASE` / `MYSQL_USER` / `MYSQL_PASSWORD` | MySQL設定 |
+| `NEXTAUTH_URL` | ComposeからNext.jsへ渡す公開URL |
+| `SERVER_NAME` / `OLD_SERVER_NAME` | 現行・旧ドメイン |
+| `PROXY_SSO_SECRET` | Designer SSOの共有秘密 |
+| `ADMIN_ALLOWED_IPS` | 管理領域を許可するIP/CIDR（スペース区切り） |
+
+`next/.env` の主な変数：
 
 | 変数名 | 説明 |
 |--------|------|
@@ -105,6 +121,9 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml down
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | メール送信設定 |
 | `CONTACT_TO_EMAIL` | お問い合わせ受信メールアドレス |
 | `ADMIN_EMAIL` / `ADMIN_NAME` / `ADMIN_PASSWORD` | 管理者シードデータ（`prisma db seed` 用） |
+| `SSO_COOKIE_DOMAIN` / `SSO_COOKIE_SECURE` / `SSO_VERIFY_ENABLED` | Designer SSO設定（任意） |
+| `NEXT_PUBLIC_DESIGNER_URL` | Designerの公開URL（任意） |
+| `NEXT_PUBLIC_ENABLE_COMMENTS` | 社内レビューコメントの有効化フラグ（任意） |
 
 ## 開発コマンド
 
@@ -170,10 +189,10 @@ npx prisma db seed    # シードデータ投入
 |------|------|
 | `/products-manage` | 商品管理 |
 | `/gallery-manage` | ギャラリー管理 |
-| `/works-manage` | 実績管理 |
 | `/news` | ニュース管理 |
 
 > **Note**: 管理ページは基本的に `ADMIN` / `EDITOR` が利用対象です。削除操作など一部 API は `ADMIN` 専用です。
+> 旧 `/works-manage` は互換性のため `/gallery-manage` へ恒久リダイレクトします。
 
 ## API エンドポイント
 
@@ -186,7 +205,7 @@ npx prisma db seed    # シードデータ投入
 | GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET: 要認証 / DELETE: ADMIN |
 | POST | `/api/recaptcha` | reCAPTCHA 検証 | - (レート制限あり) |
 | POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
-| POST | `/api/upload` | 画像アップロード | 要認証 |
+| POST | `/api/upload` | 画像アップロード | ADMIN/EDITOR |
 | GET/POST | `/api/review-comments` | 社内レビューコメント一覧・作成 | 開発環境のみ有効 / レート制限あり |
 | PATCH/DELETE | `/api/review-comments/[id]` | 社内レビューコメントの状態変更・削除 | 開発環境のみ有効 / レート制限あり |
 | POST/DELETE | `/api/review-comments/[id]/replies` | 社内レビュー返信の作成・削除 | 開発環境のみ有効 / レート制限あり |
@@ -239,14 +258,14 @@ seta-hp/
     ├── auth.config.ts           # NextAuth 設定
     ├── prisma/
     │   ├── schema.prisma        # DB スキーマ定義
-    │   └── seed.ts              # シードデータ
+    │   ├── migrations/          # Prismaマイグレーション
+    │   └── seed.js              # シードデータ
     ├── public/                  # 静的ファイル & アップロード画像
     └── src/
         ├── app/                 # App Router (ページ & API)
         │   ├── _home/           # トップページセクション
         │   ├── about/           # 飾Love について
         │   ├── api/             # API Routes
-        │   │   ├── admin/upload/ # 管理者画像アップロード
         │   │   ├── auth/        # NextAuth
         │   │   ├── email/       # お問い合わせ (送信・一覧・削除)
         │   │   ├── health/      # ヘルスチェック
@@ -268,8 +287,7 @@ seta-hp/
         │   ├── products/        # 商品一覧 & 詳細
         │   ├── products-manage/ # 商品管理
         │   ├── register/        # ユーザー登録
-        │   ├── shipping/        # 配送について
-        │   └── works-manage/    # 実績管理
+        │   └── shipping/        # 配送について
         ├── __tests__/           # Vitest
         ├── components/          # 共有コンポーネント
         ├── lib/                 # ユーティリティ
@@ -277,7 +295,6 @@ seta-hp/
         │   ├── api-response.ts  # API レスポンスヘルパー
         │   ├── auth.ts          # NextAuth 初期化
         │   ├── db.ts            # Prisma クライアント
-        │   ├── fetchSecrets.ts  # 環境変数/Secret取得
         │   ├── pagination.ts    # ページネーション共通処理
         │   ├── rate-limit.ts    # DB共有対応のレート制限
         │   ├── reviewCommentsGuard.ts # レビューAPI有効化ガード

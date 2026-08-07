@@ -50,17 +50,6 @@ findtime = 60
 bantime = 3600
 
 # ----------------------------------
-# Nginx - 認証失敗
-# ----------------------------------
-[nginx-http-auth]
-enabled = true
-port = http,https
-filter = nginx-http-auth
-logpath = /var/log/nginx/error.log
-maxretry = 3
-bantime = 86400
-
-# ----------------------------------
 # Nginx - Proxyスキャン対策
 # ----------------------------------
 [nginx-proxy]

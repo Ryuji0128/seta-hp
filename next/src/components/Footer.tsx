@@ -1,7 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import Link from "next/link";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY } from "@/theme/themeConstants";
+import XIcon from "@/components/XIcon";
+import { X_PROFILE_URL } from "@/lib/site-config";
+import { COLOR_DARK_ACCENT, FONT_DISPLAY } from "@/theme/themeConstants";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -97,7 +99,7 @@ export default function Footer() {
             </Typography>
             <Box
               component="a"
-              href="https://x.com/kaza_love_"
+              href={X_PROFILE_URL}
               target="_blank"
               rel="noopener noreferrer"
               sx={{
@@ -118,9 +120,7 @@ export default function Footer() {
               }}
               aria-label="X (Twitter)"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
+              <XIcon />
             </Box>
           </Box>
 
@@ -133,7 +133,7 @@ export default function Footer() {
                   fontWeight: 700,
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
-                  color: "#E5AC60",
+                  color: COLOR_DARK_ACCENT,
                   mb: 2.5,
                 }}
               >
@@ -171,8 +171,7 @@ export default function Footer() {
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          {/* 年越し時のSSR/クライアント不一致による警告を抑止 */}
-          <span suppressHydrationWarning>© {new Date().getFullYear()} 飾Love</span>
+          <span>© {new Date().getFullYear()} 飾Love</span>
           <span>Made in Japan</span>
         </Box>
       </SectionContainer>

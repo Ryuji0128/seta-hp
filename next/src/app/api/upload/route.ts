@@ -4,7 +4,12 @@ import path from "path";
 import crypto from "crypto";
 import { badRequestResponse, internalErrorResponse } from "@/lib/api-response";
 import { isErrorResponse, requireEditor } from "@/lib/api-utils";
-import { getActualMimeType, getExtensionFromMimeType, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from "@/lib/upload-validation";
+import {
+  getActualMimeType,
+  getExtensionFromMimeType,
+  isAllowedImageType,
+  MAX_IMAGE_SIZE,
+} from "@/lib/upload-validation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +27,7 @@ export async function POST(req: NextRequest) {
       return badRequestResponse("ファイルサイズは5MB以下にしてください");
     }
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    if (!isAllowedImageType(file.type)) {
       return badRequestResponse("JPG, PNG, GIF, WebPのみアップロード可能です");
     }
 
@@ -30,7 +35,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     const actualMimeType = getActualMimeType(buffer);
-    if (!actualMimeType || !ALLOWED_IMAGE_TYPES.includes(actualMimeType)) {
+    if (!actualMimeType || !isAllowedImageType(actualMimeType)) {
       return badRequestResponse("不正なファイル形式です。JPG, PNG, GIF, WebPのみアップロード可能です");
     }
 
@@ -44,7 +49,7 @@ export async function POST(req: NextRequest) {
     await writeFile(filePath, buffer);
 
     const url = `/uploads/${fileName}`;
-    return NextResponse.json({ url, fileName });
+    return NextResponse.json({ url });
   } catch (error) {
     console.error("アップロードエラー:", error);
     return internalErrorResponse("アップロードに失敗しました");

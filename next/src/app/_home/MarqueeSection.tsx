@@ -22,7 +22,8 @@ const MarqueeSection = () => {
         color: "#FFFFFF",
         py: 2.25,
         overflow: "hidden",
-        borderTop: "1px solid #EFEFEA",
+        borderTop: "1px solid",
+        borderColor: "divider",
       }}
     >
       <Box

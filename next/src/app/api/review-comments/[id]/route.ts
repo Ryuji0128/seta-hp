@@ -8,6 +8,7 @@
 import { getPrismaClient } from "@/lib/db";
 import { badRequestResponse, internalErrorResponse } from "@/lib/api-response";
 import { RATE_LIMITS } from "@/lib/rate-limit";
+import { reviewCommentSelect } from "@/lib/review-comment-query";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import {
   parseReviewId as parseId,
@@ -36,7 +37,7 @@ export async function PATCH(
     const updated = await prisma.reviewComment.update({
       where: { id },
       data: { status },
-      include: { replies: { orderBy: { createdAt: "asc" } } },
+      select: reviewCommentSelect,
     });
     return NextResponse.json({ comment: updated });
   } catch (error) {

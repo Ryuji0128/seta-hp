@@ -1,21 +1,25 @@
+interface ApiJsonOptions extends Omit<RequestInit, "body"> {
+  body?: unknown;
+}
+
 /**
  * クライアント側 fetch の共通ヘルパ。
  * 「JSON で送って、失敗なら data.error を Error として投げる」定型を一元化する。
  */
 export async function apiJson<T = unknown>(
   url: string,
-  options?: { method?: string; body?: unknown }
+  options?: ApiJsonOptions
 ): Promise<T> {
-  const { method = "GET", body } = options ?? {};
+  const { body, ...requestOptions } = options ?? {};
+  const headers = new Headers(requestOptions.headers);
+  if (body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
 
   const res = await fetch(url, {
-    method,
-    ...(body !== undefined
-      ? {
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      : {}),
+    ...requestOptions,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   const data = await res.json().catch(() => null);

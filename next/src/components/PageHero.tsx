@@ -113,7 +113,8 @@ export default function PageHero({
                 display: "flex",
                 gap: 5,
                 pt: 3,
-                borderTop: "1px solid #EFEFEA",
+                borderTop: "1px solid",
+                borderColor: "divider",
                 ...(statsWrap ? { flexWrap: "wrap" } : {}),
               }}
             >

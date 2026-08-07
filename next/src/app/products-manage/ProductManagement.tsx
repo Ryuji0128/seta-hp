@@ -68,7 +68,7 @@ const editProductForm = (product: Product): ProductForm => ({
   price: product.price.toString(),
   category: product.category,
   tags: product.tags,
-  images: parseProductImages(product.images, product.image),
+  images: parseProductImages(product.images),
   stock: product.stock,
   isPublished: product.isPublished,
   isHeroImage: product.isHeroImage,
@@ -76,11 +76,12 @@ const editProductForm = (product: Product): ProductForm => ({
 });
 
 const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
-  const { items: products, loading, save, remove } = useCrudResource<Product>({
+  const { items: products, loading, save, remove, pagination } = useCrudResource<Product>({
     endpoint: "/api/products",
     listUrl: "/api/products?includeUnpublished=true",
     listKey: "products",
     label: "商品",
+    pageSize: 50,
   });
   const isMobile = useIsMobile();
 
@@ -94,7 +95,6 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     price: Number(form.price),
     category: form.category,
     tags: form.tags,
-    image: form.images[0] || null,
     images: form.images.length > 0 ? form.images : null,
     stock: form.stock,
     isPublished: form.isPublished,
@@ -168,6 +168,11 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         columns={columns}
         loading={loading}
         emptyMessage="商品がありません"
+        pagination={{
+          page: pagination.page,
+          totalPages: pagination.totalPages,
+          onPageChange: pagination.setPage,
+        }}
         onCreate={canEdit ? editor.openCreate : undefined}
         actions={
           canEdit
@@ -245,7 +250,6 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
           <MultiImageUpload
             value={editor.form.images}
             onChange={(images) => editor.setField("images", images)}
-            maxImages={10}
           />
         </Box>
         <FormControl fullWidth>

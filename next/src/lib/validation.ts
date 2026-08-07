@@ -79,15 +79,6 @@ export const RegistrationSchema = z.object({
     }),
 });
 
-// ログインフォームのバリデーションスキーマ
-export const LoginSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "メールアドレスを入力してください。" })
-    .email({ message: "有効なメールアドレスを入力してください。" }),
-  password: z.string().min(8, { message: "パスワードは8文字以上で入力してください。" }),
-});
-
 // ---------------------------------------------------------------------------
 // 商品・制作事例（管理API用）
 // POST/PUT で重複していた手続き的バリデーションを Zod に統一（#245）。
@@ -140,7 +131,6 @@ export const ProductCreateSchema = z.object({
   price: priceSchema,
   category: productCategorySchema,
   tags: tagsSchema,
-  image: optionalImageSchema,
   images: z.array(z.string()).optional().nullable(),
   stock: stockSchema.optional(),
   isPublished: z.boolean().optional(),

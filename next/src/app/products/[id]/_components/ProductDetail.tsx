@@ -15,7 +15,7 @@ interface Props {
 const ProductDetail: React.FC<Props> = ({ product }) => {
 
   const tags = parseTags(product.tags);
-  const productImages = parseProductImages(product.images, product.image);
+  const productImages = parseProductImages(product.images);
 
   const ref = formatRefNumber(product.id);
   const stockMeta = getStockMeta(product.stock);
@@ -121,7 +121,8 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
               gap: 1.5,
               pb: 3,
               mb: 3,
-              borderBottom: "1px solid #EFEFEA",
+              borderBottom: "1px solid",
+              borderColor: "divider",
             }}
           >
             <Box
@@ -211,7 +212,8 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
               color: "text.secondary",
               mb: 4,
               p: 2,
-              border: "1px solid #EFEFEA",
+              border: "1px solid",
+              borderColor: "divider",
               borderRadius: "6px",
               lineHeight: 1.7,
             }}
@@ -294,7 +296,8 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
             sx={{
               mt: 5,
               pt: 4,
-              borderTop: "1px solid #EFEFEA",
+              borderTop: "1px solid",
+              borderColor: "divider",
               fontSize: "12px",
               color: "text.secondary",
               lineHeight: 1.7,

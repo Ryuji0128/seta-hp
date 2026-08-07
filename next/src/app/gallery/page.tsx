@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
 import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
-import GalleryHero from "./_components/GalleryHero";
 import GalleryGrid from "./_components/GalleryGrid";
-import GalleryCta from "./_components/GalleryCta";
+import PageHero from "@/components/PageHero";
+import DarkCtaSection from "@/components/DarkCtaSection";
 
 // CIビルド時はDBに到達できないため静的生成はせず、
 // リクエスト毎レンダリング + unstable_cache（works タグ）でDBアクセスを抑える。
@@ -26,6 +26,7 @@ const getWorks = unstable_cache(
     const prisma = getPrismaClient();
     return prisma.work.findMany({
       where: { isPublished: true },
+      select: { id: true, title: true, category: true, image: true },
       orderBy: { createdAt: "desc" },
     });
   },
@@ -38,9 +39,33 @@ export default async function GalleryPage() {
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
-      <GalleryHero count={works.length} />
+      <PageHero
+        eyebrow="Gallery · 制作事例"
+        heading={
+          <>
+            これまでの<br />
+            <em>仕事。</em>
+          </>
+        }
+        subtitle="— Selected works from the workshop."
+        stats={[
+          { value: works.length, label: "Works on display" },
+          { value: "Solo", label: "One maker" },
+        ]}
+      />
       <GalleryGrid works={works} />
-      <GalleryCta />
+      <DarkCtaSection
+        heading={
+          <>
+            こんなのが<br />
+            <em>作れますか?</em>
+          </>
+        }
+        body="特注品・大型品・サイズや形状の個別調整など、お気軽にご相談ください。一品から制作します。"
+        primaryLabel="お問い合わせ"
+        secondaryHref="/products"
+        secondaryLabel="カタログを見る"
+      />
     </Box>
   );
 }

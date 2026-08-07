@@ -65,7 +65,6 @@ model Product {
   price       Int
   category    String
   tags        String
-  image       String?
   images      Json?
   stock       String   @default("在庫あり")
   isPublished Boolean  @default(true)
@@ -92,7 +91,6 @@ model Session {
 model User {
   id            String    @id @default(cuid())
   name          String?
-  username      String?   @unique
   password      String?
   email         String?   @unique
   emailVerified DateTime?
@@ -128,17 +126,16 @@ enum User_role {
 
 // 社内レビュー用ページ内コメント (env: NEXT_PUBLIC_ENABLE_COMMENTS=true の時のみ有効)
 model ReviewComment {
-  id              Int                  @id @default(autoincrement())
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  pageUrl         String
-  xRatio          Float
-  yAbsolute       Float
-  elementSelector String?              @db.Text
-  authorName      String
-  content         String               @db.Text
-  status          String               @default("open") // "open" | "resolved"
-  replies         ReviewCommentReply[]
+  id         Int                  @id @default(autoincrement())
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  pageUrl    String
+  xRatio     Float
+  yAbsolute  Float
+  authorName String
+  content    String               @db.Text
+  status     String               @default("open") // "open" | "resolved"
+  replies    ReviewCommentReply[]
 
   @@index([pageUrl])
 }
