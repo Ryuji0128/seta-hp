@@ -97,7 +97,6 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml down
 | `RATE_LIMIT_STORE` | `database` / `memory`。省略時は環境に応じて自動選択 |
 | `AUTH_SECRET` | NextAuth 暗号化キー |
 | `NEXTAUTH_URL` | 認証コールバック URL |
-| `NEXT_PUBLIC_SITE_URL` | サイト URL（フロントエンド参照） |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（任意） |
 | `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` | Google 認証の有効化フラグ（任意） |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA v3 サイトキー（フロントエンド用） |
@@ -119,7 +118,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml exec next sh # 
 # ローカル（next/ ディレクトリで実行）
 cd next
 yarn dev              # 開発サーバー (Turbopack)
-yarn build            # プロダクションビルド + sitemap 生成
+yarn build            # プロダクションビルド
 yarn lint             # ESLint
 yarn typecheck        # 型チェック (.next を再生成してから実行)
 
@@ -134,7 +133,7 @@ npx prisma db seed    # シードデータ投入
 
 | レイヤー | 技術 |
 |---------|------|
-| Frontend | Next.js 15, React 19, MUI v6, Tailwind CSS, Framer Motion |
+| Frontend | Next.js 15, React 19, MUI v6 |
 | Backend | Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth) |
 | Database | MySQL 8.0, Prisma ORM |
 | セキュリティ | reCAPTCHA v3, Zod バリデーション, XSS サニタイズ, レート制限 |
@@ -344,11 +343,12 @@ docker compose exec mysql mysql -u app_user -papp_pass app_db
 
 ### Sitemap
 
-`next-sitemap` で自動生成。設定ファイル: `next/next-sitemap.config.cjs`
+App RouterのMetadata Routeでリクエスト時に生成する。
 
-- `changefreq` / `priority` は Google が無視するため不使用
-- `lastmod` のみを設定
-- 管理画面・API・決済完了ページは除外
+- `next/src/app/robots.ts`: `/robots.txt` を生成し、APIをクロール対象外にする
+- `next/src/app/sitemap.ts`: `/sitemap.xml` を生成し、静的ページと公開商品を列挙する
+- 公開商品の `lastModified` にはDBの実更新日時を使用する
+- 管理画面・API・noindexページはサイトマップから除外する
 
 ## セキュリティ
 

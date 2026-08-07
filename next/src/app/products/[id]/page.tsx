@@ -70,9 +70,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const product = await getProduct(productId);
   if (!product || !product.isPublished) notFound();
 
-  const [relatedProducts] = await Promise.all([
-    getRelatedProducts(product.category, product.id),
-  ]);
+  const relatedProducts = await getRelatedProducts(product.category, product.id);
 
   // 検索結果に価格・在庫を表示させる Product 構造化データと、
   // パンくずリッチリザルト用の BreadcrumbList をサーバーレンダリングで埋め込む。

@@ -76,7 +76,6 @@ export default function Header() {
             {/* Brand */}
             <Link
               href="/"
-              passHref
               style={{ textDecoration: "none", color: "inherit" }}
             >
               <Box
@@ -122,7 +121,6 @@ export default function Header() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    passHref
                     style={{ textDecoration: "none" }}
                   >
                     <Box
@@ -163,7 +161,7 @@ export default function Header() {
 
               {/* Desktop: 購入CTA */}
               <Box sx={{ display: { xs: "none", md: "block" } }}>
-                <Link href="/products" passHref style={{ textDecoration: "none" }}>
+                <Link href="/products" style={{ textDecoration: "none" }}>
                   <Button
                     variant="contained"
                     sx={{
@@ -203,7 +201,6 @@ export default function Header() {
                   <MenuItem key={item.href} onClick={handleMenuClose}>
                     <Link
                       href={item.href}
-                      passHref
                       style={{
                         textDecoration: "none",
                         color: "inherit",

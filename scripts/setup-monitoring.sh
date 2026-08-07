@@ -32,6 +32,11 @@ apt-get install -y fail2ban logwatch mailutils
 echo ""
 echo "2. fail2ban設定中..."
 
+# Nginxコンテナとホスト監視ツールで共有する実ログ。docker-compose.ymlも同じパスをbind mountする。
+install -d -m 0755 /var/log/nginx
+touch /var/log/nginx/access.log /var/log/nginx/error.log
+chmod 0640 /var/log/nginx/access.log /var/log/nginx/error.log
+
 # jail.localをコピー
 if [ -f "$PROJECT_DIR/fail2ban/jail.local" ]; then
     cp "$PROJECT_DIR/fail2ban/jail.local" /etc/fail2ban/jail.local
@@ -42,6 +47,12 @@ fi
 if [ -f "$PROJECT_DIR/fail2ban/filter.d/nginx-404.conf" ]; then
     cp "$PROJECT_DIR/fail2ban/filter.d/nginx-404.conf" /etc/fail2ban/filter.d/
     echo "nginx-404.conf をコピーしました"
+fi
+
+# jail.localで有効なproxyスキャンfilterも必ず配置する
+if [ -f "$PROJECT_DIR/fail2ban/filter.d/nginx-proxy.conf" ]; then
+    cp "$PROJECT_DIR/fail2ban/filter.d/nginx-proxy.conf" /etc/fail2ban/filter.d/
+    echo "nginx-proxy.conf をコピーしました"
 fi
 
 # fail2ban再起動

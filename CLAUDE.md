@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, MUI v6, Tailwind CSS, Framer Motion
+- **Frontend**: Next.js 15, React 19, MUI v6
 - **Backend**: Next.js API Routes, NextAuth.js v5 (JWT + Credentials / Google OAuth)
 - **Database**: MySQL 8.0, Prisma ORM
 - **Deployment**: Docker, Nginx, GitHub Container Registry, GitHub Actions
@@ -56,7 +56,7 @@ docker compose up
 # 個別コマンド (nextディレクトリで実行)
 cd next
 yarn dev              # 開発サーバー (Turbopack)
-yarn build            # ビルド + sitemap生成
+yarn build            # プロダクションビルド
 yarn lint             # ESLint
 yarn typecheck        # 型チェック (.next を再生成してから実行)
 
@@ -92,7 +92,7 @@ npx prisma db seed    # シードデータ投入
 |------|-------------|
 | `/products-manage` | 商品管理 |
 | `/gallery-manage` | ギャラリー管理 |
-| `/works-manage` | 実績管理 |
+| `/works-manage` | 互換URL（`/gallery-manage` へリダイレクト） |
 | `/news` | ニュース管理 |
 
 ## Database Models
@@ -142,10 +142,14 @@ npx prisma db seed    # シードデータ投入
 ### Security Headers
 - `next.config.ts` でセキュリティヘッダーを設定（HSTS, X-Frame-Options等）
 
+### SEO Routes
+- `src/app/robots.ts` と `src/app/sitemap.ts` が正本（App Router Metadata Route）
+- `public/robots.txt` / `public/sitemap*.xml` の静的生成物は使用しない
+- sitemapはリクエスト時に公開商品をDBから取得し、静的ページと合わせて返す
+
 ### Styling
 - MUIコンポーネント + カスタムテーマ (`src/theme/`)
-- Tailwind CSSとの併用
-- Framer Motionによるアニメーション
+- `sx` と法務ページ共通レイアウトで表示規則を管理
 
 ## Workflow Best Practices
 

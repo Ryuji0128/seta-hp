@@ -85,6 +85,8 @@ services:
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot:ro
       - ./uploads:/var/www/uploads:ro
+      # fail2ban/logwatchがホスト上で実ログを監視できるよう、標準ログパスを共有する。
+      - /var/log/nginx:/var/log/nginx
     entrypoint: ["/bin/sh", "/docker-entrypoint.sh"]
     depends_on:
       - next

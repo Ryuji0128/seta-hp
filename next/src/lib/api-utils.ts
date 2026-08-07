@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Session } from "next-auth";
 import { Prisma } from "@prisma/client";
-import { z } from "zod";
+import type { z } from "zod";
 import xss from "xss";
 import { auth } from "@/lib/auth";
 import {
@@ -11,8 +11,7 @@ import {
   notFoundResponse,
   unauthorizedResponse,
 } from "@/lib/api-response";
-
-type UserRole = "ADMIN" | "EDITOR" | "VIEWER";
+import type { UserRole } from "@/lib/roles";
 
 /**
  * 認証と権限をまとめて検証する。
@@ -86,19 +85,28 @@ export function sanitizeTags(tags: unknown): string {
 
 /**
  * API ルート共通の catch ハンドラ。
- * - Zod バリデーションエラー → 400（先頭メッセージ）
  * - Prisma P2025（更新・削除対象なし） → 404
+ * - Prisma P2002（一意制約違反）→ 指定時は既存契約と同じ400
  * - その他 → ログ出力して 500
  */
 export function handleApiError(
   error: unknown,
-  options: { log: string; message: string; notFoundMessage?: string }
-): NextResponse {
-  if (error instanceof z.ZodError) {
-    return badRequestResponse(error.errors[0].message);
+  options: {
+    log: string;
+    message: string;
+    notFoundMessage?: string;
+    uniqueConstraintMessage?: string;
   }
+): NextResponse {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
     return notFoundResponse(options.notFoundMessage ?? "対象が見つかりません");
+  }
+  if (
+    options.uniqueConstraintMessage &&
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
+    return badRequestResponse(options.uniqueConstraintMessage);
   }
   console.error(`${options.log}:`, error);
   return internalErrorResponse(options.message);

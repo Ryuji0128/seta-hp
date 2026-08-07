@@ -9,13 +9,6 @@ declare module "@mui/material/styles" {
   }
   interface Theme {
     custom: {
-      subTitle: {
-        height: string;
-        widthXs: number;
-        widthSm: number;
-        widthMd: number;
-        widthLg: number;
-      };
       header: {
         height: {
           mobile: number;
@@ -31,13 +24,6 @@ declare module "@mui/material/styles" {
   }
   interface ThemeOptions {
     custom?: {
-      subTitle: {
-        height: string;
-        widthXs: number;
-        widthSm: number;
-        widthMd: number;
-        widthLg: number;
-      };
       header: {
         height: {
           mobile: number;
@@ -244,13 +230,6 @@ export const themeConstants = {
         mobile: 60,
         desktop: 72,
       },
-    },
-    subTitle: {
-      height: "1rem",
-      widthXs: 100,
-      widthSm: 30,
-      widthMd: 30,
-      widthLg: 30,
     },
     fonts: {
       display: FONT_DISPLAY,

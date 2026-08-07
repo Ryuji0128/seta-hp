@@ -1,10 +1,7 @@
-"use client";
-
 import { Box, Typography } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import SectionContainer from "@/components/SectionContainer";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -37,13 +34,6 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
 ];
 
 export default function Footer() {
-  const params = usePathname();
-  const theme = useTheme();
-  const isFooterDisabled = params.includes("portal-");
-  if (isFooterDisabled) {
-    return null;
-  }
-
   return (
     <Box
       component="footer"
@@ -69,7 +59,7 @@ export default function Footer() {
           <Box>
             <Box
               sx={{
-                fontFamily: theme.custom.fonts.display,
+                fontFamily: FONT_DISPLAY,
                 fontWeight: 800,
                 fontSize: "24px",
                 letterSpacing: "-0.02em",

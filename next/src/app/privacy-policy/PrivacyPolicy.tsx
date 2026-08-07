@@ -1,4 +1,5 @@
 import React from "react";
+import { Box } from "@mui/material";
 import { data, ListItem, Paragraph } from "./privacy-policy-data";
 
 const PrivacyPolicy: React.FC = () => {
@@ -10,15 +11,27 @@ const PrivacyPolicy: React.FC = () => {
   // 再帰的にリストを描画
   const renderItems = (items: ListItem[], parentKey: string) => {
     return (
-      <ol className="list-decimal list-inside ml-4 my-4">
+      <Box
+        component="ol"
+        sx={{
+          listStyleType: "decimal",
+          listStylePosition: "inside",
+          ml: "1rem",
+          my: "1rem",
+        }}
+      >
         {items.map((item, index) => {
           const uniqueKey = `${parentKey}-${index}`;
 
           if (typeof item === "string") {
             return (
-              <li key={uniqueKey} className="my-2 leading-relaxed">
+              <Box
+                component="li"
+                key={uniqueKey}
+                sx={{ "&&": { my: "0.5rem", lineHeight: 1.625 } }}
+              >
                 {item}
-              </li>
+              </Box>
             );
           } else if (Array.isArray(item)) {
             return <React.Fragment key={uniqueKey}>{renderItems(item, uniqueKey)}</React.Fragment>;
@@ -26,16 +39,20 @@ const PrivacyPolicy: React.FC = () => {
             return (
               <React.Fragment key={uniqueKey}>
                 {item.content.map((line, lineIndex) => (
-                  <p key={`${uniqueKey}-${lineIndex}`} className="my-2 leading-relaxed">
+                  <Box
+                    component="p"
+                    key={`${uniqueKey}-${lineIndex}`}
+                    sx={{ "&&": { my: "0.5rem", lineHeight: 1.625 } }}
+                  >
                     {line}
-                  </p>
+                  </Box>
                 ))}
               </React.Fragment>
             );
           }
           return null;
         })}
-      </ol>
+      </Box>
     );
   };
 

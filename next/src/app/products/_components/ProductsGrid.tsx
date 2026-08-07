@@ -1,9 +1,13 @@
 import { Box } from "@mui/material";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
-import Image from "next/image";
 import Link from "next/link";
 import EmptyState from "@/components/EmptyState";
 import SectionContainer from "@/components/SectionContainer";
+import {
+  ProductCardFrame,
+  ProductCardMedia,
+  ProductPriceRow,
+} from "@/components/product/ProductCardPrimitives";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
 import { normalizeImageUrl } from "@/lib/images";
 import { parseTags, type ProductGridItem } from "@/lib/types/product";
@@ -42,57 +46,13 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                 href={`/products/${p.id}`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: "6px",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    bgcolor: "#FFFFFF",
-                    transition: "transform 0.4s, border-color 0.3s, box-shadow 0.3s",
-                    "&:hover": {
-                      transform: "translateY(-4px)",
-                      borderColor: "text.primary",
-                      boxShadow: "0 22px 40px -22px rgba(10,10,10,0.2)",
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: "relative",
-                      aspectRatio: "4 / 5",
-                      background: "linear-gradient(150deg, #F6F6F4 0%, #EDEDE8 100%)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={p.name}
-                        fill
-                        sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          inset: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "text.disabled",
-                          fontFamily: FONT_ITALIC,
-                          fontStyle: "italic",
-                          fontSize: "15px",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        No. {ref}
-                      </Box>
-                    )}
-                    {(isPopular || isNew) && (
+                <ProductCardFrame>
+                  <ProductCardMedia
+                    src={imageUrl}
+                    alt={p.name}
+                    sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
+                    placeholder={`No. ${ref}`}
+                    badge={(isPopular || isNew) && (
                       <Box
                         sx={{
                           position: "absolute",
@@ -112,7 +72,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                         {isPopular ? "Popular" : "New"}
                       </Box>
                     )}
-                  </Box>
+                  />
 
                   <Box sx={{ p: "24px 24px 28px" }}>
                     <Box
@@ -164,39 +124,9 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                     >
                       {p.name}
                     </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        pt: 2,
-                        borderTop: "1px solid #EFEFEA",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontFamily: FONT_DISPLAY,
-                          fontSize: "22px",
-                          fontWeight: 700,
-                          letterSpacing: "-0.02em",
-                          color: "text.primary",
-                        }}
-                      >
-                        ¥{p.price.toLocaleString()}
-                      </Box>
-                      <Box
-                        sx={{
-                          fontSize: "11px",
-                          color: "text.secondary",
-                          letterSpacing: "0.12em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        送料込
-                      </Box>
-                    </Box>
+                    <ProductPriceRow price={p.price} />
                   </Box>
-                </Box>
+                </ProductCardFrame>
               </Link>
             );
           })}

@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
-import { normalizeImageUrl } from "@/lib/images";
+import { parseProductImages } from "@/lib/types/product";
 import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 
 // トップの「ラインナップ」カードに表示する商品データ。
@@ -27,16 +27,11 @@ export const getCatalogueProducts = unstable_cache(
     });
 
     return products.map((p) => {
-      const fallbackImage = Array.isArray(p.images)
-        ? (p.images
-            .map((img) => typeof img === "string" ? normalizeImageUrl(img) : null)
-            .find((img): img is string => Boolean(img)) ?? null)
-        : null;
       return {
         id: p.id,
         name: p.name,
         price: p.price,
-        image: normalizeImageUrl(p.image) || fallbackImage,
+        image: parseProductImages(p.images, p.image)[0] ?? null,
       };
     });
   } catch (error) {

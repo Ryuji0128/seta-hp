@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
 import AboutSectionHeader from "./AboutSectionHeader";
-import { FONT_DISPLAY } from "@/theme/themeConstants";
+import AboutTwoColumn from "./AboutTwoColumn";
 
 const AboutStory = () => {
   return (
@@ -25,31 +25,17 @@ const AboutStory = () => {
           <Box />
         </Box>
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1.4fr" },
-            gap: { xs: 4, md: 10 },
-          }}
+        <AboutTwoColumn
+          lead={
+            <>
+              欲しいものが
+              <br />
+              なかったから、
+              <br />
+              <Box component="span" sx={{ color: "primary.main" }}>作った。</Box>
+            </>
+          }
         >
-          <Box
-            sx={{
-              fontFamily: FONT_DISPLAY,
-              fontWeight: 500,
-              fontSize: "clamp(32px, 3.8vw, 56px)",
-              lineHeight: 1.2,
-              letterSpacing: "-0.025em",
-              color: "text.primary",
-            }}
-          >
-            欲しいものが
-            <br />
-            なかったから、
-            <br />
-            <Box component="span" sx={{ color: "primary.main" }}>作った。</Box>
-          </Box>
-
-          <Box sx={{ pt: 2 }}>
             <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 3 }}>
               飾Love は、カード好きが営む小さな個人工房です。
             </Box>
@@ -67,8 +53,7 @@ const AboutStory = () => {
               レーザー加工で、自分が「これだ」と思える一品仕立てを、
               一つずつ手作業で組み立てています。同じカード好きの方に届くと嬉しいです。
             </Box>
-          </Box>
-        </Box>
+        </AboutTwoColumn>
       </SectionContainer>
     </Box>
   );

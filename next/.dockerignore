@@ -6,3 +6,6 @@ npm-debug.log
 yarn-error.log
 package-lock.json
 .env
+# App Routerのrobots.ts / sitemap.tsが正本。旧next-sitemap生成物をbuild contextへ入れない。
+public/robots.txt
+public/sitemap*.xml

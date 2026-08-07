@@ -156,7 +156,7 @@ export default function NotFound() {
 
       {/* 戻るボタン */}
       <Box sx={{ mt: 4, zIndex: 1 }}>
-        <Link href="/" passHref>
+        <Link href="/">
           <Button
             variant="outlined"
             sx={{

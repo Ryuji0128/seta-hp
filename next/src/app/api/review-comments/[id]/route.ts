@@ -6,6 +6,7 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
+import { badRequestResponse, internalErrorResponse } from "@/lib/api-response";
 import { RATE_LIMITS } from "@/lib/rate-limit";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import {
@@ -25,7 +26,7 @@ export async function PATCH(
 
   const { id: rawId } = await params;
   const id = parseId(rawId);
-  if (!id) return NextResponse.json({ error: "invalid id" }, { status: 400 });
+  if (!id) return badRequestResponse("invalid id");
 
   try {
     const body = await parseJsonBody(req);
@@ -40,7 +41,7 @@ export async function PATCH(
     return NextResponse.json({ comment: updated });
   } catch (error) {
     console.error("レビューコメント更新エラー:", error);
-    return NextResponse.json({ error: "更新に失敗しました" }, { status: 500 });
+    return internalErrorResponse("更新に失敗しました");
   }
 }
 
@@ -53,13 +54,13 @@ export async function DELETE(
 
   const { id: rawId } = await params;
   const id = parseId(rawId);
-  if (!id) return NextResponse.json({ error: "invalid id" }, { status: 400 });
+  if (!id) return badRequestResponse("invalid id");
 
   try {
     await prisma.reviewComment.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("レビューコメント削除エラー:", error);
-    return NextResponse.json({ error: "削除に失敗しました" }, { status: 500 });
+    return internalErrorResponse("削除に失敗しました");
   }
 }
