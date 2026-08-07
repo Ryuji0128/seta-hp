@@ -1,11 +1,8 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
+import { COLOR_DARK_ACCENT, FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const AboutHero = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box
       component="section"
@@ -27,24 +24,24 @@ const AboutHero = () => {
               fontWeight: 600,
               letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "#E5AC60",
+              color: COLOR_DARK_ACCENT,
             }}
           >
-            <Box sx={{ width: 28, height: "1px", bgcolor: "#E5AC60" }} />
+            <Box sx={{ width: 28, height: "1px", bgcolor: COLOR_DARK_ACCENT }} />
             The Workshop · 工房について
           </Box>
 
           <Box
             component="h1"
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 800,
               fontSize: "clamp(48px, 6.5vw, 96px)",
               lineHeight: 0.96,
               letterSpacing: "-0.04em",
               mt: 0,
               mb: 3,
-              "& em": { fontStyle: "normal", color: "#E5AC60" },
+              "& em": { fontStyle: "normal", color: COLOR_DARK_ACCENT },
             }}
           >
             個人工房で、
@@ -54,7 +51,7 @@ const AboutHero = () => {
 
           <Box
             sx={{
-              fontFamily: fontItalic,
+              fontFamily: FONT_ITALIC,
               fontStyle: "italic",
               fontSize: "20px",
               color: "rgba(255,255,255,0.5)",

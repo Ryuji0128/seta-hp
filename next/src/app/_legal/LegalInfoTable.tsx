@@ -16,8 +16,6 @@ interface Props {
  * サーバーコンポーネント（フォントは themeConstants から直接参照）
  */
 const LegalInfoTable: React.FC<Props> = ({ rows }) => {
-  const fontDisplay = FONT_DISPLAY;
-
   return (
     <Box
       sx={{
@@ -44,7 +42,7 @@ const LegalInfoTable: React.FC<Props> = ({ rows }) => {
               bgcolor: "background.alt",
               px: { xs: 2, sm: 3 },
               py: { xs: 1.75, sm: 2.5 },
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 600,
               fontSize: "13.5px",
               letterSpacing: "-0.01em",

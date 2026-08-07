@@ -5,7 +5,7 @@ export type Paragraph = {
 
 export type ListItem = string | ListItem[] | Paragraph;
 
-export interface ISection {
+interface ISection {
   title: string;
   description?: string;
   listItems: ListItem[];
@@ -121,9 +121,10 @@ export const data: ISection[] = [
           "運営事業者： 瀬田製作所(個人事業所)",
           "運営責任者： 木村 竜次",
           "所在地： ご請求いただいた方にお知らせいたします",
-          "Eメールアドレス： info@kaza-love.com",
+          `Eメールアドレス： ${CONTACT_EMAIL}`,
         ],
       },
     ],
   },
 ];
+import { CONTACT_EMAIL } from "@/lib/site-config";

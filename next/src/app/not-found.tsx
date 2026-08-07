@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Typography, Box, useMediaQuery } from "@mui/material";
 import Link from "next/link";
 import { useTheme } from "@mui/material";
@@ -156,7 +156,7 @@ export default function NotFound() {
 
       {/* 戻るボタン */}
       <Box sx={{ mt: 4, zIndex: 1 }}>
-        <Link href="/" passHref>
+        <Link href="/">
           <Button
             variant="outlined"
             sx={{

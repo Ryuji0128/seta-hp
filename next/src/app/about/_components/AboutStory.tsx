@@ -1,11 +1,9 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
+import AboutSectionHeader from "./AboutSectionHeader";
+import AboutTwoColumn from "./AboutTwoColumn";
 
 const AboutStory = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ py: { xs: 10, md: 15 } }}>
       <SectionContainer>
@@ -18,52 +16,26 @@ const AboutStory = () => {
             alignItems: "baseline",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 3,
-              borderTop: "1px solid",
-              borderTopColor: "text.primary",
-              pt: 3.5,
-              fontFamily: fontItalic,
-              fontStyle: "italic",
-              fontSize: "16px",
-              letterSpacing: "0.05em",
-            }}
-          >
-            <Box sx={{ color: "primary.main" }}>— 01</Box>
-            <Box sx={{ color: "text.primary" }}>Story</Box>
-            <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　はじまり</Box>
-          </Box>
+          <AboutSectionHeader
+            number="01"
+            title="Story"
+            titleJa="はじまり"
+            marginBottom={0}
+          />
           <Box />
         </Box>
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1.4fr" },
-            gap: { xs: 4, md: 10 },
-          }}
+        <AboutTwoColumn
+          lead={
+            <>
+              欲しいものが
+              <br />
+              なかったから、
+              <br />
+              <Box component="span" sx={{ color: "primary.main" }}>作った。</Box>
+            </>
+          }
         >
-          <Box
-            sx={{
-              fontFamily: fontDisplay,
-              fontWeight: 500,
-              fontSize: "clamp(32px, 3.8vw, 56px)",
-              lineHeight: 1.2,
-              letterSpacing: "-0.025em",
-              color: "text.primary",
-            }}
-          >
-            欲しいものが
-            <br />
-            なかったから、
-            <br />
-            <Box component="span" sx={{ color: "primary.main" }}>作った。</Box>
-          </Box>
-
-          <Box sx={{ pt: 2 }}>
             <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 3 }}>
               飾Love は、カード好きが営む小さな個人工房です。
             </Box>
@@ -81,8 +53,7 @@ const AboutStory = () => {
               レーザー加工で、自分が「これだ」と思える一品仕立てを、
               一つずつ手作業で組み立てています。同じカード好きの方に届くと嬉しいです。
             </Box>
-          </Box>
-        </Box>
+        </AboutTwoColumn>
       </SectionContainer>
     </Box>
   );

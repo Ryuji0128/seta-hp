@@ -3,9 +3,8 @@ import { NextResponse } from "next/server";
 /**
  * 統一されたAPIレスポンス形式
  */
-export interface ApiResponse<T = unknown> {
+interface ApiResponse {
   success: boolean;
-  data?: T;
   error?: string;
   errors?: Record<string, string>;
 }
@@ -35,12 +34,11 @@ export function internalErrorResponse(message: string): NextResponse {
  * バリデーションエラーレスポンスを作成
  */
 export function validationErrorResponse(
-  errors: Record<string, string>,
-  status: number = 400
+  errors: Record<string, string>
 ): NextResponse<ApiResponse> {
   return NextResponse.json(
     { success: false, errors },
-    { status }
+    { status: 400 }
   );
 }
 
@@ -88,4 +86,3 @@ export function forbiddenResponse(
     { status: 403 }
   );
 }
-

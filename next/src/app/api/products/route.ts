@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { parsePagination } from "@/lib/pagination";
-import { badRequestResponse, notFoundResponse } from "@/lib/api-response";
-import { handleApiError, isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
-import { ProductCreateSchema, ProductUpdateSchema } from "@/lib/validation";
+import { notFoundResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonWithSchema,
+  requireAdmin,
+  requireEditor,
+  sanitizeTags,
+} from "@/lib/api-utils";
+import { ProductCreateSchema, ProductUpdateSchema, RequiredIdSchema } from "@/lib/validation";
 import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
 import { revalidateProductPages } from "@/lib/cache-tags";
 import xss from "xss";
@@ -18,7 +25,7 @@ export async function GET(req: NextRequest) {
 
     // 認証・権限チェック（非公開商品を含める場合はADMIN/EDITORのみ）
     if (includeUnpublished) {
-      const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+      const session = await requireEditor();
       if (isErrorResponse(session)) return session;
     }
 
@@ -28,6 +35,19 @@ export async function GET(req: NextRequest) {
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          category: true,
+          tags: true,
+          images: true,
+          stock: true,
+          isPublished: true,
+          isHeroImage: true,
+          purchaseUrl: true,
+        },
         orderBy: { createdAt: "desc" },
         take: limit,
         skip,
@@ -44,20 +64,24 @@ export async function GET(req: NextRequest) {
 // 商品作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-
-    // バリデーションは Zod スキーマに集約（価格の整数チェック・カテゴリ/在庫/URL検証を含む）
-    const parsed = ProductCreateSchema.safeParse(body);
-    if (!parsed.success) {
-      return badRequestResponse(parsed.error.errors[0].message);
-    }
-    const { name, description, price, category, stock, purchaseUrl } = parsed.data;
-    const { tags, image, images, isPublished, isHeroImage } = body;
+    const parsed = await parseJsonWithSchema(req, ProductCreateSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const {
+      name,
+      description,
+      price,
+      category,
+      tags,
+      images,
+      stock,
+      isPublished,
+      isHeroImage,
+      purchaseUrl,
+    } = parsed;
 
     const product = await prisma.product.create({
       data: {
@@ -66,8 +90,7 @@ export async function POST(req: NextRequest) {
         price,
         category,
         tags: sanitizeTags(tags),
-        image: image || null,
-        images: Array.isArray(images) ? images : Prisma.JsonNull,
+        images: images ?? Prisma.JsonNull,
         stock: stock || "在庫あり",
         isPublished: isPublished !== false,
         isHeroImage: isHeroImage === true,
@@ -86,20 +109,25 @@ export async function POST(req: NextRequest) {
 // 商品更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-
-    // バリデーションは Zod スキーマに集約（POST と共通・全フィールド任意 + ID 必須）
-    const parsed = ProductUpdateSchema.safeParse(body);
-    if (!parsed.success) {
-      return badRequestResponse(parsed.error.errors[0].message);
-    }
-    const { id, name, description, price, category, stock, purchaseUrl } = parsed.data;
-    const { tags, image, images, isPublished, isHeroImage } = body;
+    const parsed = await parseJsonWithSchema(req, ProductUpdateSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const {
+      id,
+      name,
+      description,
+      price,
+      category,
+      tags,
+      images,
+      stock,
+      isPublished,
+      isHeroImage,
+      purchaseUrl,
+    } = parsed;
 
     // 存在確認
     const existing = await prisma.product.findUnique({ where: { id } });
@@ -115,8 +143,7 @@ export async function PUT(req: NextRequest) {
         price,
         category,
         tags: tags !== undefined ? sanitizeTags(tags) : undefined,
-        image: image !== undefined ? (image || null) : undefined,
-        images: images !== undefined ? (Array.isArray(images) ? images : Prisma.JsonNull) : undefined,
+        images: images !== undefined ? (images ?? Prisma.JsonNull) : undefined,
         stock,
         isPublished,
         isHeroImage: isHeroImage !== undefined ? isHeroImage === true : undefined,
@@ -141,17 +168,13 @@ export async function PUT(req: NextRequest) {
 // 商品削除
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN"], "管理者権限が必要です");
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const { id } = body;
-
-    if (!id) {
-      return badRequestResponse("IDは必須です");
-    }
+    const parsed = await parseJsonWithSchema(req, RequiredIdSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { id } = parsed;
 
     // 存在確認
     const existing = await prisma.product.findUnique({ where: { id } });

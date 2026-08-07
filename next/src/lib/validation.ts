@@ -6,7 +6,7 @@ import {
 } from "@/lib/constants/categories";
 
 // ValidationError型（後方互換性のため維持）
-export interface ValidationError {
+interface ValidationError {
   [key: string]: string;
 }
 
@@ -35,7 +35,7 @@ export const InquirySchema = z.object({
     .max(500, { message: "お問い合わせ内容は500文字以内で入力してください。" }),
 });
 
-export type InquiryData = z.infer<typeof InquirySchema>;
+type InquiryData = z.infer<typeof InquirySchema>;
 
 /**
  * 問い合わせデータのバリデーション（Zod版）
@@ -77,15 +77,6 @@ export const RegistrationSchema = z.object({
     .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
       message: "パスワードは大文字・小文字・数字をそれぞれ含める必要があります。",
     }),
-});
-
-// ログインフォームのバリデーションスキーマ
-export const LoginSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "メールアドレスを入力してください。" })
-    .email({ message: "有効なメールアドレスを入力してください。" }),
-  password: z.string().min(8, { message: "パスワードは8文字以上で入力してください。" }),
 });
 
 // ---------------------------------------------------------------------------
@@ -131,12 +122,19 @@ const idSchema = z
   .int({ message: "IDは必須です" })
   .positive({ message: "IDは必須です" });
 
+const tagsSchema = z.union([z.string(), z.array(z.unknown())]).optional();
+const optionalImageSchema = z.string().optional().nullable();
+
 export const ProductCreateSchema = z.object({
   name: z.string({ required_error: "名前は必須です" }).min(1, { message: "名前は必須です" }),
   description: z.string({ required_error: "説明は必須です" }).min(1, { message: "説明は必須です" }),
   price: priceSchema,
   category: productCategorySchema,
+  tags: tagsSchema,
+  images: z.array(z.string()).optional().nullable(),
   stock: stockSchema.optional(),
+  isPublished: z.boolean().optional(),
+  isHeroImage: z.boolean().optional(),
   purchaseUrl: purchaseUrlSchema.optional().nullable(),
 });
 
@@ -154,8 +152,47 @@ export const WorkCreateSchema = z.object({
   title: z.string({ required_error: "タイトルは必須です" }).min(1, { message: "タイトルは必須です" }),
   description: z.string({ required_error: "説明は必須です" }).min(1, { message: "説明は必須です" }),
   category: galleryCategorySchema,
+  tags: tagsSchema,
+  image: optionalImageSchema,
+  isPublished: z.boolean().optional(),
 });
 
 export const WorkUpdateSchema = WorkCreateSchema.partial().extend({
   id: idSchema,
 });
+
+const newsRequiredMessage = "タイトル、内容、日付は必須です";
+const newsDateSchema = z
+  .custom<string | number>(
+    (value) =>
+      (typeof value === "string" && value.length > 0) ||
+      (typeof value === "number" && value !== 0),
+    { message: newsRequiredMessage }
+  )
+  .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+    message: "日付の形式が正しくありません",
+  })
+  .transform((value) => new Date(value));
+
+const newsContentsSchema = z.custom<string | { text: string }>(
+  (value) =>
+    (typeof value === "string" && value.length > 0) ||
+    (typeof value === "object" &&
+      value !== null &&
+      "text" in value &&
+      typeof value.text === "string"),
+  { message: newsRequiredMessage }
+);
+
+export const NewsCreateSchema = z.object({
+  title: z.string({ required_error: newsRequiredMessage }).min(1, { message: newsRequiredMessage }),
+  contents: newsContentsSchema,
+  date: newsDateSchema,
+  url: z.string().optional().nullable(),
+});
+
+export const NewsUpdateSchema = NewsCreateSchema.partial().extend({
+  id: idSchema,
+});
+
+export const RequiredIdSchema = z.object({ id: idSchema });

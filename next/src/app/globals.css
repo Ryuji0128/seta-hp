@@ -1,29 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
-  --bg: #FFFFFF;
-  --bg-alt: #F6F6F4;
-  --bg-deep: #EDEDE8;
-  --ink: #0A0A0A;
-  --ink-soft: #2A2A2A;
   --gray: #6B6B6B;
   --gray-soft: #9A9A9A;
-  --rule: #E5E5E0;
-  --rule-thin: #EFEFEA;
-  --accent: #B45309;
-  --accent-soft: #FEF3E2;
-  --accent-deep: #8C3E07;
-  --background: var(--bg);
-  --foreground: var(--ink);
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .grecaptcha-badge { visibility: hidden; }

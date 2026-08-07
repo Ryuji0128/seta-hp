@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
+import SplitSectionHeading from "./SplitSectionHeading";
 
 const FEATURES = [
   {
@@ -30,39 +31,19 @@ const FEATURES = [
 ];
 
 const FeaturesSection = () => {
-  const fontDisplay = FONT_DISPLAY;
-
   return (
     <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
       <SectionContainer>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1.4fr" },
-            gap: { xs: 3, md: 10 },
-            mb: 8,
-            alignItems: "end",
-          }}
-        >
-          <Box
-            sx={{
-              fontFamily: fontDisplay,
-              fontWeight: 700,
-              fontSize: "clamp(40px, 4.6vw, 64px)",
-              lineHeight: 1,
-              letterSpacing: "-0.035em",
-              color: "text.primary",
-              "& em": { fontStyle: "normal", color: "primary.main" },
-            }}
-          >
-            長く、<em>共に。</em>
-          </Box>
-          <Box sx={{ fontSize: "16px", color: "secondary.main", lineHeight: 1.7, maxWidth: 540 }}>
-            飾るカードの方が長持ちするくらい、ディスプレイ側もしっかり作る。
-            <br />
-            手を抜かないことが、飾Love のスタンダードです。
-          </Box>
-        </Box>
+        <SplitSectionHeading
+          title={<>長く、<em>共に。</em></>}
+          description={
+            <>
+              飾るカードの方が長持ちするくらい、ディスプレイ側もしっかり作る。
+              <br />
+              手を抜かないことが、飾Love のスタンダードです。
+            </>
+          }
+        />
 
         <Box
           sx={{
@@ -80,7 +61,7 @@ const FeaturesSection = () => {
             <Box key={f.num} sx={{ bgcolor: "#FFFFFF", p: { xs: 4, md: 5 } }}>
               <Box
                 sx={{
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: "13px",
                   fontWeight: 700,
                   color: "primary.main",
@@ -92,7 +73,7 @@ const FeaturesSection = () => {
               </Box>
               <Box
                 sx={{
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: "19px",
                   fontWeight: 700,
                   letterSpacing: "-0.02em",

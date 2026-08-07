@@ -4,6 +4,7 @@ import AboutStory from "./_components/AboutStory";
 import AboutCollector from "./_components/AboutCollector";
 import AboutValues from "./_components/AboutValues";
 import AboutFeatures from "./_components/AboutFeatures";
+import DarkCtaSection from "@/components/DarkCtaSection";
 
 export const metadata: Metadata = {
   title: "工房について",
@@ -22,6 +23,13 @@ export default function AboutPage() {
       <AboutCollector />
       <AboutValues />
       <AboutFeatures />
+      <DarkCtaSection
+        heading={<><em>飾りたい気持ちを、</em><br />かたちにします。</>}
+        body="お手持ちのカード、飾る場所、理想の見せ方をお聞かせください。コレクター目線で一緒に考えます。"
+        primaryLabel="制作の相談をする"
+        secondaryHref="/gallery"
+        secondaryLabel="制作事例を見る"
+      />
     </>
   );
 }

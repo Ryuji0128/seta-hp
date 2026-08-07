@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useRef } from "react";
 import {
   Box,
   Button,
@@ -11,37 +10,23 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
-import { uploadImage } from "@/lib/api-client";
+import {
+  IMAGE_ACCEPT,
+  IMAGE_UPLOAD_HINT,
+  useImageUpload,
+} from "@/lib/hooks/useImageUpload";
 
 interface ImageUploadProps {
   value: string;
   onChange: (url: string) => void;
-  disabled?: boolean;
 }
 
-export default function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setError(null);
-    setUploading(true);
-
-    try {
-      onChange(await uploadImage(file));
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "通信エラーが発生しました");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
+export default function ImageUpload({ value, onChange }: ImageUploadProps) {
+  const { error, uploading, fileInputRef, handleFileSelect, openFileDialog } = useImageUpload({
+    currentCount: 0,
+    maxFiles: 1,
+    onUploaded: ([url]) => onChange(url),
+  });
 
   const handleRemove = () => {
     onChange("");
@@ -52,10 +37,10 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={IMAGE_ACCEPT}
         onChange={handleFileSelect}
         style={{ display: "none" }}
-        disabled={disabled || uploading}
+        disabled={uploading}
       />
 
       {value ? (
@@ -89,7 +74,6 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
               "&:hover": { bgcolor: "rgba(255,255,255,1)" },
             }}
             onClick={handleRemove}
-            disabled={disabled}
           >
             <DeleteIcon fontSize="small" color="error" />
           </IconButton>
@@ -98,8 +82,8 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
         <Button
           variant="outlined"
           startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || uploading}
+          onClick={openFileDialog}
+          disabled={uploading}
           sx={{ height: 100, width: 200 }}
         >
           {uploading ? "アップロード中..." : "画像を選択"}
@@ -113,7 +97,7 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
       )}
 
       <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-        JPG, PNG, GIF, WebP (最大5MB)
+        {IMAGE_UPLOAD_HINT}
       </Typography>
     </Box>
   );

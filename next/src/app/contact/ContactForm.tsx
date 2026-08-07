@@ -75,7 +75,7 @@ interface ContactFormProps {
 
 export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
   const theme = useTheme();
-  const fontDisplay = theme.custom.fonts.display;
+  const FONT_DISPLAY = theme.custom.fonts.display;
 
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -254,7 +254,8 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
             <Box
               sx={{
                 pt: 2,
-                borderTop: "1px solid #EFEFEA",
+                borderTop: "1px solid",
+                borderColor: "divider",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -280,7 +281,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
                   fontSize: "14px",
                   fontWeight: 600,
                   boxShadow: "none",
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   letterSpacing: "0.02em",
                   "&:hover": { bgcolor: "primary.main", boxShadow: "none", transform: "translateY(-1px)" },
                   "&:disabled": { bgcolor: "divider", color: "#FFFFFF" },
@@ -321,7 +322,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
               <Typography
                 sx={{
                   mt: 2,
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontWeight: 700,
                   fontSize: "22px",
                   letterSpacing: "-0.02em",
@@ -360,7 +361,7 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
               <Typography
                 sx={{
                   mt: 2,
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontWeight: 700,
                   fontSize: "22px",
                   letterSpacing: "-0.02em",

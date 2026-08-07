@@ -44,8 +44,6 @@ const ssoCookies = ssoCookieDomain
 export const {
   auth,
   handlers: { GET, POST },
-  signIn,
-  signOut,
 } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },

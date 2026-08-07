@@ -2,10 +2,11 @@ import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
-import { CACHE_TAGS } from "@/lib/cache-tags";
-import ProductsHero from "./_components/ProductsHero";
+import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 import ProductsGrid from "./_components/ProductsGrid";
-import ProductsBespokeCta from "./_components/ProductsBespokeCta";
+import PageHero from "@/components/PageHero";
+import DarkCtaSection from "@/components/DarkCtaSection";
+import { getPrimaryProductImage } from "@/lib/types/product";
 
 // searchParams（カテゴリ・ソート）に依存するため動的レンダリング。
 // 公開商品の取得は unstable_cache（products タグ）でキャッシュし、絞り込みはメモリ上で行う。
@@ -22,13 +23,22 @@ export const metadata: Metadata = {
 const getPublishedProducts = unstable_cache(
   async () => {
     const prisma = getPrismaClient();
-    return prisma.product.findMany({
+    const products = await prisma.product.findMany({
       where: { isPublished: true },
+      select: { id: true, name: true, category: true, price: true, tags: true, images: true },
       orderBy: { createdAt: "desc" },
     });
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      tags: product.tags,
+      image: getPrimaryProductImage(product.images),
+    }));
   },
   ["published-products"],
-  { revalidate: 3600, tags: [CACHE_TAGS.products] }
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
 async function getProducts(category?: string, sort?: string) {
@@ -50,9 +60,35 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
-      <ProductsHero count={products.length} />
+      <PageHero
+        eyebrow="Catalogue · 商品一覧"
+        heading={
+          <>
+            飾るための、<br />
+            <em>道具一式。</em>
+          </>
+        }
+        subtitle="— Built for collectors who actually display their cards."
+        statsWrap
+        stats={[
+          { value: products.length, label: "Products listed" },
+          { value: "¥0", label: "全国送料無料" },
+          { value: "100%", label: "Hand-finished" },
+        ]}
+      />
       <ProductsGrid products={products} />
-      <ProductsBespokeCta />
+      <DarkCtaSection
+        heading={
+          <>
+            既製品にない、<br />
+            <em>あなただけの一品。</em>
+          </>
+        }
+        body="50枚以上の大型システム、AWARD HISTORY のような特注品、サイズ・形状のカスタマイズなど、お気軽にご相談ください。一品からお作りします。"
+        primaryLabel="特注品のご相談"
+        secondaryHref="/gallery"
+        secondaryLabel="制作事例を見る"
+      />
     </Box>
   );
 }

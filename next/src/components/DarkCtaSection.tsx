@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
-import Link from "next/link";
+import PillLink from "@/components/PillLink";
 import type { ReactNode } from "react";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY } from "@/theme/themeConstants";
+import { COLOR_DARK_ACCENT, FONT_DISPLAY } from "@/theme/themeConstants";
 
 interface DarkCtaSectionProps {
   /** 見出し（h2）。<em> は銅色アクセントになる */
@@ -12,7 +12,6 @@ interface DarkCtaSectionProps {
   /** 主ボタン（白背景）のラベル。末尾に矢印が付く */
   primaryLabel: ReactNode;
   /** 主ボタンのリンク先（既定: お問い合わせ） */
-  primaryHref?: string;
   /** 副ボタン（枠線）のラベル */
   secondaryLabel: ReactNode;
   /** 副ボタンのリンク先 */
@@ -28,7 +27,6 @@ export default function DarkCtaSection({
   heading,
   body,
   primaryLabel,
-  primaryHref = "/contact",
   secondaryLabel,
   secondaryHref,
 }: DarkCtaSectionProps) {
@@ -45,7 +43,7 @@ export default function DarkCtaSection({
               letterSpacing: "-0.035em",
               lineHeight: 1.1,
               m: 0,
-              "& em": { fontStyle: "normal", color: "#E5AC60" },
+              "& em": { fontStyle: "normal", color: COLOR_DARK_ACCENT },
             }}
           >
             {heading}
@@ -63,48 +61,8 @@ export default function DarkCtaSection({
               {body}
             </Box>
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-              <Link href={primaryHref} passHref style={{ textDecoration: "none" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    bgcolor: "#FFFFFF",
-                    color: "text.primary",
-                    px: 3.5,
-                    py: 1.75,
-                    borderRadius: "999px",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "background-color 0.2s, transform 0.2s",
-                    "&:hover": { bgcolor: "#E5AC60", transform: "translateY(-1px)" },
-                  }}
-                >
-                  {primaryLabel} <span>→</span>
-                </Box>
-              </Link>
-              <Link href={secondaryHref} passHref style={{ textDecoration: "none" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    color: "#FFFFFF",
-                    px: 3.5,
-                    py: 1.75,
-                    borderRadius: "999px",
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    border: "1px solid rgba(255,255,255,0.25)",
-                    cursor: "pointer",
-                    transition: "border-color 0.2s",
-                    "&:hover": { borderColor: "#FFFFFF" },
-                  }}
-                >
-                  {secondaryLabel}
-                </Box>
-              </Link>
+              <PillLink href="/contact" tone="light" showArrow>{primaryLabel}</PillLink>
+              <PillLink href={secondaryHref} tone="outline">{secondaryLabel}</PillLink>
             </Box>
           </Box>
         </Box>

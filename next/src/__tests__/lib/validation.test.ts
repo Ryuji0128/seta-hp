@@ -2,7 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   InquirySchema,
   RegistrationSchema,
-  LoginSchema,
+  NewsCreateSchema,
+  NewsUpdateSchema,
+  ProductCreateSchema,
+  ProductUpdateSchema,
+  RequiredIdSchema,
+  WorkCreateSchema,
   validateInquiry,
 } from "@/lib/validation";
 
@@ -111,19 +116,84 @@ describe("RegistrationSchema", () => {
   });
 });
 
-describe("LoginSchema", () => {
-  it("有効なデータでバリデーション成功", () => {
-    const result = LoginSchema.safeParse({ email: "test@example.com", password: "12345678" });
+describe("管理APIスキーマ", () => {
+  const product = {
+    name: "8枚モデル",
+    description: "商品説明",
+    price: 12000,
+    category: "card-display",
+    tags: ["MLB", "Topps"],
+    images: ["/uploads/main.webp", "/uploads/sub.webp"],
+    stock: "在庫あり",
+    isPublished: true,
+    isHeroImage: false,
+    purchaseUrl: "https://example.com/item/1",
+  };
+
+  it("商品作成の全入力項目を検証して保持する", () => {
+    const result = ProductCreateSchema.safeParse(product);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.images).toEqual(product.images);
+  });
+
+  it("商品公開フラグの文字列を拒否する", () => {
+    expect(ProductCreateSchema.safeParse({ ...product, isPublished: "true" }).success).toBe(false);
+  });
+
+  it("商品更新はID必須で部分更新を許可する", () => {
+    expect(ProductUpdateSchema.safeParse({ id: 1, isHeroImage: true }).success).toBe(true);
+    expect(ProductUpdateSchema.safeParse({ isHeroImage: true }).success).toBe(false);
+  });
+
+  it("制作事例の画像・タグ・公開状態を検証する", () => {
+    const result = WorkCreateSchema.safeParse({
+      title: "壁面展示",
+      description: "制作事例",
+      category: "laser",
+      tags: "MLB,大型",
+      image: "/uploads/work.webp",
+      isPublished: false,
+    });
     expect(result.success).toBe(true);
   });
 
-  it("メールアドレスが空で失敗", () => {
-    const result = LoginSchema.safeParse({ email: "", password: "12345678" });
-    expect(result.success).toBe(false);
+  it("削除IDは正の整数だけを許可する", () => {
+    expect(RequiredIdSchema.safeParse({ id: 1 }).success).toBe(true);
+    expect(RequiredIdSchema.safeParse({ id: 0 }).success).toBe(false);
+    expect(RequiredIdSchema.safeParse({ id: "1" }).success).toBe(false);
   });
 
-  it("パスワードが8文字未満で失敗", () => {
-    const result = LoginSchema.safeParse({ email: "test@example.com", password: "1234" });
+  it("お知らせ日付をDateへ変換し、不正な日付を拒否する", () => {
+    const valid = NewsCreateSchema.safeParse({
+      title: "公開日",
+      contents: { text: "本文" },
+      date: "2026-08-07",
+    });
+    expect(valid.success).toBe(true);
+    if (valid.success) expect(valid.data.date).toBeInstanceOf(Date);
+
+    const invalid = NewsCreateSchema.safeParse({
+      title: "公開日",
+      contents: { text: "本文" },
+      date: "not-a-date",
+    });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success) {
+      expect(invalid.error.errors[0].message).toBe("日付の形式が正しくありません");
+    }
+  });
+
+  it("お知らせの必須項目不足は従来の共通メッセージを返す", () => {
+    const result = NewsCreateSchema.safeParse({ title: "公開日", date: "2026-08-07" });
     expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.errors[0].message).toBe("タイトル、内容、日付は必須です");
+    }
+  });
+
+  it("お知らせ更新は正の整数IDを必須にする", () => {
+    expect(NewsUpdateSchema.safeParse({ id: 1, title: "更新" }).success).toBe(true);
+    expect(NewsUpdateSchema.safeParse({ title: "更新" }).success).toBe(false);
+    expect(NewsUpdateSchema.safeParse({ id: 0, title: "更新" }).success).toBe(false);
   });
 });

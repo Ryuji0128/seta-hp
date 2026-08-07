@@ -1,5 +1,4 @@
 import { NextResponse, NextRequest } from "next/server";
-import { fetchSecret } from "@/lib/fetchSecrets";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 
@@ -16,8 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'No token provided' }, { status: 400 });
   }
 
-  const secretName = "RECAPTCHA_SECRET_KEY";
-  const recaptchaKey = await fetchSecret(secretName);
+  const recaptchaKey = process.env.RECAPTCHA_SECRET_KEY || "";
 
   try {
     const params = new URLSearchParams({ secret: recaptchaKey, response: token });

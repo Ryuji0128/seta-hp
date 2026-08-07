@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
+import AboutSectionHeader from "./AboutSectionHeader";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const VALUES = [
@@ -24,31 +25,15 @@ const VALUES = [
 ];
 
 const AboutValues = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
       <SectionContainer>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 3,
-            borderTop: "1px solid",
-            borderTopColor: "text.primary",
-            pt: 3.5,
-            mb: 8,
-            fontFamily: fontItalic,
-            fontStyle: "italic",
-            fontSize: "16px",
-            letterSpacing: "0.05em",
-          }}
-        >
-          <Box sx={{ color: "primary.main" }}>— 03</Box>
-          <Box sx={{ color: "text.primary" }}>Values</Box>
-          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　大切にしていること</Box>
-        </Box>
+        <AboutSectionHeader
+          number="03"
+          title="Values"
+          titleJa="大切にしていること"
+          marginBottom={8}
+        />
 
         <Box
           sx={{
@@ -61,7 +46,7 @@ const AboutValues = () => {
             <Box key={v.no}>
               <Box
                 sx={{
-                  fontFamily: fontItalic,
+                  fontFamily: FONT_ITALIC,
                   fontStyle: "italic",
                   fontSize: "14px",
                   color: "primary.main",
@@ -73,7 +58,7 @@ const AboutValues = () => {
               </Box>
               <Box
                 sx={{
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: "26px",
                   fontWeight: 700,
                   letterSpacing: "-0.02em",

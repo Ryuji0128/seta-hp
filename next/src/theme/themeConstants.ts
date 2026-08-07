@@ -1,21 +1,10 @@
 declare module "@mui/material/styles" {
-  interface SimplePaletteColorOptions {
-    pale?: string;
-  }
   interface TypeBackground {
     dark?: string;
     alt?: string;
-    deep?: string;
   }
   interface Theme {
     custom: {
-      subTitle: {
-        height: string;
-        widthXs: number;
-        widthSm: number;
-        widthMd: number;
-        widthLg: number;
-      };
       header: {
         height: {
           mobile: number;
@@ -31,13 +20,6 @@ declare module "@mui/material/styles" {
   }
   interface ThemeOptions {
     custom?: {
-      subTitle: {
-        height: string;
-        widthXs: number;
-        widthSm: number;
-        widthMd: number;
-        widthLg: number;
-      };
       header: {
         height: {
           mobile: number;
@@ -60,40 +42,37 @@ declare module "@mui/material/styles" {
 // (layout.tsx で <html> に --font-* 変数を付与している前提)
 export const FONT_DISPLAY =
   'var(--font-inter-tight), var(--font-noto-jp), "Helvetica Neue", Arial, sans-serif';
-export const FONT_BODY =
+const FONT_BODY =
   'var(--font-inter), var(--font-noto-jp), "Helvetica Neue", Arial, sans-serif';
 export const FONT_ITALIC = 'var(--font-cormorant), serif';
+export const COLOR_PRIMARY = "#B45309";
+export const COLOR_DARK_ACCENT = "#E5AC60";
 
 export const themeConstants = {
   palette: {
     primary: {
-      pale: "#FEF3E2",      // accent-soft
       light: "#D97706",
-      main: "#B45309",      // warm umber (copper accent)
+      main: COLOR_PRIMARY,    // warm umber (copper accent)
       dark: "#8C3E07",
       contrastText: "#FFFFFF",
     },
     secondary: {
-      pale: "#F6F6F4",      // bg-alt
       light: "#9A9A9A",
       main: "#2A2A2A",      // ink-soft
       dark: "#0A0A0A",      // ink (pure)
       contrastText: "#FFFFFF",
     },
     info: {
-      pale: "#FFFFFF",
       light: "#E5E5E0",     // rule
       main: "#6B6B6B",      // gray
       dark: "#0A0A0A",
     },
     warning: {
-      pale: "#FEF3E2",
       light: "#FBBF24",
       main: "#D97706",
       dark: "#8C3E07",
     },
     error: {
-      pale: "#FEE2E2",
       light: "#FCA5A5",
       main: "#DC2626",
       dark: "#991B1B",
@@ -102,7 +81,6 @@ export const themeConstants = {
       default: "#FFFFFF",
       paper: "#FFFFFF",
       alt: "#F6F6F4",
-      deep: "#EDEDE8",
       dark: "#0A0A0A",
     },
     text: {
@@ -244,13 +222,6 @@ export const themeConstants = {
         mobile: 60,
         desktop: 72,
       },
-    },
-    subTitle: {
-      height: "1rem",
-      widthXs: 100,
-      widthSm: 30,
-      widthMd: 30,
-      widthLg: 30,
     },
     fonts: {
       display: FONT_DISPLAY,

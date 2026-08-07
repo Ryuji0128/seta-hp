@@ -2,6 +2,7 @@
 
 import { Alert, Box, Typography } from "@mui/material";
 import Link from "next/link";
+import { COLOR_PRIMARY } from "@/theme/themeConstants";
 
 interface Props {
   title: string;
@@ -62,7 +63,7 @@ export default function AuthCard({
         {footerText}{" "}
         <Link
           href={footerLinkHref}
-          style={{ color: "#FF5722", fontWeight: 500, textDecoration: "none" }}
+          style={{ color: COLOR_PRIMARY, fontWeight: 500, textDecoration: "none" }}
         >
           {footerLinkLabel}
         </Link>

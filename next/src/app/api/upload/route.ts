@@ -2,35 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { isErrorResponse, requireRole } from "@/lib/api-utils";
-import { getActualMimeType, getExtensionFromMimeType, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from "@/lib/upload-validation";
+import { badRequestResponse, internalErrorResponse } from "@/lib/api-response";
+import { isErrorResponse, requireEditor } from "@/lib/api-utils";
+import {
+  getActualMimeType,
+  getExtensionFromMimeType,
+  isAllowedImageType,
+  MAX_IMAGE_SIZE,
+} from "@/lib/upload-validation";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "ファイルが選択されていません" }, { status: 400 });
+      return badRequestResponse("ファイルが選択されていません");
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      return NextResponse.json({ error: "ファイルサイズは5MB以下にしてください" }, { status: 400 });
+      return badRequestResponse("ファイルサイズは5MB以下にしてください");
     }
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      return NextResponse.json({ error: "JPG, PNG, GIF, WebPのみアップロード可能です" }, { status: 400 });
+    if (!isAllowedImageType(file.type)) {
+      return badRequestResponse("JPG, PNG, GIF, WebPのみアップロード可能です");
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     const actualMimeType = getActualMimeType(buffer);
-    if (!actualMimeType || !ALLOWED_IMAGE_TYPES.includes(actualMimeType)) {
-      return NextResponse.json({ error: "不正なファイル形式です。JPG, PNG, GIF, WebPのみアップロード可能です" }, { status: 400 });
+    if (!actualMimeType || !isAllowedImageType(actualMimeType)) {
+      return badRequestResponse("不正なファイル形式です。JPG, PNG, GIF, WebPのみアップロード可能です");
     }
 
     const ext = getExtensionFromMimeType(actualMimeType);
@@ -43,9 +49,9 @@ export async function POST(req: NextRequest) {
     await writeFile(filePath, buffer);
 
     const url = `/uploads/${fileName}`;
-    return NextResponse.json({ url, fileName });
+    return NextResponse.json({ url });
   } catch (error) {
     console.error("アップロードエラー:", error);
-    return NextResponse.json({ error: "アップロードに失敗しました" }, { status: 500 });
+    return internalErrorResponse("アップロードに失敗しました");
   }
 }

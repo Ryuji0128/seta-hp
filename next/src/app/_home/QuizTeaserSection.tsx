@@ -1,11 +1,9 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
-import Link from "next/link";
+import PillLink from "@/components/PillLink";
 
 const QuizTeaserSection = () => {
-  const fontDisplay = FONT_DISPLAY;
-
   return (
     <Box component="section" sx={{ bgcolor: "#FFFFFF", py: { xs: 10, md: 15 } }}>
       <SectionContainer>
@@ -38,7 +36,7 @@ const QuizTeaserSection = () => {
             <Box
               component="h2"
               sx={{
-                fontFamily: fontDisplay,
+                fontFamily: FONT_DISPLAY,
                 fontSize: "clamp(32px, 3.4vw, 48px)",
                 fontWeight: 700,
                 letterSpacing: "-0.035em",
@@ -59,27 +57,7 @@ const QuizTeaserSection = () => {
               推し選手・カードの状態・置き場所・枚数。
               4つの質問に答えていただければ、最適なモデルを30秒でご提案します。
             </Box>
-            <Link href="/contact" passHref style={{ textDecoration: "none" }}>
-              <Box
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 1.25,
-                  bgcolor: "background.dark",
-                  color: "#FFFFFF",
-                  px: 3.5,
-                  py: 2,
-                  borderRadius: "999px",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "background-color 0.2s, transform 0.2s",
-                  "&:hover": { bgcolor: "primary.main", transform: "translateY(-1px)" },
-                }}
-              >
-                サイズ診断をはじめる <span>→</span>
-              </Box>
-            </Link>
+            <PillLink href="/contact" showArrow>サイズ診断をはじめる</PillLink>
           </Box>
         </Box>
       </SectionContainer>

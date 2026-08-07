@@ -2,16 +2,13 @@ import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Image from "next/image";
-import Link from "next/link";
+import PillLink from "@/components/PillLink";
 
 interface HeroSectionProps {
   heroImage?: string | null;
 }
 
 const HeroSection = ({ heroImage }: HeroSectionProps) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box
       component="section"
@@ -53,7 +50,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
             <Box
               component="h1"
               sx={{
-                fontFamily: fontDisplay,
+                fontFamily: FONT_DISPLAY,
                 fontWeight: 800,
                 fontSize: "clamp(56px, 7.2vw, 108px)",
                 lineHeight: 0.96,
@@ -72,7 +69,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
 
             <Box
               sx={{
-                fontFamily: fontItalic,
+                fontFamily: FONT_ITALIC,
                 fontStyle: "italic",
                 fontSize: "20px",
                 color: "primary.main",
@@ -112,27 +109,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
 
             {/* CTA */}
             <Box sx={{ display: "flex", gap: 1.75, flexWrap: "wrap" }}>
-              <Link href="#products" passHref style={{ textDecoration: "none" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    bgcolor: "background.dark",
-                    color: "#FFFFFF",
-                    px: 3.5,
-                    py: 2,
-                    borderRadius: "999px",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "background-color 0.2s, transform 0.2s",
-                    "&:hover": { bgcolor: "primary.main", transform: "translateY(-1px)" },
-                  }}
-                >
-                  カタログを見る <span>→</span>
-                </Box>
-              </Link>
+              <PillLink href="#products" showArrow>カタログを見る</PillLink>
             </Box>
 
             {/* Stats */}
@@ -142,7 +119,8 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                 gap: { xs: 3, md: 4.5 },
                 mt: 7,
                 pt: 3.5,
-                borderTop: "1px solid #EFEFEA",
+                borderTop: "1px solid",
+                borderColor: "divider",
                 flexWrap: "wrap",
               }}
             >
@@ -154,7 +132,7 @@ const HeroSection = ({ heroImage }: HeroSectionProps) => {
                 <Box key={s.l} sx={{ flex: 1, minWidth: 100, maxWidth: 140 }}>
                   <Box
                     sx={{
-                      fontFamily: fontDisplay,
+                      fontFamily: FONT_DISPLAY,
                       fontSize: "26px",
                       fontWeight: 700,
                       letterSpacing: "-0.02em",

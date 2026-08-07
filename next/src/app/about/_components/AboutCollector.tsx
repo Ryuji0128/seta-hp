@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
+import AboutSectionHeader from "./AboutSectionHeader";
+import AboutTwoColumn from "./AboutTwoColumn";
 
 const COLLECTION = [
   { label: "コレクション歴", value: "約3年" },
@@ -10,55 +11,25 @@ const COLLECTION = [
 ];
 
 const AboutCollector = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
       <SectionContainer>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 3,
-            borderTop: "1px solid",
-            borderTopColor: "text.primary",
-            pt: 3.5,
-            mb: 8,
-            fontFamily: fontItalic,
-            fontStyle: "italic",
-            fontSize: "16px",
-            letterSpacing: "0.05em",
-          }}
-        >
-          <Box sx={{ color: "primary.main" }}>— 02</Box>
-          <Box sx={{ color: "text.primary" }}>Collector</Box>
-          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　コレクターとして</Box>
-        </Box>
+        <AboutSectionHeader
+          number="02"
+          title="Collector"
+          titleJa="コレクターとして"
+          marginBottom={8}
+        />
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1.4fr" },
-            gap: { xs: 4, md: 10 },
-          }}
+        <AboutTwoColumn
+          lead={
+            <>
+              同じ熱量の
+              <br />
+              <Box component="span" sx={{ color: "primary.main" }}>仲間として。</Box>
+            </>
+          }
         >
-          <Box
-            sx={{
-              fontFamily: fontDisplay,
-              fontWeight: 500,
-              fontSize: "clamp(32px, 3.8vw, 56px)",
-              lineHeight: 1.2,
-              letterSpacing: "-0.025em",
-              color: "text.primary",
-            }}
-          >
-            同じ熱量の
-            <br />
-            <Box component="span" sx={{ color: "primary.main" }}>仲間として。</Box>
-          </Box>
-
-          <Box sx={{ pt: 2 }}>
             <Box sx={{ fontSize: "15.5px", color: "secondary.main", lineHeight: 2, mb: 3 }}>
               私自身、MLBカードのコレクターです。きっかけは大谷翔平選手のドジャース移籍。
               ニュースで見た Topps NOW のカードに惹かれて1枚買ったら、
@@ -93,8 +64,7 @@ const AboutCollector = () => {
                 </Box>
               ))}
             </Box>
-          </Box>
-        </Box>
+        </AboutTwoColumn>
       </SectionContainer>
     </Box>
   );

@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { parsePagination } from "@/lib/pagination";
-import { badRequestResponse } from "@/lib/api-response";
-import { handleApiError, isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonWithSchema,
+  requireAdmin,
+  requireEditor,
+} from "@/lib/api-utils";
+import {
+  NewsCreateSchema,
+  NewsUpdateSchema,
+  RequiredIdSchema,
+} from "@/lib/validation";
 import xss from "xss";
-
-/** "Invalid Date" によるPrismaエラーを防ぐための日付検証 */
-function parseValidDate(value: unknown): Date | null {
-  if (typeof value !== "string" && typeof value !== "number") return null;
-  const date = new Date(value);
-  return isNaN(date.getTime()) ? null : date;
-}
 
 // お知らせ一覧取得
 export async function GET(req: NextRequest) {
@@ -21,6 +24,7 @@ export async function GET(req: NextRequest) {
 
     const [news, total] = await Promise.all([
       prisma.news.findMany({
+        select: { id: true, date: true, title: true, contents: true, url: true },
         orderBy: { date: "desc" },
         take: limit,
         skip,
@@ -36,22 +40,13 @@ export async function GET(req: NextRequest) {
 // お知らせ作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const { title, contents, date, url } = body;
-
-    if (!title || !contents || !date) {
-      return badRequestResponse("タイトル、内容、日付は必須です");
-    }
-
-    const parsedDate = parseValidDate(date);
-    if (!parsedDate) {
-      return badRequestResponse("日付の形式が正しくありません");
-    }
+    const parsed = await parseJsonWithSchema(req, NewsCreateSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { title, contents, date, url } = parsed;
 
     const sanitizedContents = typeof contents === "string" ? xss(contents) : contents;
 
@@ -59,7 +54,7 @@ export async function POST(req: NextRequest) {
       data: {
         title: xss(title),
         contents: sanitizedContents,
-        date: parsedDate,
+        date,
         url: url ? xss(url) : null,
       },
     });
@@ -73,26 +68,13 @@ export async function POST(req: NextRequest) {
 // お知らせ更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const { id, title, contents, date, url } = body;
-
-    if (!id) {
-      return badRequestResponse("IDは必須です");
-    }
-
-    let parsedDate: Date | undefined;
-    if (date) {
-      const valid = parseValidDate(date);
-      if (!valid) {
-        return badRequestResponse("日付の形式が正しくありません");
-      }
-      parsedDate = valid;
-    }
+    const parsed = await parseJsonWithSchema(req, NewsUpdateSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { id, title, contents, date, url } = parsed;
 
     const sanitizedContents = contents !== undefined
       ? (typeof contents === "string" ? xss(contents) : contents)
@@ -103,7 +85,7 @@ export async function PUT(req: NextRequest) {
       data: {
         title: title ? xss(title) : undefined,
         contents: sanitizedContents,
-        date: parsedDate,
+        date,
         url: url !== undefined ? (url ? xss(url) : null) : undefined,
       },
     });
@@ -121,17 +103,13 @@ export async function PUT(req: NextRequest) {
 // お知らせ削除
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN"], "管理者権限が必要です");
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const { id } = body;
-
-    if (!id) {
-      return badRequestResponse("IDは必須です");
-    }
+    const parsed = await parseJsonWithSchema(req, RequiredIdSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { id } = parsed;
 
     await prisma.news.delete({
       where: { id },

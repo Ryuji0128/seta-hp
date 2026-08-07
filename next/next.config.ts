@@ -87,6 +87,11 @@ const nextConfig: NextConfig = {
                 destination: "/company",
                 permanent: true,
             },
+            {
+                source: "/works-manage",
+                destination: "/gallery-manage",
+                permanent: true,
+            },
         ];
     },
 };

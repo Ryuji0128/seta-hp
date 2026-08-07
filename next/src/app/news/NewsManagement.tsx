@@ -1,97 +1,67 @@
 "use client";
 
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
 import dayjs from "dayjs";
-import "dayjs/locale/ja";
 import { Session } from "next-auth";
-import { useState } from "react";
+import { useCallback } from "react";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
+import ResourceActions from "@/components/manage/ResourceActions";
 import FormDialog from "@/components/manage/FormDialog";
 import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
 import { useCrudResource } from "@/lib/hooks/useCrudResource";
-
-interface News {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  date: string;
-  title: string;
-  contents: { text: string };
-  url: string | null;
-}
+import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
+import { useResourceEditor } from "@/lib/hooks/useResourceEditor";
+import { getManagementPermissions } from "@/lib/management-permissions";
+import type { News } from "@/lib/types/news";
 
 interface NewsManagementProps {
   session: Session;
 }
 
+interface NewsForm {
+  title: string;
+  contents: string;
+  date: string;
+  url: string;
+}
+
+const createNewsForm = (): NewsForm => ({
+  title: "",
+  contents: "",
+  date: dayjs().format("YYYY-MM-DD"),
+  url: "",
+});
+
+const editNewsForm = (news: News): NewsForm => ({
+  title: news.title,
+  contents: news.contents?.text || "",
+  date: dayjs(news.date).format("YYYY-MM-DD"),
+  url: news.url || "",
+});
+
 const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
-  const { items: newsList, loading, save, remove } = useCrudResource<News>({
+  const { items: newsList, loading, save, remove, pagination } = useCrudResource<News>({
     endpoint: "/api/news",
     listKey: "news",
     label: "お知らせ",
+    pageSize: 10,
   });
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedNews, setSelectedNews] = useState<News | null>(null);
-  const [newsToDelete, setNewsToDelete] = useState<number | null>(null);
+  const { canEdit, canDelete } = getManagementPermissions(session?.user?.role);
+  const { deleteDialogOpen, requestDelete, cancelDelete, confirmDelete } =
+    useResourceDelete(remove);
 
-  // フォーム用
-  const [formTitle, setFormTitle] = useState("");
-  const [formContents, setFormContents] = useState("");
-  const [formDate, setFormDate] = useState("");
-  const [formUrl, setFormUrl] = useState("");
-
-  const userRole = session?.user?.role;
-  const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
-  const canDelete = userRole === "ADMIN";
-
-  const resetForm = () => {
-    setFormTitle("");
-    setFormContents("");
-    setFormDate("");
-    setFormUrl("");
-    setSelectedNews(null);
-  };
-
-  const openCreateDialog = () => {
-    resetForm();
-    setFormDate(dayjs().format("YYYY-MM-DD"));
-    setDialogOpen(true);
-  };
-
-  const openEditDialog = (news: News) => {
-    setSelectedNews(news);
-    setFormTitle(news.title);
-    setFormContents(news.contents?.text || "");
-    setFormDate(dayjs(news.date).format("YYYY-MM-DD"));
-    setFormUrl(news.url || "");
-    setDialogOpen(true);
-  };
-
-  const handleSave = async () => {
-    const payload = {
-      title: formTitle,
-      contents: { text: formContents },
-      date: formDate,
-      url: formUrl || null,
-    };
-
-    const ok = await save(payload, selectedNews?.id);
-    if (ok) {
-      setDialogOpen(false);
-      resetForm();
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!newsToDelete) return;
-    const ok = await remove(newsToDelete);
-    if (ok) {
-      setDeleteDialogOpen(false);
-      setNewsToDelete(null);
-    }
-  };
+  const saveNews = useCallback((form: NewsForm, id?: number) => save({
+    title: form.title,
+    contents: { text: form.contents },
+    date: form.date,
+    url: form.url || null,
+  }, id), [save]);
+  const editor = useResourceEditor<News, NewsForm>({
+    createForm: createNewsForm,
+    editForm: editNewsForm,
+    save: saveNews,
+  });
 
   const columns: ResourceColumn<News>[] = [
     {
@@ -132,35 +102,20 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
         columns={columns}
         loading={loading}
         emptyMessage="お知らせはありません"
-        pageSize={10}
-        onCreate={canEdit ? openCreateDialog : undefined}
+        pagination={{
+          page: pagination.page,
+          totalPages: pagination.totalPages,
+          onPageChange: pagination.setPage,
+        }}
+        onCreate={canEdit ? editor.openCreate : undefined}
         actions={
           canEdit
             ? (news) => (
-                <>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => openEditDialog(news)}
-                    sx={{ m: "2px" }}
-                  >
-                    編集
-                  </Button>
-                  {canDelete && (
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      onClick={() => {
-                        setNewsToDelete(news.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                      sx={{ m: "2px" }}
-                    >
-                      削除
-                    </Button>
-                  )}
-                </>
+                <ResourceActions
+                  primaryLabel="編集"
+                  onPrimary={() => editor.openEdit(news)}
+                  onDelete={canDelete ? () => requestDelete(news.id) : undefined}
+                />
               )
             : undefined
         }
@@ -168,32 +123,32 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
 
       {/* 作成/編集ダイアログ */}
       <FormDialog
-        open={dialogOpen}
-        title={selectedNews ? "お知らせ編集" : "お知らせ新規作成"}
-        submitLabel={selectedNews ? "更新" : "作成"}
-        submitDisabled={!formTitle || !formContents || !formDate}
-        onClose={() => setDialogOpen(false)}
-        onSubmit={handleSave}
+        open={editor.dialogOpen}
+        title={editor.selectedResource ? "お知らせ編集" : "お知らせ新規作成"}
+        submitLabel={editor.selectedResource ? "更新" : "作成"}
+        submitDisabled={!editor.form.title || !editor.form.contents || !editor.form.date}
+        onClose={editor.close}
+        onSubmit={editor.submit}
       >
         <TextField
           label="日付"
           type="date"
-          value={formDate}
-          onChange={(e) => setFormDate(e.target.value)}
+          value={editor.form.date}
+          onChange={(e) => editor.setField("date", e.target.value)}
           fullWidth
           InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="タイトル"
-          value={formTitle}
-          onChange={(e) => setFormTitle(e.target.value)}
+          value={editor.form.title}
+          onChange={(e) => editor.setField("title", e.target.value)}
           fullWidth
           required
         />
         <TextField
           label="内容"
-          value={formContents}
-          onChange={(e) => setFormContents(e.target.value)}
+          value={editor.form.contents}
+          onChange={(e) => editor.setField("contents", e.target.value)}
           fullWidth
           multiline
           rows={4}
@@ -201,8 +156,8 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
         />
         <TextField
           label="リンクURL（任意）"
-          value={formUrl}
-          onChange={(e) => setFormUrl(e.target.value)}
+          value={editor.form.url}
+          onChange={(e) => editor.setField("url", e.target.value)}
           fullWidth
         />
       </FormDialog>
@@ -211,8 +166,8 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         title="お知らせを削除"
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDelete}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
       />
     </Box>
   );

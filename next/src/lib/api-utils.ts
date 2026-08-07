@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Session } from "next-auth";
 import { Prisma } from "@prisma/client";
-import { z } from "zod";
+import type { z } from "zod";
 import xss from "xss";
 import { auth } from "@/lib/auth";
 import {
@@ -11,14 +11,13 @@ import {
   notFoundResponse,
   unauthorizedResponse,
 } from "@/lib/api-response";
-
-type UserRole = "ADMIN" | "EDITOR" | "VIEWER";
+import type { UserRole } from "@/lib/roles";
 
 /**
  * 認証と権限をまとめて検証する。
  * 未認証なら401、権限不足なら403のレスポンスを、検証通過ならセッションを返す。
  */
-export async function requireRole(
+async function requireRole(
   roles: UserRole[],
   forbiddenMessage: string = "権限がありません"
 ): Promise<Session | NextResponse> {
@@ -30,6 +29,14 @@ export async function requireRole(
     return forbiddenResponse(forbiddenMessage);
   }
   return session;
+}
+
+export function requireEditor(): Promise<Session | NextResponse> {
+  return requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+}
+
+export function requireAdmin(): Promise<Session | NextResponse> {
+  return requireRole(["ADMIN"], "管理者権限が必要です");
 }
 
 /**
@@ -48,6 +55,20 @@ export async function parseJsonBody(req: Request): Promise<any | NextResponse> {
   }
 }
 
+export async function parseJsonWithSchema<T extends z.ZodTypeAny>(
+  req: Request,
+  schema: T
+): Promise<z.infer<T> | NextResponse> {
+  const body = await parseJsonBody(req);
+  if (isErrorResponse(body)) return body;
+
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return badRequestResponse(parsed.error.errors[0].message);
+  }
+  return parsed.data;
+}
+
 export function isErrorResponse(value: unknown): value is NextResponse {
   return value instanceof NextResponse;
 }
@@ -64,19 +85,28 @@ export function sanitizeTags(tags: unknown): string {
 
 /**
  * API ルート共通の catch ハンドラ。
- * - Zod バリデーションエラー → 400（先頭メッセージ）
  * - Prisma P2025（更新・削除対象なし） → 404
+ * - Prisma P2002（一意制約違反）→ 指定時は既存契約と同じ400
  * - その他 → ログ出力して 500
  */
 export function handleApiError(
   error: unknown,
-  options: { log: string; message: string; notFoundMessage?: string }
-): NextResponse {
-  if (error instanceof z.ZodError) {
-    return badRequestResponse(error.errors[0].message);
+  options: {
+    log: string;
+    message: string;
+    notFoundMessage?: string;
+    uniqueConstraintMessage?: string;
   }
+): NextResponse {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
     return notFoundResponse(options.notFoundMessage ?? "対象が見つかりません");
+  }
+  if (
+    options.uniqueConstraintMessage &&
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
+    return badRequestResponse(options.uniqueConstraintMessage);
   }
   console.error(`${options.log}:`, error);
   return internalErrorResponse(options.message);

@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import bcryptjs from "bcryptjs";
-import { z } from "zod";
-import { Prisma } from "@prisma/client";
-import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { badRequestResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonWithSchema,
+} from "@/lib/api-utils";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { RegistrationSchema } from "@/lib/validation";
 
@@ -20,9 +23,8 @@ export async function POST(request: NextRequest) {
     );
     if (limited) return limited;
 
-    const body = await parseJsonBody(request);
-    if (isErrorResponse(body)) return body;
-    const validatedData = RegistrationSchema.parse(body);
+    const validatedData = await parseJsonWithSchema(request, RegistrationSchema);
+    if (isErrorResponse(validatedData)) return validatedData;
 
     // 既存ユーザーのチェック
     const existingUser = await prisma.user.findUnique({
@@ -30,10 +32,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "アカウントの作成に失敗しました" },
-        { status: 400 }
-      );
+      return badRequestResponse("アカウントの作成に失敗しました");
     }
 
     // パスワードのハッシュ化
@@ -67,23 +66,10 @@ export async function POST(request: NextRequest) {
       }
     );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: error.errors[0].message },
-        { status: 400 }
-      );
-    }
-    // 同時登録による一意制約違反は既存ユーザーと同じ応答にする（事前チェックとのTOCTOU対策）
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return NextResponse.json(
-        { error: "アカウントの作成に失敗しました" },
-        { status: 400 }
-      );
-    }
-    console.error("Registration error:", error);
-    return NextResponse.json(
-      { error: "アカウントの作成に失敗しました" },
-      { status: 500 }
-    );
+    return handleApiError(error, {
+      log: "Registration error",
+      message: "アカウントの作成に失敗しました",
+      uniqueConstraintMessage: "アカウントの作成に失敗しました",
+    });
   }
 }

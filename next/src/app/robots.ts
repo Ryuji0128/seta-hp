@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site-config";
 
 /**
  * robots.txt（/robots.txt）
@@ -10,8 +11,6 @@ import type { MetadataRoute } from "next";
  * meta robots(noindex) を読めず、URL だけがインデックスに残る恐れがあるため、
  * それらは「クロール可能なまま noindex を出す」方針とする（各ページ側で noindex 指定済み）。
  */
-const SITE_URL = "https://kaza-love.com";
-
 const DISALLOW = ["/api/"];
 
 export default function robots(): MetadataRoute.Robots {

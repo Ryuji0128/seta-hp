@@ -6,6 +6,36 @@ CERT_PATH="/etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem"
 # 環境変数を展開
 envsubst '${SERVER_NAME} ${OLD_SERVER_NAME}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
+# 共通proxy設定は include に集約し、各locationでは差分だけを定義する。
+cat > /etc/nginx/conf.d/proxy_headers.inc <<'EOFINC'
+proxy_http_version 1.1;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+EOFINC
+
+cat > /etc/nginx/conf.d/proxy_timeouts.inc <<'EOFINC'
+proxy_connect_timeout 60s;
+proxy_send_timeout 60s;
+proxy_read_timeout 60s;
+EOFINC
+
+# HTTPS/HTTP fallbackで共通の静的アセットlocation。serverコンテキストからincludeする。
+cat > /etc/nginx/conf.d/site_static_locations.inc <<'EOFINC'
+location /uploads/ {
+    alias /var/www/uploads/;
+    expires 30d;
+    add_header X-Content-Type-Options "nosniff" always;
+}
+
+location /_next/static/ {
+    proxy_pass http://next_app:3000;
+    include /etc/nginx/conf.d/proxy_headers.inc;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+EOFINC
+
 # --- 管理エリアIP制限の allow リストを生成（#248） ---
 # ADMIN_ALLOWED_IPS: スペース区切りの IP/CIDR（例: "203.0.113.10 198.51.100.0/24"）。
 # 未設定なら "allow all" となり従来挙動（制限なし）。IP変更でロックアウトした場合は
@@ -90,49 +120,28 @@ server {
         include /etc/nginx/conf.d/admin_allow.inc;
         limit_req zone=general burst=20 nodelay;
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
+        include /etc/nginx/conf.d/proxy_headers.inc;
 
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
     location / {
         limit_req zone=general burst=20 nodelay;
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
 
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
     location /api/ {
         limit_req zone=api burst=10 nodelay;
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
+        include /etc/nginx/conf.d/proxy_headers.inc;
 
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
     # 認証APIのIP制限（#251）。signin/callback/csrf 等を許可IPに限定し
@@ -143,24 +152,14 @@ server {
     location = /api/auth/session {
         limit_req zone=api burst=10 nodelay;
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
     }
 
     location /api/auth/ {
         include /etc/nginx/conf.d/admin_allow.inc;
         limit_req zone=api burst=10 nodelay;
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
     }
 
     # ユーザー登録APIもIP制限（#251: ログインと同じく一般利用なし）
@@ -168,55 +167,17 @@ server {
         include /etc/nginx/conf.d/admin_allow.inc;
         limit_req zone=api burst=10 nodelay;
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
     }
 
     # 商品/制作事例/お知らせAPI: GET(公開)以外の書込メソッドのみIP制限（#248）
-    location = /api/products {
+    location ~ ^/api/(products|works|news)\$ {
         limit_req zone=api burst=10 nodelay;
         limit_except GET {
             include /etc/nginx/conf.d/admin_allow.inc;
         }
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location = /api/works {
-        limit_req zone=api burst=10 nodelay;
-        limit_except GET {
-            include /etc/nginx/conf.d/admin_allow.inc;
-        }
-        proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location = /api/news {
-        limit_req zone=api burst=10 nodelay;
-        limit_except GET {
-            include /etc/nginx/conf.d/admin_allow.inc;
-        }
-        proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
     }
 
     # 問い合わせAPI: POST(フォーム送信)は公開、GET/DELETE(管理)のみIP制限（#248）
@@ -226,12 +187,7 @@ server {
             include /etc/nginx/conf.d/admin_allow.inc;
         }
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
     }
 
     # 画像アップロードは管理専用APIのため全体をIP制限（#248）
@@ -239,92 +195,36 @@ server {
         include /etc/nginx/conf.d/admin_allow.inc;
         limit_req zone=upload burst=20 nodelay;
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
+        include /etc/nginx/conf.d/proxy_headers.inc;
 
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
-    location = /api/admin/upload {
-        include /etc/nginx/conf.d/admin_allow.inc;
-        limit_req zone=upload burst=20 nodelay;
-        proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
-
-    location /uploads/ {
-        alias /var/www/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000";
-        add_header X-Content-Type-Options "nosniff" always;
-    }
-
-    location /_next/static/ {
-        proxy_pass http://next_app:3000;
-        proxy_cache_valid 200 60m;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    location /static/ {
-        proxy_pass http://next_app:3000;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
+    include /etc/nginx/conf.d/site_static_locations.inc;
 
     # next/image 最適化エンドポイント（#196）。多数のサムネイルを読み込むギャラリー等で
     # 一般レート制限(zone=general)に当たらないよう専用 location でプロキシする。
     # Cache-Control は Next 側が付与する（images.minimumCacheTTL）。
     location /_next/image {
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
     }
 
     # public/ 直下の静的アセット（ロゴ・favicon・og-image 等）に長期キャッシュを付与。
     # ルート直下のファイルのみに限定し、/uploads/ や /_next/static/ は侵さない。
     location ~* ^/[^/]+\.(?:png|jpg|jpeg|gif|svg|ico|webp|avif|woff2?)\$ {
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
         proxy_hide_header Cache-Control;
         add_header Cache-Control "public, max-age=604800" always;
         add_header X-Content-Type-Options "nosniff" always;
     }
 }
 
-# www.kaza-love.com → kaza-love.com リダイレクト (HTTPS)
+# www・旧ドメイン → kaza-love.com リダイレクト (HTTPS)
 server {
     listen 443 ssl;
-    server_name www.${SERVER_NAME};
-
-    ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
-
-    ssl_protocols TLSv1.2 TLSv1.3;
-
-    return 301 https://${SERVER_NAME}\$request_uri;
-}
-
-# 旧ドメイン setaseisakusyo.com → kaza-love.com リダイレクト (HTTPS)
-server {
-    listen 443 ssl;
-    server_name ${OLD_SERVER_NAME} www.${OLD_SERVER_NAME};
+    server_name www.${SERVER_NAME} ${OLD_SERVER_NAME} www.${OLD_SERVER_NAME};
 
     ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
@@ -392,20 +292,14 @@ server {
         auth_request /__auth;
         auth_request_set \$auth_email \$upstream_http_x_user_email;
         proxy_pass \$designer_back;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
         # ★HPセッションCookieは Designer に渡さない（designer自身のcsrf/sessionのみ）。
         proxy_set_header Cookie \$designer_cookie;
         # ★なりすまし対策: クライアント供給の X-Remote-User を必ず上書き。
         proxy_set_header X-Remote-User \$auth_email;
         # ★同一network内の他コンテナからの偽装防止: 共有秘密(未設定なら空=Django側も非強制)。
         proxy_set_header X-SSO-Auth "${PROXY_SSO_SECRET}";
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
     # Django admin（到達者は全員HPのADMIN。SSO側で is_staff/superuser を付与済み）。
@@ -414,11 +308,7 @@ server {
         auth_request /__auth;
         auth_request_set \$auth_email \$upstream_http_x_user_email;
         proxy_pass \$designer_back;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
         proxy_set_header Cookie \$designer_cookie;
         proxy_set_header X-Remote-User \$auth_email;
         proxy_set_header X-SSO-Auth "${PROXY_SSO_SECRET}";
@@ -429,7 +319,7 @@ server {
         limit_req zone=designer burst=30 nodelay;
         auth_request /__auth;
         proxy_pass \$designer_back;
-        proxy_set_header Host \$host;
+        include /etc/nginx/conf.d/proxy_headers.inc;
         proxy_set_header Cookie "";
     }
 
@@ -438,17 +328,11 @@ server {
         limit_req zone=designer burst=30 nodelay;
         auth_request /__auth;
         proxy_pass \$designer_front;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
         proxy_set_header Cookie "";
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 }
 EOFCONF
@@ -467,68 +351,29 @@ server {
 
     location = /api/upload {
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
+        include /etc/nginx/conf.d/proxy_headers.inc;
 
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
-    location = /api/admin/upload {
-        proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
 
     location / {
         proxy_pass http://next_app:3000;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        include /etc/nginx/conf.d/proxy_headers.inc;
 
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
-    location /_next/static/ {
-        proxy_pass http://next_app:3000;
-        proxy_cache_valid 200 60m;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    location /static/ {
-        proxy_pass http://next_app:3000;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    location /uploads/ {
-        alias /var/www/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000";
-        add_header X-Content-Type-Options "nosniff" always;
-    }
+    include /etc/nginx/conf.d/site_static_locations.inc;
 }
 EOF
+fi
+
+if [ "${NGINX_TEST_ONLY:-0}" = "1" ]; then
+    exec nginx -t
 fi
 
 exec nginx -g 'daemon off;'

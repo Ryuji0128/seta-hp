@@ -7,10 +7,13 @@ import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data
 import ProductDetail from "./_components/ProductDetail";
 import RelatedProducts from "./_components/RelatedProducts";
 import SectionContainer from "@/components/SectionContainer";
+import DarkCtaSection from "@/components/DarkCtaSection";
+import { getPrimaryProductImage } from "@/lib/types/product";
 
 // ISR: ビルド時は生成せず（CIビルドはDB到達不可のため generateStaticParams は空）、
 // 初回アクセス時に生成してキャッシュする。商品の作成・更新・削除時は
 // API 側の revalidateProductPages() が全詳細ページを即時再生成対象にする。
+// Next.js のroute configはimport定数を静的解析できないためリテラルで指定する。
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
@@ -29,11 +32,18 @@ const getProduct = cache(async (id: number) => {
 
 async function getRelatedProducts(category: string, excludeId: number) {
   const prisma = getPrismaClient();
-  return prisma.product.findMany({
+  const products = await prisma.product.findMany({
     where: { category, isPublished: true, id: { not: excludeId } },
+    select: { id: true, name: true, price: true, images: true },
     take: 4,
     orderBy: { createdAt: "desc" },
   });
+  return products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: getPrimaryProductImage(product.images),
+  }));
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
@@ -55,7 +65,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title: product.name,
       description: product.description,
       url: `/products/${productId}`,
-      images: product.image ? [product.image] : ["/og-image.png"],
+      images: [getPrimaryProductImage(product.images) ?? "/og-image.png"],
     },
   };
 }
@@ -68,9 +78,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const product = await getProduct(productId);
   if (!product || !product.isPublished) notFound();
 
-  const [relatedProducts] = await Promise.all([
-    getRelatedProducts(product.category, product.id),
-  ]);
+  const relatedProducts = await getRelatedProducts(product.category, product.id);
 
   // 検索結果に価格・在庫を表示させる Product 構造化データと、
   // パンくずリッチリザルト用の BreadcrumbList をサーバーレンダリングで埋め込む。
@@ -92,6 +100,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ProductDetail product={product} />
         </SectionContainer>
         {relatedProducts.length > 0 && <RelatedProducts products={relatedProducts} />}
+        <DarkCtaSection
+          heading={<><em>サイズも枚数も、</em><br />ご相談ください。</>}
+          body="お手持ちのカードや飾る場所に合わせた特注ディスプレイを、一品から制作します。"
+          primaryLabel="特注品のご相談"
+          secondaryHref="/products"
+          secondaryLabel="商品一覧へ戻る"
+        />
       </Box>
     </>
   );

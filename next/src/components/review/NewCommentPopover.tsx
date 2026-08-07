@@ -5,7 +5,6 @@ import { Z_OVERLAY, Z_PIN } from "./types";
 interface PendingPin {
   xRatio: number;
   yAbsolute: number;
-  elementSelector: string;
 }
 
 interface NewCommentPopoverProps {

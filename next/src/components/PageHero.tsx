@@ -15,6 +15,10 @@ interface PageHeroProps {
   heading: ReactNode;
   /** 斜体サブタイトル（"— ..." を含めて渡す） */
   subtitle: ReactNode;
+  /** 本文（任意） */
+  description?: ReactNode;
+  /** Contact用の少しコンパクトな表示 */
+  variant?: "default" | "contact";
   /** 下部の統計行（任意） */
   stats?: HeroStat[];
   /** 統計行を折り返す（項目が多いページ用） */
@@ -26,18 +30,30 @@ interface PageHeroProps {
  * GalleryHero / ProductsHero が同一の外殻だったため共通化（#195）。
  * インタラクションなしのサーバーコンポーネント。
  */
-export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap }: PageHeroProps) {
+export default function PageHero({
+  eyebrow,
+  heading,
+  subtitle,
+  description,
+  variant = "default",
+  stats,
+  statsWrap,
+}: PageHeroProps) {
+  const isContact = variant === "contact";
+
   return (
     <Box
       component="section"
       sx={{
         py: { xs: 7, md: 11 },
         background:
-          "radial-gradient(ellipse at 80% 30%, rgba(180,83,9,0.05), transparent 50%), #FFFFFF",
+          isContact
+            ? "radial-gradient(ellipse at 20% 30%, rgba(180,83,9,0.04), transparent 50%), #FFFFFF"
+            : "radial-gradient(ellipse at 80% 30%, rgba(180,83,9,0.05), transparent 50%), #FFFFFF",
       }}
     >
       <SectionContainer>
-        <Box sx={{ maxWidth: 800 }}>
+        <Box sx={{ maxWidth: isContact ? 720 : 800 }}>
           <Box
             sx={{
               display: "inline-flex",
@@ -60,12 +76,12 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
             sx={{
               fontFamily: FONT_DISPLAY,
               fontWeight: 700,
-              fontSize: "clamp(40px, 5.5vw, 84px)",
+              fontSize: isContact ? "clamp(40px, 5vw, 72px)" : "clamp(40px, 5.5vw, 84px)",
               lineHeight: 1,
               letterSpacing: "-0.04em",
               color: "text.primary",
               mt: 0,
-              mb: 3,
+              mb: isContact ? 2 : 3,
               "& em": { fontStyle: "normal", color: "primary.main" },
             }}
           >
@@ -85,13 +101,20 @@ export default function PageHero({ eyebrow, heading, subtitle, stats, statsWrap 
             {subtitle}
           </Box>
 
+          {description && (
+            <Box sx={{ fontSize: "16px", color: "secondary.main", lineHeight: 1.8, maxWidth: 560 }}>
+              {description}
+            </Box>
+          )}
+
           {stats && stats.length > 0 && (
             <Box
               sx={{
                 display: "flex",
                 gap: 5,
                 pt: 3,
-                borderTop: "1px solid #EFEFEA",
+                borderTop: "1px solid",
+                borderColor: "divider",
                 ...(statsWrap ? { flexWrap: "wrap" } : {}),
               }}
             >

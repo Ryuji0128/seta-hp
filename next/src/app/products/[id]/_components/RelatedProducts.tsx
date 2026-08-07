@@ -1,7 +1,11 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
+import {
+  ProductCardFrame,
+  ProductCardMedia,
+  ProductPriceRow,
+} from "@/components/product/ProductCardPrimitives";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
-import Image from "next/image";
 import Link from "next/link";
 import { normalizeImageUrl } from "@/lib/images";
 import { type ProductSummary } from "@/lib/types/product";
@@ -12,9 +16,6 @@ interface Props {
 }
 
 const RelatedProducts: React.FC<Props> = ({ products }) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 8, md: 12 } }}>
       <SectionContainer>
@@ -27,7 +28,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
             borderColor: "text.primary",
             pt: 3.5,
             mb: 6,
-            fontFamily: fontItalic,
+            fontFamily: FONT_ITALIC,
             fontStyle: "italic",
             fontSize: "16px",
             letterSpacing: "0.05em",
@@ -54,59 +55,20 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                 href={`/products/${p.id}`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: "6px",
-                    overflow: "hidden",
-                    bgcolor: "#FFFFFF",
-                    cursor: "pointer",
-                    transition: "transform 0.4s, border-color 0.3s",
-                    "&:hover": {
-                      transform: "translateY(-4px)",
-                      borderColor: "text.primary",
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: "relative",
-                      aspectRatio: "1 / 1",
-                      background: "linear-gradient(150deg, #F6F6F4 0%, #EDEDE8 100%)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={p.name}
-                        fill
-                        sizes="(max-width: 600px) 50vw, 25vw"
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          inset: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "text.disabled",
-                          fontFamily: fontItalic,
-                          fontStyle: "italic",
-                          fontSize: "13px",
-                        }}
-                      >
-                        No. {ref}
-                      </Box>
-                    )}
-                  </Box>
+                <ProductCardFrame hoverShadow={false}>
+                  <ProductCardMedia
+                    src={imageUrl}
+                    alt={p.name}
+                    sizes="(max-width: 600px) 50vw, 25vw"
+                    aspectRatio="1 / 1"
+                    placeholder={`No. ${ref}`}
+                    placeholderFontSize="13px"
+                    placeholderLetterSpacing="normal"
+                  />
                   <Box sx={{ p: 2 }}>
                     <Box
                       sx={{
-                        fontFamily: fontItalic,
+                        fontFamily: FONT_ITALIC,
                         fontStyle: "italic",
                         color: "primary.main",
                         fontSize: "12px",
@@ -118,7 +80,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                     </Box>
                     <Box
                       sx={{
-                        fontFamily: fontDisplay,
+                        fontFamily: FONT_DISPLAY,
                         fontSize: "14px",
                         fontWeight: 600,
                         letterSpacing: "-0.01em",
@@ -133,19 +95,9 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                     >
                       {p.name}
                     </Box>
-                    <Box
-                      sx={{
-                        fontFamily: fontDisplay,
-                        fontSize: "15px",
-                        fontWeight: 700,
-                        letterSpacing: "-0.015em",
-                        color: "text.primary",
-                      }}
-                    >
-                      ¥{p.price.toLocaleString()}
-                    </Box>
+                    <ProductPriceRow price={p.price} variant="compact" />
                   </Box>
-                </Box>
+                </ProductCardFrame>
               </Link>
             );
           })}

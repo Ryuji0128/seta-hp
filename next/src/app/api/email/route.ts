@@ -1,14 +1,21 @@
 import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
-import { badRequestResponse, validationErrorResponse } from "@/lib/api-response";
-import { handleApiError, isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
+import { validationErrorResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonBody,
+  parseJsonWithSchema,
+  requireAdmin,
+} from "@/lib/api-utils";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
-import { validateInquiry } from "@/lib/validation";
+import { RequiredIdSchema, validateInquiry } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 import xss from "xss";
 import { parsePagination } from "@/lib/pagination";
+import { CONTACT_EMAIL } from "@/lib/site-config";
 
 const prisma = getPrismaClient();
 
@@ -106,7 +113,7 @@ export async function POST(req: NextRequest) {
           <hr />
           <p>２営業日以内に、担当者よりご連絡いたします。</p>
           <p>飾Love(かざらぶ)<br>
-          Email: info@kaza-love.com<br>
+          Email: ${CONTACT_EMAIL}<br>
           </p>
         `,
       });
@@ -136,7 +143,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     // 認証・権限チェック（ADMINのみ）
-    const session = await requireRole(["ADMIN"]);
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
     const { searchParams } = new URL(req.url);
@@ -144,6 +151,14 @@ export async function GET(req: NextRequest) {
 
     const [inquiries, total] = await Promise.all([
       prisma.inquiry.findMany({
+        select: {
+          id: true,
+          createdAt: true,
+          name: true,
+          email: true,
+          phone: true,
+          inquiry: true,
+        },
         orderBy: { createdAt: "desc" },
         take: limit,
         skip,
@@ -162,16 +177,12 @@ export async function GET(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     // 認証・権限チェック（ADMINのみ）
-    const session = await requireRole(["ADMIN"]);
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const id = Number(body.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return badRequestResponse("IDが正しく指定されていません");
-    }
+    const parsed = await parseJsonWithSchema(req, RequiredIdSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { id } = parsed;
 
     await prisma.inquiry.delete({
       where: { id },

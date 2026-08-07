@@ -1,11 +1,9 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY } from "@/theme/themeConstants";
-import Link from "next/link";
+import { COLOR_DARK_ACCENT, FONT_DISPLAY } from "@/theme/themeConstants";
+import PillLink from "@/components/PillLink";
 
 const CTASection = () => {
-  const fontDisplay = FONT_DISPLAY;
-
   return (
     <Box
       component="section"
@@ -20,14 +18,14 @@ const CTASection = () => {
         <Box
           component="h2"
           sx={{
-            fontFamily: fontDisplay,
+            fontFamily: FONT_DISPLAY,
             fontSize: "clamp(48px, 6vw, 96px)",
             fontWeight: 800,
             letterSpacing: "-0.04em",
             lineHeight: 1.05,
             mt: 0,
             mb: 3,
-            "& em": { fontStyle: "normal", color: "#E5AC60" },
+            "& em": { fontStyle: "normal", color: COLOR_DARK_ACCENT },
           }}
         >
           あなたのカードに、
@@ -54,48 +52,8 @@ const CTASection = () => {
             flexWrap: "wrap",
           }}
         >
-          <Link href="/products" passHref style={{ textDecoration: "none" }}>
-            <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 1.25,
-                bgcolor: "#FFFFFF",
-                color: "text.primary",
-                px: 4,
-                py: 2,
-                borderRadius: "999px",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "background-color 0.2s, transform 0.2s",
-                "&:hover": { bgcolor: "#E5AC60", transform: "translateY(-1px)" },
-              }}
-            >
-              BASEで購入する <span>→</span>
-            </Box>
-          </Link>
-          <Link href="/contact" passHref style={{ textDecoration: "none" }}>
-            <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 1.25,
-                color: "#FFFFFF",
-                px: 3.5,
-                py: 2,
-                borderRadius: "999px",
-                fontSize: "14px",
-                fontWeight: 500,
-                border: "1px solid rgba(255,255,255,0.25)",
-                cursor: "pointer",
-                transition: "border-color 0.2s",
-                "&:hover": { borderColor: "#FFFFFF" },
-              }}
-            >
-              特注品のご相談
-            </Box>
-          </Link>
+          <PillLink href="/products" tone="light" showArrow>BASEで購入する</PillLink>
+          <PillLink href="/contact" tone="outline">特注品のご相談</PillLink>
         </Box>
       </SectionContainer>
     </Box>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useRef } from "react";
 import {
   Box,
   Button,
@@ -10,61 +9,28 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import { uploadImage } from "@/lib/api-client";
+import {
+  IMAGE_ACCEPT,
+  IMAGE_UPLOAD_HINT,
+  useImageUpload,
+} from "@/lib/hooks/useImageUpload";
+
+const MAX_IMAGES = 10;
+
 interface MultiImageUploadProps {
   value: string[];
   onChange: (urls: string[]) => void;
-  maxImages?: number;
-  disabled?: boolean;
 }
 
 export default function MultiImageUpload({
   value,
   onChange,
-  maxImages = 10,
-  disabled,
 }: MultiImageUploadProps) {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setError(null);
-    setUploading(true);
-
-    const newUrls: string[] = [];
-
-    try {
-      for (let i = 0; i < files.length; i++) {
-        if (value.length + newUrls.length >= maxImages) {
-          setError(`最大${maxImages}枚までアップロードできます`);
-          break;
-        }
-
-        const file = files[i];
-        try {
-          newUrls.push(await uploadImage(file));
-        } catch (error) {
-          setError(
-            error instanceof Error ? error.message : `${file.name}のアップロードに失敗しました`
-          );
-          break;
-        }
-      }
-
-      if (newUrls.length > 0) {
-        onChange([...value, ...newUrls]);
-      }
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
+  const { error, uploading, fileInputRef, handleFileSelect, openFileDialog } = useImageUpload({
+    currentCount: value.length,
+    maxFiles: MAX_IMAGES,
+    onUploaded: (urls) => onChange([...value, ...urls]),
+  });
 
   const handleRemove = (index: number) => {
     const newImages = [...value];
@@ -84,11 +50,11 @@ export default function MultiImageUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={IMAGE_ACCEPT}
         multiple
         onChange={handleFileSelect}
         style={{ display: "none" }}
-        disabled={disabled || uploading}
+        disabled={uploading}
       />
 
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
@@ -140,18 +106,17 @@ export default function MultiImageUpload({
                 "&:hover": { bgcolor: "rgba(255,255,255,1)" },
               }}
               onClick={() => handleRemove(index)}
-              disabled={disabled}
             >
               <DeleteIcon fontSize="small" color="error" />
             </IconButton>
           </Box>
         ))}
 
-        {value.length < maxImages && (
+        {value.length < MAX_IMAGES && (
           <Button
             variant="outlined"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled || uploading}
+            onClick={openFileDialog}
+            disabled={uploading}
             sx={{
               width: 120,
               height: 120,
@@ -180,7 +145,7 @@ export default function MultiImageUpload({
       )}
 
       <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-        JPG, PNG, GIF, WebP (最大5MB) - {value.length}/{maxImages}枚
+        {IMAGE_UPLOAD_HINT} - {value.length}/{MAX_IMAGES}枚
         {value.length > 1 && " - クリックで順番変更"}
       </Typography>
     </Box>

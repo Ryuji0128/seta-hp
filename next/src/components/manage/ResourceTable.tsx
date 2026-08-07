@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Box,
   Button,
@@ -33,8 +32,12 @@ interface Props<T> {
   onCreate?: () => void;
   /** 指定時のみ「操作」列を表示（セルの中身を返す） */
   actions?: (item: T) => React.ReactNode;
-  /** 指定時はクライアント側ページネーションを行う */
-  pageSize?: number;
+  /** API側ページネーションの状態 */
+  pagination?: {
+    page: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  };
 }
 
 /**
@@ -48,10 +51,9 @@ export default function ResourceTable<T extends { id: number }>({
   emptyMessage,
   onCreate,
   actions,
-  pageSize,
+  pagination,
 }: Props<T>) {
   const isMobile = useIsMobile();
-  const [page, setPage] = useState(1);
 
   if (loading) {
     return (
@@ -62,11 +64,8 @@ export default function ResourceTable<T extends { id: number }>({
   }
 
   const visibleColumns = columns.filter((c) => !(isMobile && c.hideOnMobile));
-  const totalPages = pageSize ? Math.max(1, Math.ceil(items.length / pageSize)) : 1;
-  const currentPage = Math.min(page, totalPages);
-  const pagedItems = pageSize
-    ? items.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-    : items;
+  const currentPage = pagination?.page ?? 1;
+  const totalPages = pagination?.totalPages ?? 1;
 
   return (
     <Box>
@@ -78,12 +77,12 @@ export default function ResourceTable<T extends { id: number }>({
         </Box>
       )}
 
-      {pageSize && totalPages > 1 && (
+      {pagination && totalPages > 1 && (
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
           <Button
             variant="outlined"
             disabled={currentPage === 1}
-            onClick={() => setPage(currentPage - 1)}
+            onClick={() => pagination.onPageChange(currentPage - 1)}
           >
             前へ
           </Button>
@@ -93,7 +92,7 @@ export default function ResourceTable<T extends { id: number }>({
           <Button
             variant="outlined"
             disabled={currentPage === totalPages}
-            onClick={() => setPage(currentPage + 1)}
+            onClick={() => pagination.onPageChange(currentPage + 1)}
           >
             次へ
           </Button>
@@ -113,14 +112,14 @@ export default function ResourceTable<T extends { id: number }>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {pagedItems.length === 0 ? (
+            {items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={visibleColumns.length + (actions ? 1 : 0)} align="center">
                   {emptyMessage}
                 </TableCell>
               </TableRow>
             ) : (
-              pagedItems.map((item) => (
+              items.map((item) => (
                 <TableRow key={item.id} hover>
                   {visibleColumns.map((col) => (
                     <TableCell key={col.header} align={col.align}>
