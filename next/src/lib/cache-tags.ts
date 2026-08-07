@@ -5,6 +5,8 @@ import { revalidatePath, revalidateTag } from "next/cache";
  * 公開ページのDBアクセスはこのタグ付きでキャッシュし、
  * 管理画面からの書き込み時に revalidate* で即時無効化する。
  */
+export const CACHE_REVALIDATE_SECONDS = 60 * 60;
+
 export const CACHE_TAGS = {
   products: "products",
   works: "works",

@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import BaseContainer from "@/components/BaseContainer";
+import SectionContainer from "@/components/SectionContainer";
 
 interface Props {
   title: string;
@@ -9,7 +9,7 @@ interface Props {
 /** 管理ページ共通のレイアウト（コンテナ + 中央見出し） */
 export default function AdminPageShell({ title, children }: Props) {
   return (
-    <BaseContainer>
+    <SectionContainer>
       <Box sx={{ py: 4 }}>
         <Typography
           variant="h4"
@@ -20,6 +20,6 @@ export default function AdminPageShell({ title, children }: Props) {
         </Typography>
         {children}
       </Box>
-    </BaseContainer>
+    </SectionContainer>
   );
 }

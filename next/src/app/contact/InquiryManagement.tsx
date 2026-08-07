@@ -14,17 +14,12 @@ import "dayjs/locale/ja";
 import { Session } from "next-auth";
 import { useState } from "react";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
+import ResourceActions from "@/components/manage/ResourceActions";
 import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
 import { useCrudResource } from "@/lib/hooks/useCrudResource";
-
-interface Inquiry {
-  id: number;
-  createdAt: string;
-  name: string;
-  email: string;
-  phone: string;
-  inquiry: string;
-}
+import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
+import { getManagementPermissions } from "@/lib/management-permissions";
+import type { Inquiry } from "@/lib/types/inquiry";
 
 interface InquiryManagementProps {
   session: Session;
@@ -37,22 +32,12 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
     label: "問い合わせ",
   });
 
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [inquiryToDelete, setInquiryToDelete] = useState<number | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
 
-  const userRole = session?.user?.role;
-  const canDelete = userRole === "ADMIN";
-
-  const handleDelete = async () => {
-    if (!inquiryToDelete) return;
-    const ok = await remove(inquiryToDelete);
-    if (ok) {
-      setDeleteDialogOpen(false);
-      setInquiryToDelete(null);
-    }
-  };
+  const { canDelete } = getManagementPermissions(session?.user?.role);
+  const { deleteDialogOpen, requestDelete, cancelDelete, confirmDelete } =
+    useResourceDelete(remove);
 
   const columns: ResourceColumn<Inquiry>[] = [
     {
@@ -102,33 +87,14 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
         emptyMessage="問い合わせはありません"
         pageSize={10}
         actions={(inquiry) => (
-          <>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                setSelectedInquiry(inquiry);
-                setDetailDialogOpen(true);
-              }}
-              sx={{ m: "2px" }}
-            >
-              詳細
-            </Button>
-            {canDelete && (
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                onClick={() => {
-                  setInquiryToDelete(inquiry.id);
-                  setDeleteDialogOpen(true);
-                }}
-                sx={{ m: "2px" }}
-              >
-                削除
-              </Button>
-            )}
-          </>
+          <ResourceActions
+            primaryLabel="詳細"
+            onPrimary={() => {
+              setSelectedInquiry(inquiry);
+              setDetailDialogOpen(true);
+            }}
+            onDelete={canDelete ? () => requestDelete(inquiry.id) : undefined}
+          />
         )}
       />
 
@@ -173,8 +139,8 @@ const InquiryManagement: React.FC<InquiryManagementProps> = ({ session }) => {
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         title="問い合わせを削除"
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDelete}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
       />
     </Box>
   );

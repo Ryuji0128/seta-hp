@@ -42,8 +42,6 @@ function GalleryCardImage({ src, alt }: { src: string; alt: string }) {
 }
 
 const GalleryGrid: React.FC<Props> = ({ works }) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
   const [selectedWork, setSelectedWork] = useState<WorkGridItem | null>(null);
 
   if (works.length === 0) {
@@ -117,7 +115,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                       alignItems: "center",
                       justifyContent: "center",
                       color: "text.disabled",
-                      fontFamily: fontItalic,
+                      fontFamily: FONT_ITALIC,
                       fontStyle: "italic",
                       fontSize: "14px",
                       letterSpacing: "0.04em",
@@ -139,7 +137,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                 >
                   <Box
                     sx={{
-                      fontFamily: fontItalic,
+                      fontFamily: FONT_ITALIC,
                       fontStyle: "italic",
                       color: "primary.main",
                       fontSize: "13px",
@@ -162,7 +160,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
                 </Box>
                 <Box
                   sx={{
-                    fontFamily: fontDisplay,
+                    fontFamily: FONT_DISPLAY,
                     fontSize: "18px",
                     fontWeight: 700,
                     letterSpacing: "-0.015em",
@@ -285,7 +283,7 @@ const GalleryGrid: React.FC<Props> = ({ works }) => {
             >
               <Box
                 sx={{
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: { xs: "18px", md: "24px" },
                   fontWeight: 700,
                   letterSpacing: "-0.015em",

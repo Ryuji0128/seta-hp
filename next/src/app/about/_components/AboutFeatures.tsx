@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
+import AboutSectionHeader from "./AboutSectionHeader";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 const FEATURES = [
   { en: "Studio-Built", ja: "設計・製作・梱包まで個人工房で一貫" },
@@ -11,36 +12,20 @@ const FEATURES = [
 ];
 
 const AboutFeatures = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ py: { xs: 10, md: 15 } }}>
       <SectionContainer>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 3,
-            borderTop: "1px solid",
-            borderTopColor: "text.primary",
-            pt: 3.5,
-            mb: 6,
-            fontFamily: fontItalic,
-            fontStyle: "italic",
-            fontSize: "16px",
-            letterSpacing: "0.05em",
-          }}
-        >
-          <Box sx={{ color: "primary.main" }}>— 04</Box>
-          <Box sx={{ color: "text.primary" }}>Features</Box>
-          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　飾Love の特徴</Box>
-        </Box>
+        <AboutSectionHeader
+          number="04"
+          title="Features"
+          titleJa="飾Love の特徴"
+          marginBottom={6}
+        />
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1.4fr" }, gap: { xs: 0, md: 10 } }}>
           <Box
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontSize: "clamp(28px, 3.4vw, 48px)",
               fontWeight: 700,
               letterSpacing: "-0.025em",
@@ -69,7 +54,7 @@ const AboutFeatures = () => {
               >
                 <Box
                   sx={{
-                    fontFamily: fontDisplay,
+                    fontFamily: FONT_DISPLAY,
                     fontWeight: 700,
                     fontSize: "16px",
                     letterSpacing: "-0.01em",

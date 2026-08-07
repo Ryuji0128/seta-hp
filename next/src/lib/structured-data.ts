@@ -1,9 +1,7 @@
 import { parseProductImages, type Product } from "@/lib/types/product";
 import { getStockMeta } from "@/lib/constants/categories";
 import { formatRefNumber } from "@/lib/format";
-
-const SITE_URL = "https://kaza-love.com";
-const SITE_NAME = "飾Love";
+import { SITE_NAME, SITE_URL } from "@/lib/site-config";
 
 // 相対パス（/uploads/...）を絶対URLに変換する。外部URLはそのまま。
 function toAbsoluteUrl(path: string): string {

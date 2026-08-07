@@ -9,13 +9,13 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import {
   cleanReviewInput as clean,
   parseReviewId as parseId,
   REVIEW_MAX_CONTENT as MAX_CONTENT,
   REVIEW_MAX_NAME as MAX_NAME,
-  reviewCommentsDisabledResponse,
+  reviewWriteGuard,
 } from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -25,11 +25,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const disabled = reviewCommentsDisabledResponse();
-  if (disabled) return disabled;
-
-  const { limited } = await enforceRateLimit(req, `review:${req.nextUrl.pathname}`, RATE_LIMITS.review);
-  if (limited) return limited;
+  const blocked = await reviewWriteGuard(req);
+  if (blocked) return blocked;
 
   const { id: rawId } = await params;
   const commentId = parseId(rawId);
@@ -37,7 +34,8 @@ export async function POST(
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
 
   try {
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const authorName = clean(body.authorName, MAX_NAME);
     const content = clean(body.content, MAX_CONTENT);
 
@@ -62,11 +60,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const disabled = reviewCommentsDisabledResponse();
-  if (disabled) return disabled;
-
-  const { limited } = await enforceRateLimit(req, `review:${req.nextUrl.pathname}`, RATE_LIMITS.review);
-  if (limited) return limited;
+  const blocked = await reviewWriteGuard(req);
+  if (blocked) return blocked;
 
   const { id: rawId } = await params;
   const commentId = parseId(rawId);

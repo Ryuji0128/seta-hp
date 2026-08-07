@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
 import { normalizeImageUrl } from "@/lib/images";
-import { CACHE_TAGS } from "@/lib/cache-tags";
+import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 
 // ヒーロー候補の取得はキャッシュし（products タグで管理画面の更新時に無効化）、
 // ランダム抽選だけをリクエスト毎に行う。DBアクセスはキャッシュ切れ時のみ。
@@ -17,7 +17,7 @@ const getHeroImageCandidates = unstable_cache(
       .filter((img): img is string => Boolean(img));
   },
   ["hero-image-candidates"],
-  { revalidate: 3600, tags: [CACHE_TAGS.products] }
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
 export async function getRandomHeroImage(): Promise<string | null> {

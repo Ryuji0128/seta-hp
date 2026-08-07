@@ -1,20 +1,11 @@
+import type { Product as PrismaProduct } from "@prisma/client";
 import { normalizeImageUrl } from "@/lib/images";
 
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  tags: string;
-  stock: string;
-  image: string | null;
-  images: unknown;
-  isPublished: boolean;
-  isHeroImage: boolean;
-  purchaseUrl: string | null;
+// DB直取得（Date）とAPIレスポンス（ISO文字列）の両方を受けつつ、
+// モデルのフィールド追加・変更はPrisma型へ追従する。
+export type Product = Omit<PrismaProduct, "createdAt" | "updatedAt"> & {
   createdAt: string | Date;
-}
+};
 
 export type ProductSummary = Pick<Product, "id" | "name" | "category" | "price" | "image">;
 

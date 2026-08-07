@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { parsePagination } from "@/lib/pagination";
 import { badRequestResponse } from "@/lib/api-response";
-import { handleApiError, isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonBody,
+  requireAdmin,
+  requireEditor,
+} from "@/lib/api-utils";
 import xss from "xss";
 
 /** "Invalid Date" によるPrismaエラーを防ぐための日付検証 */
@@ -36,7 +42,7 @@ export async function GET(req: NextRequest) {
 // お知らせ作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
@@ -73,7 +79,7 @@ export async function POST(req: NextRequest) {
 // お知らせ更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
@@ -121,7 +127,7 @@ export async function PUT(req: NextRequest) {
 // お知らせ削除
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN"], "管理者権限が必要です");
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();

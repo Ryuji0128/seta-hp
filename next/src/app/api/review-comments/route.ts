@@ -8,7 +8,7 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
 import {
   cleanReviewInput as clean,
   REVIEW_MAX_CONTENT as MAX_CONTENT,
@@ -16,6 +16,7 @@ import {
   REVIEW_MAX_PAGE_URL as MAX_PAGE_URL,
   REVIEW_MAX_SELECTOR as MAX_SELECTOR,
   reviewCommentsDisabledResponse,
+  reviewWriteGuard,
 } from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -44,14 +45,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const disabled = reviewCommentsDisabledResponse();
-  if (disabled) return disabled;
-
-  const { limited } = await enforceRateLimit(req, `review:${req.nextUrl.pathname}`, RATE_LIMITS.review);
-  if (limited) return limited;
+  const blocked = await reviewWriteGuard(req);
+  if (blocked) return blocked;
 
   try {
-    const body = await req.json();
+    const body = await parseJsonBody(req);
+    if (isErrorResponse(body)) return body;
     const pageUrl = clean(body.pageUrl, MAX_PAGE_URL);
     const authorName = clean(body.authorName, MAX_NAME);
     const content = clean(body.content, MAX_CONTENT);

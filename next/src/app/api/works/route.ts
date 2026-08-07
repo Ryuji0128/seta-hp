@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { parsePagination } from "@/lib/pagination";
-import { badRequestResponse, notFoundResponse } from "@/lib/api-response";
-import { handleApiError, isErrorResponse, parseJsonBody, requireRole, sanitizeTags } from "@/lib/api-utils";
-import { WorkCreateSchema, WorkUpdateSchema } from "@/lib/validation";
+import { notFoundResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonWithSchema,
+  requireAdmin,
+  requireEditor,
+  sanitizeTags,
+} from "@/lib/api-utils";
+import { RequiredIdSchema, WorkCreateSchema, WorkUpdateSchema } from "@/lib/validation";
 import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
 import { revalidateWorkPages } from "@/lib/cache-tags";
 import xss from "xss";
@@ -17,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     // 認証・権限チェック（非公開を含める場合はADMIN/EDITORのみ）
     if (includeUnpublished) {
-      const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+      const session = await requireEditor();
       if (isErrorResponse(session)) return session;
     }
 
@@ -43,20 +50,13 @@ export async function GET(req: NextRequest) {
 // 制作事例作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-
-    // バリデーションは Zod スキーマに集約
-    const parsed = WorkCreateSchema.safeParse(body);
-    if (!parsed.success) {
-      return badRequestResponse(parsed.error.errors[0].message);
-    }
-    const { title, description, category } = parsed.data;
-    const { tags, image, isPublished } = body;
+    const parsed = await parseJsonWithSchema(req, WorkCreateSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { title, description, category, tags, image, isPublished } = parsed;
 
     const work = await prisma.work.create({
       data: {
@@ -80,20 +80,13 @@ export async function POST(req: NextRequest) {
 // 制作事例更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-
-    // バリデーションは Zod スキーマに集約（POST と共通・全フィールド任意 + ID 必須）
-    const parsed = WorkUpdateSchema.safeParse(body);
-    if (!parsed.success) {
-      return badRequestResponse(parsed.error.errors[0].message);
-    }
-    const { id, title, description, category } = parsed.data;
-    const { tags, image, isPublished } = body;
+    const parsed = await parseJsonWithSchema(req, WorkUpdateSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { id, title, description, category, tags, image, isPublished } = parsed;
 
     // 存在確認
     const existing = await prisma.work.findUnique({ where: { id } });
@@ -130,17 +123,13 @@ export async function PUT(req: NextRequest) {
 // 制作事例削除
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN"], "管理者権限が必要です");
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
     const prisma = getPrismaClient();
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const { id } = body;
-
-    if (!id) {
-      return badRequestResponse("IDは必須です");
-    }
+    const parsed = await parseJsonWithSchema(req, RequiredIdSchema);
+    if (isErrorResponse(parsed)) return parsed;
+    const { id } = parsed;
 
     // 存在確認
     const existing = await prisma.work.findUnique({ where: { id } });

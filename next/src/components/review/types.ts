@@ -1,4 +1,4 @@
-export interface Reply {
+interface Reply {
   id: number;
   authorName: string;
   content: string;
@@ -19,7 +19,7 @@ export interface ReviewComment {
   replies: Reply[];
 }
 
-export const NAME_STORAGE_KEY = "seta-hp-review-overlay-name";
+const NAME_STORAGE_KEY = "seta-hp-review-overlay-name";
 export const Z_OVERLAY = 1400;
 export const Z_PIN = 1399;
 

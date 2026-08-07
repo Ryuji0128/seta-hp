@@ -1,5 +1,5 @@
 import { Box, Container } from "@mui/material";
-import Link from "next/link";
+import PillLink from "@/components/PillLink";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 interface Props {
@@ -22,9 +22,6 @@ const LegalPageLayout: React.FC<Props> = ({
   children,
   showFooterCta = true,
 }) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box sx={{ bgcolor: "#FFFFFF" }}>
       {/* Hero (compact) */}
@@ -59,7 +56,7 @@ const LegalPageLayout: React.FC<Props> = ({
           <Box
             component="h1"
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 700,
               fontSize: "clamp(32px, 4vw, 56px)",
               lineHeight: 1.1,
@@ -73,7 +70,7 @@ const LegalPageLayout: React.FC<Props> = ({
           </Box>
           <Box
             sx={{
-              fontFamily: fontItalic,
+              fontFamily: FONT_ITALIC,
               fontStyle: "italic",
               fontSize: "16px",
               color: "text.secondary",
@@ -92,7 +89,7 @@ const LegalPageLayout: React.FC<Props> = ({
             sx={{
               maxWidth: 720,
               "& h2": {
-                fontFamily: fontDisplay,
+                fontFamily: FONT_DISPLAY,
                 fontWeight: 700,
                 fontSize: "20px",
                 letterSpacing: "-0.015em",
@@ -105,7 +102,7 @@ const LegalPageLayout: React.FC<Props> = ({
                 lineHeight: 1.4,
               },
               "& h3": {
-                fontFamily: fontDisplay,
+                fontFamily: FONT_DISPLAY,
                 fontWeight: 600,
                 fontSize: "15px",
                 letterSpacing: "-0.005em",
@@ -160,7 +157,7 @@ const LegalPageLayout: React.FC<Props> = ({
               <Box>
                 <Box
                   sx={{
-                    fontFamily: fontDisplay,
+                    fontFamily: FONT_DISPLAY,
                     fontSize: "22px",
                     fontWeight: 700,
                     letterSpacing: "-0.02em",
@@ -174,27 +171,7 @@ const LegalPageLayout: React.FC<Props> = ({
                   記載内容について質問・確認したいことがあれば、お問い合わせください。
                 </Box>
               </Box>
-              <Link href="/contact" passHref style={{ textDecoration: "none" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    bgcolor: "background.dark",
-                    color: "#FFFFFF",
-                    px: 3,
-                    py: 1.5,
-                    borderRadius: "999px",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "background-color 0.2s, transform 0.2s",
-                    "&:hover": { bgcolor: "primary.main", transform: "translateY(-1px)" },
-                  }}
-                >
-                  お問い合わせ <span>→</span>
-                </Box>
-              </Link>
+              <PillLink href="/contact" compact showArrow>お問い合わせ</PillLink>
             </Box>
           </Container>
         </Box>

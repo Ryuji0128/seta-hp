@@ -6,6 +6,8 @@
  */
 
 import { NextResponse } from "next/server";
+import type { RateLimitConfig } from "@/lib/rate-limit";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import xss from "xss";
 
 export function reviewCommentsDisabledResponse(): NextResponse | null {
@@ -13,6 +15,19 @@ export function reviewCommentsDisabledResponse(): NextResponse | null {
     return NextResponse.json({ error: "Not Found" }, { status: 404 });
   }
   return null;
+}
+
+/** 書き込みAPI共通の有効化フラグ・レート制限ガード。 */
+export async function reviewWriteGuard(
+  req: Request,
+  config: RateLimitConfig = RATE_LIMITS.review
+): Promise<NextResponse | null> {
+  const disabled = reviewCommentsDisabledResponse();
+  if (disabled) return disabled;
+
+  const pathname = new URL(req.url).pathname;
+  const { limited } = await enforceRateLimit(req, `review:${pathname}`, config);
+  return limited;
 }
 
 // 各レビューコメントAPIルートで共通の入力上限

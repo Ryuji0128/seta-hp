@@ -5,7 +5,6 @@ import {
   Chip,
   FormControl,
   FormControlLabel,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -13,15 +12,16 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Session } from "next-auth";
 import { useState } from "react";
 import ImageUpload from "@/components/ImageUpload";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
+import ResourceActions from "@/components/manage/ResourceActions";
 import FormDialog from "@/components/manage/FormDialog";
 import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
 import { useCrudResource } from "@/lib/hooks/useCrudResource";
+import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
+import { getManagementPermissions } from "@/lib/management-permissions";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { GALLERY_CATEGORIES, getGalleryCategoryLabel } from "@/lib/constants/categories";
 import type { Work } from "@/lib/types/work";
@@ -40,9 +40,7 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
   const isMobile = useIsMobile();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
-  const [workToDelete, setWorkToDelete] = useState<number | null>(null);
 
   // フォーム用
   const [formTitle, setFormTitle] = useState("");
@@ -52,9 +50,9 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
   const [formImage, setFormImage] = useState("");
   const [formIsPublished, setFormIsPublished] = useState(true);
 
-  const userRole = session?.user?.role;
-  const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
-  const canDelete = userRole === "ADMIN";
+  const { canEdit, canDelete } = getManagementPermissions(session?.user?.role);
+  const { deleteDialogOpen, requestDelete, cancelDelete, confirmDelete } =
+    useResourceDelete(remove);
 
   const resetForm = () => {
     setFormTitle("");
@@ -96,15 +94,6 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
     if (ok) {
       setDialogOpen(false);
       resetForm();
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!workToDelete) return;
-    const ok = await remove(workToDelete);
-    if (ok) {
-      setDeleteDialogOpen(false);
-      setWorkToDelete(null);
     }
   };
 
@@ -154,23 +143,12 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
         actions={
           canEdit
             ? (work) => (
-                <>
-                  <IconButton size="small" onClick={() => openEditDialog(work)} color="primary">
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  {canDelete && (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setWorkToDelete(work.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                      color="error"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                </>
+                <ResourceActions
+                  mode="icon"
+                  primaryLabel="作品を編集"
+                  onPrimary={() => openEditDialog(work)}
+                  onDelete={canDelete ? () => requestDelete(work.id) : undefined}
+                />
               )
             : undefined
         }
@@ -244,8 +222,8 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
         open={deleteDialogOpen}
         title="作品を削除"
         message="この作品を削除してもよろしいですか？"
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDelete}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
       />
     </Box>
   );

@@ -14,8 +14,6 @@ interface Props {
 }
 
 const ProductsGrid: React.FC<Props> = ({ products }) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
 
   if (products.length === 0) {
     return <EmptyState title="商品を準備中" description="標準ラインナップを準備しています。" />;
@@ -85,7 +83,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                           alignItems: "center",
                           justifyContent: "center",
                           color: "text.disabled",
-                          fontFamily: fontItalic,
+                          fontFamily: FONT_ITALIC,
                           fontStyle: "italic",
                           fontSize: "15px",
                           letterSpacing: "0.04em",
@@ -127,7 +125,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                     >
                       <Box
                         sx={{
-                          fontFamily: fontItalic,
+                          fontFamily: FONT_ITALIC,
                           fontStyle: "italic",
                           color: "primary.main",
                           fontSize: "13px",
@@ -150,7 +148,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                     </Box>
                     <Box
                       sx={{
-                        fontFamily: fontDisplay,
+                        fontFamily: FONT_DISPLAY,
                         fontSize: "18px",
                         fontWeight: 700,
                         letterSpacing: "-0.015em",
@@ -177,7 +175,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
                     >
                       <Box
                         sx={{
-                          fontFamily: fontDisplay,
+                          fontFamily: FONT_DISPLAY,
                           fontSize: "22px",
                           fontWeight: 700,
                           letterSpacing: "-0.02em",

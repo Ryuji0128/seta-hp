@@ -3,6 +3,10 @@ import {
   InquirySchema,
   RegistrationSchema,
   LoginSchema,
+  ProductCreateSchema,
+  ProductUpdateSchema,
+  RequiredIdSchema,
+  WorkCreateSchema,
   validateInquiry,
 } from "@/lib/validation";
 
@@ -125,5 +129,55 @@ describe("LoginSchema", () => {
   it("パスワードが8文字未満で失敗", () => {
     const result = LoginSchema.safeParse({ email: "test@example.com", password: "1234" });
     expect(result.success).toBe(false);
+  });
+});
+
+
+describe("管理APIスキーマ", () => {
+  const product = {
+    name: "8枚モデル",
+    description: "商品説明",
+    price: 12000,
+    category: "card-display",
+    tags: ["MLB", "Topps"],
+    image: "/uploads/main.webp",
+    images: ["/uploads/main.webp", "/uploads/sub.webp"],
+    stock: "在庫あり",
+    isPublished: true,
+    isHeroImage: false,
+    purchaseUrl: "https://example.com/item/1",
+  };
+
+  it("商品作成の全入力項目を検証して保持する", () => {
+    const result = ProductCreateSchema.safeParse(product);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.images).toEqual(product.images);
+  });
+
+  it("商品公開フラグの文字列を拒否する", () => {
+    expect(ProductCreateSchema.safeParse({ ...product, isPublished: "true" }).success).toBe(false);
+  });
+
+  it("商品更新はID必須で部分更新を許可する", () => {
+    expect(ProductUpdateSchema.safeParse({ id: 1, isHeroImage: true }).success).toBe(true);
+    expect(ProductUpdateSchema.safeParse({ isHeroImage: true }).success).toBe(false);
+  });
+
+  it("制作事例の画像・タグ・公開状態を検証する", () => {
+    const result = WorkCreateSchema.safeParse({
+      title: "壁面展示",
+      description: "制作事例",
+      category: "laser",
+      tags: "MLB,大型",
+      image: "/uploads/work.webp",
+      isPublished: false,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("削除IDは正の整数だけを許可する", () => {
+    expect(RequiredIdSchema.safeParse({ id: 1 }).success).toBe(true);
+    expect(RequiredIdSchema.safeParse({ id: 0 }).success).toBe(false);
+    expect(RequiredIdSchema.safeParse({ id: "1" }).success).toBe(false);
   });
 });

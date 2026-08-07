@@ -2,15 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Box, TextField, Button, InputAdornment, IconButton } from "@mui/material";
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Box, Button } from "@mui/material";
 import { signIn } from "next-auth/react";
 import AuthCard from "@/components/auth/AuthCard";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { AUTH_SUBMIT_BUTTON_SX } from "@/components/auth/authStyles";
+import { AuthEmailField, AuthPasswordField } from "@/components/auth/AuthFields";
 
 interface LoginFormProps {
   isGoogleEnabled: boolean;
@@ -62,49 +59,14 @@ export default function LoginForm({ isGoogleEnabled }: LoginFormProps) {
       {isGoogleEnabled && <GoogleSignInButton label="Googleでログイン" />}
 
       <Box component="form" onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
-          label="メールアドレス"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          sx={{ mb: 2 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlinedIcon sx={{ color: "#999" }} />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        <AuthEmailField value={email} onChange={(event) => setEmail(event.target.value)} />
 
-        <TextField
-          fullWidth
-          label="パスワード"
-          type={showPassword ? "text" : "password"}
+        <AuthPasswordField
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          sx={{ mb: 3 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon sx={{ color: "#999" }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
+          onChange={(event) => setPassword(event.target.value)}
+          visible={showPassword}
+          onToggleVisibility={() => setShowPassword((visible) => !visible)}
+          marginBottom={3}
         />
 
         <Button

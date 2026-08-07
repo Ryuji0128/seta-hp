@@ -1,24 +1,18 @@
 "use client";
 
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import "dayjs/locale/ja";
 import { Session } from "next-auth";
 import { useState } from "react";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
+import ResourceActions from "@/components/manage/ResourceActions";
 import FormDialog from "@/components/manage/FormDialog";
 import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
 import { useCrudResource } from "@/lib/hooks/useCrudResource";
-
-interface News {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  date: string;
-  title: string;
-  contents: { text: string };
-  url: string | null;
-}
+import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
+import { getManagementPermissions } from "@/lib/management-permissions";
+import type { News } from "@/lib/types/news";
 
 interface NewsManagementProps {
   session: Session;
@@ -32,9 +26,7 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
-  const [newsToDelete, setNewsToDelete] = useState<number | null>(null);
 
   // フォーム用
   const [formTitle, setFormTitle] = useState("");
@@ -42,9 +34,9 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
   const [formDate, setFormDate] = useState("");
   const [formUrl, setFormUrl] = useState("");
 
-  const userRole = session?.user?.role;
-  const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
-  const canDelete = userRole === "ADMIN";
+  const { canEdit, canDelete } = getManagementPermissions(session?.user?.role);
+  const { deleteDialogOpen, requestDelete, cancelDelete, confirmDelete } =
+    useResourceDelete(remove);
 
   const resetForm = () => {
     setFormTitle("");
@@ -81,15 +73,6 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
     if (ok) {
       setDialogOpen(false);
       resetForm();
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!newsToDelete) return;
-    const ok = await remove(newsToDelete);
-    if (ok) {
-      setDeleteDialogOpen(false);
-      setNewsToDelete(null);
     }
   };
 
@@ -137,30 +120,11 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
         actions={
           canEdit
             ? (news) => (
-                <>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => openEditDialog(news)}
-                    sx={{ m: "2px" }}
-                  >
-                    編集
-                  </Button>
-                  {canDelete && (
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      onClick={() => {
-                        setNewsToDelete(news.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                      sx={{ m: "2px" }}
-                    >
-                      削除
-                    </Button>
-                  )}
-                </>
+                <ResourceActions
+                  primaryLabel="編集"
+                  onPrimary={() => openEditDialog(news)}
+                  onDelete={canDelete ? () => requestDelete(news.id) : undefined}
+                />
               )
             : undefined
         }
@@ -211,8 +175,8 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         title="お知らせを削除"
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDelete}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
       />
     </Box>
   );
