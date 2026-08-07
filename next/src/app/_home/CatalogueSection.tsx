@@ -36,8 +36,6 @@ function catalogueMeta(name: string): CatalogueMeta {
 }
 
 const CatalogueSection = ({ products }: CatalogueSectionProps) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
 
   // 公開商品が無ければセクションごと非表示
   if (products.length === 0) return null;
@@ -57,7 +55,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
         >
           <Box
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 700,
               fontSize: "clamp(40px, 4.6vw, 64px)",
               lineHeight: 1,
@@ -79,7 +77,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                 display: "block",
                 mt: 1.5,
                 color: "text.secondary",
-                fontFamily: fontItalic,
+                fontFamily: FONT_ITALIC,
                 fontStyle: "italic",
               }}
             >
@@ -152,7 +150,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                             alignItems: "center",
                             justifyContent: "center",
                             color: "#B9B9B0",
-                            fontFamily: fontItalic,
+                            fontFamily: FONT_ITALIC,
                             fontStyle: "italic",
                             fontSize: "15px",
                             letterSpacing: "0.04em",
@@ -199,7 +197,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                         <Box
                           component="span"
                           sx={{
-                            fontFamily: fontItalic,
+                            fontFamily: FONT_ITALIC,
                             fontStyle: "italic",
                             color: "primary.main",
                             fontSize: "14px",
@@ -224,7 +222,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                     )}
                     <Box
                       sx={{
-                        fontFamily: fontDisplay,
+                        fontFamily: FONT_DISPLAY,
                         fontSize: "22px",
                         fontWeight: 700,
                         letterSpacing: "-0.02em",
@@ -257,7 +255,7 @@ const CatalogueSection = ({ products }: CatalogueSectionProps) => {
                     >
                       <Box
                         sx={{
-                          fontFamily: fontDisplay,
+                          fontFamily: FONT_DISPLAY,
                           fontSize: "22px",
                           fontWeight: 700,
                           letterSpacing: "-0.02em",

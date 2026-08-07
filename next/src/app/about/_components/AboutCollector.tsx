@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
+import AboutSectionHeader from "./AboutSectionHeader";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 const COLLECTION = [
   { label: "コレクション歴", value: "約3年" },
@@ -10,31 +11,15 @@ const COLLECTION = [
 ];
 
 const AboutCollector = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
       <SectionContainer>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 3,
-            borderTop: "1px solid",
-            borderTopColor: "text.primary",
-            pt: 3.5,
-            mb: 8,
-            fontFamily: fontItalic,
-            fontStyle: "italic",
-            fontSize: "16px",
-            letterSpacing: "0.05em",
-          }}
-        >
-          <Box sx={{ color: "primary.main" }}>— 02</Box>
-          <Box sx={{ color: "text.primary" }}>Collector</Box>
-          <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　コレクターとして</Box>
-        </Box>
+        <AboutSectionHeader
+          number="02"
+          title="Collector"
+          titleJa="コレクターとして"
+          marginBottom={8}
+        />
 
         <Box
           sx={{
@@ -45,7 +30,7 @@ const AboutCollector = () => {
         >
           <Box
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 500,
               fontSize: "clamp(32px, 3.8vw, 56px)",
               lineHeight: 1.2,

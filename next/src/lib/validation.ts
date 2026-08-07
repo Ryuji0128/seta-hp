@@ -6,7 +6,7 @@ import {
 } from "@/lib/constants/categories";
 
 // ValidationError型（後方互換性のため維持）
-export interface ValidationError {
+interface ValidationError {
   [key: string]: string;
 }
 
@@ -35,7 +35,7 @@ export const InquirySchema = z.object({
     .max(500, { message: "お問い合わせ内容は500文字以内で入力してください。" }),
 });
 
-export type InquiryData = z.infer<typeof InquirySchema>;
+type InquiryData = z.infer<typeof InquirySchema>;
 
 /**
  * 問い合わせデータのバリデーション（Zod版）
@@ -131,12 +131,20 @@ const idSchema = z
   .int({ message: "IDは必須です" })
   .positive({ message: "IDは必須です" });
 
+const tagsSchema = z.union([z.string(), z.array(z.unknown())]).optional();
+const optionalImageSchema = z.string().optional().nullable();
+
 export const ProductCreateSchema = z.object({
   name: z.string({ required_error: "名前は必須です" }).min(1, { message: "名前は必須です" }),
   description: z.string({ required_error: "説明は必須です" }).min(1, { message: "説明は必須です" }),
   price: priceSchema,
   category: productCategorySchema,
+  tags: tagsSchema,
+  image: optionalImageSchema,
+  images: z.array(z.string()).optional().nullable(),
   stock: stockSchema.optional(),
+  isPublished: z.boolean().optional(),
+  isHeroImage: z.boolean().optional(),
   purchaseUrl: purchaseUrlSchema.optional().nullable(),
 });
 
@@ -154,8 +162,13 @@ export const WorkCreateSchema = z.object({
   title: z.string({ required_error: "タイトルは必須です" }).min(1, { message: "タイトルは必須です" }),
   description: z.string({ required_error: "説明は必須です" }).min(1, { message: "説明は必須です" }),
   category: galleryCategorySchema,
+  tags: tagsSchema,
+  image: optionalImageSchema,
+  isPublished: z.boolean().optional(),
 });
 
 export const WorkUpdateSchema = WorkCreateSchema.partial().extend({
   id: idSchema,
 });
+
+export const RequiredIdSchema = z.object({ id: idSchema });

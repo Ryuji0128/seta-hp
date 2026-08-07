@@ -30,8 +30,6 @@ const FEATURES = [
 ];
 
 const FeaturesSection = () => {
-  const fontDisplay = FONT_DISPLAY;
-
   return (
     <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 10, md: 15 } }}>
       <SectionContainer>
@@ -46,7 +44,7 @@ const FeaturesSection = () => {
         >
           <Box
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 700,
               fontSize: "clamp(40px, 4.6vw, 64px)",
               lineHeight: 1,
@@ -80,7 +78,7 @@ const FeaturesSection = () => {
             <Box key={f.num} sx={{ bgcolor: "#FFFFFF", p: { xs: 4, md: 5 } }}>
               <Box
                 sx={{
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: "13px",
                   fontWeight: 700,
                   color: "primary.main",
@@ -92,7 +90,7 @@ const FeaturesSection = () => {
               </Box>
               <Box
                 sx={{
-                  fontFamily: fontDisplay,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: "19px",
                   fontWeight: 700,
                   letterSpacing: "-0.02em",

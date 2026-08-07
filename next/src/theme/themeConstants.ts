@@ -60,7 +60,7 @@ declare module "@mui/material/styles" {
 // (layout.tsx で <html> に --font-* 変数を付与している前提)
 export const FONT_DISPLAY =
   'var(--font-inter-tight), var(--font-noto-jp), "Helvetica Neue", Arial, sans-serif';
-export const FONT_BODY =
+const FONT_BODY =
   'var(--font-inter), var(--font-noto-jp), "Helvetica Neue", Arial, sans-serif';
 export const FONT_ITALIC = 'var(--font-cormorant), serif';
 

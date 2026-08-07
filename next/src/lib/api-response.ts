@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 /**
  * 統一されたAPIレスポンス形式
  */
-export interface ApiResponse<T = unknown> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

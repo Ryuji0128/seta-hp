@@ -5,7 +5,7 @@ export type Paragraph = {
 
 export type ListItem = string | ListItem[] | Paragraph;
 
-export interface ISection {
+interface ISection {
   title: string;
   description?: string;
   listItems: ListItem[];

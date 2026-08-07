@@ -3,9 +3,6 @@ import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 
 const AboutHero = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box
       component="section"
@@ -37,7 +34,7 @@ const AboutHero = () => {
           <Box
             component="h1"
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 800,
               fontSize: "clamp(48px, 6.5vw, 96px)",
               lineHeight: 0.96,
@@ -54,7 +51,7 @@ const AboutHero = () => {
 
           <Box
             sx={{
-              fontFamily: fontItalic,
+              fontFamily: FONT_ITALIC,
               fontStyle: "italic",
               fontSize: "20px",
               color: "rgba(255,255,255,0.5)",

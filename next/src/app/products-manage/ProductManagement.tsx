@@ -4,7 +4,6 @@ import {
   Chip,
   FormControl,
   FormControlLabel,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -13,15 +12,16 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Session } from "next-auth";
 import { useState } from "react";
 import MultiImageUpload from "@/components/MultiImageUpload";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
+import ResourceActions from "@/components/manage/ResourceActions";
 import FormDialog from "@/components/manage/FormDialog";
 import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
 import { useCrudResource } from "@/lib/hooks/useCrudResource";
+import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
+import { getManagementPermissions } from "@/lib/management-permissions";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
   PRODUCT_CATEGORIES,
@@ -45,9 +45,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const isMobile = useIsMobile();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
   // フォーム用
   const [formName, setFormName] = useState("");
@@ -61,9 +59,9 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
   const [formIsHeroImage, setFormIsHeroImage] = useState(false);
   const [formPurchaseUrl, setFormPurchaseUrl] = useState("");
 
-  const userRole = session?.user?.role;
-  const canEdit = userRole === "ADMIN" || userRole === "EDITOR";
-  const canDelete = userRole === "ADMIN";
+  const { canEdit, canDelete } = getManagementPermissions(session?.user?.role);
+  const { deleteDialogOpen, requestDelete, cancelDelete, confirmDelete } =
+    useResourceDelete(remove);
 
   const resetForm = () => {
     setFormName("");
@@ -124,15 +122,6 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
     if (ok) {
       setDialogOpen(false);
       resetForm();
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!productToDelete) return;
-    const ok = await remove(productToDelete);
-    if (ok) {
-      setDeleteDialogOpen(false);
-      setProductToDelete(null);
     }
   };
 
@@ -201,23 +190,12 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         actions={
           canEdit
             ? (product) => (
-                <>
-                  <IconButton size="small" onClick={() => openEditDialog(product)} color="primary">
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  {canDelete && (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setProductToDelete(product.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                      color="error"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                </>
+                <ResourceActions
+                  mode="icon"
+                  primaryLabel="商品を編集"
+                  onPrimary={() => openEditDialog(product)}
+                  onDelete={canDelete ? () => requestDelete(product.id) : undefined}
+                />
               )
             : undefined
         }
@@ -330,8 +308,8 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ session }) => {
         open={deleteDialogOpen}
         title="商品を削除"
         message="この商品を削除してもよろしいですか？"
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDelete}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
       />
     </Box>
   );

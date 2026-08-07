@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import Link from "next/link";
+import PillLink from "@/components/PillLink";
 import type { ReactNode } from "react";
 import SectionContainer from "@/components/SectionContainer";
 import { FONT_DISPLAY } from "@/theme/themeConstants";
@@ -63,48 +63,8 @@ export default function DarkCtaSection({
               {body}
             </Box>
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-              <Link href={primaryHref} passHref style={{ textDecoration: "none" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    bgcolor: "#FFFFFF",
-                    color: "text.primary",
-                    px: 3.5,
-                    py: 1.75,
-                    borderRadius: "999px",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "background-color 0.2s, transform 0.2s",
-                    "&:hover": { bgcolor: "#E5AC60", transform: "translateY(-1px)" },
-                  }}
-                >
-                  {primaryLabel} <span>→</span>
-                </Box>
-              </Link>
-              <Link href={secondaryHref} passHref style={{ textDecoration: "none" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    color: "#FFFFFF",
-                    px: 3.5,
-                    py: 1.75,
-                    borderRadius: "999px",
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    border: "1px solid rgba(255,255,255,0.25)",
-                    cursor: "pointer",
-                    transition: "border-color 0.2s",
-                    "&:hover": { borderColor: "#FFFFFF" },
-                  }}
-                >
-                  {secondaryLabel}
-                </Box>
-              </Link>
+              <PillLink href={primaryHref} tone="light" showArrow>{primaryLabel}</PillLink>
+              <PillLink href={secondaryHref} tone="outline">{secondaryLabel}</PillLink>
             </Box>
           </Box>
         </Box>

@@ -7,10 +7,12 @@ import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data
 import ProductDetail from "./_components/ProductDetail";
 import RelatedProducts from "./_components/RelatedProducts";
 import SectionContainer from "@/components/SectionContainer";
+import DarkCtaSection from "@/components/DarkCtaSection";
 
 // ISR: ビルド時は生成せず（CIビルドはDB到達不可のため generateStaticParams は空）、
 // 初回アクセス時に生成してキャッシュする。商品の作成・更新・削除時は
 // API 側の revalidateProductPages() が全詳細ページを即時再生成対象にする。
+// Next.js のroute configはimport定数を静的解析できないためリテラルで指定する。
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
@@ -92,6 +94,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ProductDetail product={product} />
         </SectionContainer>
         {relatedProducts.length > 0 && <RelatedProducts products={relatedProducts} />}
+        <DarkCtaSection
+          heading={<><em>サイズも枚数も、</em><br />ご相談ください。</>}
+          body="お手持ちのカードや飾る場所に合わせた特注ディスプレイを、一品から制作します。"
+          primaryLabel="特注品のご相談"
+          secondaryHref="/products"
+          secondaryLabel="商品一覧へ戻る"
+        />
       </Box>
     </>
   );

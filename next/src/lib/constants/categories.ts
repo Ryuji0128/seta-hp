@@ -47,7 +47,7 @@ export const STOCK_OPTIONS = [
   },
 ] as const;
 
-export type StockMeta = (typeof STOCK_OPTIONS)[number];
+type StockMeta = (typeof STOCK_OPTIONS)[number];
 
 /** 在庫ステータス文字列からメタ情報を引く（未知の値は undefined） */
 export function getStockMeta(value: string): StockMeta | undefined {

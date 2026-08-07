@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
 import { normalizeImageUrl } from "@/lib/images";
-import { CACHE_TAGS } from "@/lib/cache-tags";
+import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 
 // トップの「ラインナップ」カードに表示する商品データ。
 export type CatalogueProduct = {
@@ -45,5 +45,5 @@ export const getCatalogueProducts = unstable_cache(
   }
   },
   ["catalogue-products"],
-  { revalidate: 3600, tags: [CACHE_TAGS.products] }
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );

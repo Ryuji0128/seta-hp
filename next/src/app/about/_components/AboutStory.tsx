@@ -1,11 +1,9 @@
 import { Box } from "@mui/material";
 import SectionContainer from "@/components/SectionContainer";
-import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
+import AboutSectionHeader from "./AboutSectionHeader";
+import { FONT_DISPLAY } from "@/theme/themeConstants";
 
 const AboutStory = () => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ py: { xs: 10, md: 15 } }}>
       <SectionContainer>
@@ -18,24 +16,12 @@ const AboutStory = () => {
             alignItems: "baseline",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 3,
-              borderTop: "1px solid",
-              borderTopColor: "text.primary",
-              pt: 3.5,
-              fontFamily: fontItalic,
-              fontStyle: "italic",
-              fontSize: "16px",
-              letterSpacing: "0.05em",
-            }}
-          >
-            <Box sx={{ color: "primary.main" }}>— 01</Box>
-            <Box sx={{ color: "text.primary" }}>Story</Box>
-            <Box sx={{ color: "text.secondary", fontSize: "14px" }}>／　はじまり</Box>
-          </Box>
+          <AboutSectionHeader
+            number="01"
+            title="Story"
+            titleJa="はじまり"
+            marginBottom={0}
+          />
           <Box />
         </Box>
 
@@ -48,7 +34,7 @@ const AboutStory = () => {
         >
           <Box
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontWeight: 500,
               fontSize: "clamp(32px, 3.8vw, 56px)",
               lineHeight: 1.2,

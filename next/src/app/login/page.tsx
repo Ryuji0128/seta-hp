@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Box, Container } from "@mui/material";
+import AuthPageShell from "@/components/auth/AuthPageShell";
 import { isGoogleAuthEnabled } from "@/lib/runtime-config";
 import LoginForm from "./LoginForm";
 
@@ -21,10 +21,8 @@ export default async function LoginPage() {
   const googleAuthEnabled = isGoogleAuthEnabled();
 
   return (
-    <Box sx={{ bgcolor: "white", minHeight: "100vh", py: { xs: 4, md: 8 } }}>
-      <Container maxWidth="sm">
+    <AuthPageShell>
         <LoginForm isGoogleEnabled={googleAuthEnabled} />
-      </Container>
-    </Box>
+    </AuthPageShell>
   );
 }

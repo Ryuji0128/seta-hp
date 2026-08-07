@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { isErrorResponse, requireRole } from "@/lib/api-utils";
+import { isErrorResponse, requireEditor } from "@/lib/api-utils";
 import { getActualMimeType, getExtensionFromMimeType, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from "@/lib/upload-validation";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+    const session = await requireEditor();
     if (isErrorResponse(session)) return session;
 
     const formData = await req.formData();

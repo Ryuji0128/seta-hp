@@ -188,7 +188,6 @@ npx prisma db seed    # シードデータ投入
 | POST | `/api/recaptcha` | reCAPTCHA 検証 | - (レート制限あり) |
 | POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
 | POST | `/api/upload` | 画像アップロード | 要認証 |
-| POST | `/api/admin/upload` | 管理者画像アップロード | 要認証 |
 | GET/POST | `/api/review-comments` | 社内レビューコメント一覧・作成 | 開発環境のみ有効 / レート制限あり |
 | PATCH/DELETE | `/api/review-comments/[id]` | 社内レビューコメントの状態変更・削除 | 開発環境のみ有効 / レート制限あり |
 | POST/DELETE | `/api/review-comments/[id]/replies` | 社内レビュー返信の作成・削除 | 開発環境のみ有効 / レート制限あり |
@@ -405,7 +404,7 @@ docker compose up -d
 | スクリプト | 説明 |
 |-----------|------|
 | `scripts/renew-ssl.sh` | SSL 証明書の更新 |
-| `scripts/backup-db.sh` | DB バックアップ（7日間保持） |
+| `scripts/backup-db.sh` | DB バックアップ（14日間保持） |
 | `scripts/monitor.sh` | サービス死活監視 |
 | `scripts/setup-monitoring.sh` | 監視環境セットアップ |
 

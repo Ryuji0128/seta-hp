@@ -12,9 +12,6 @@ interface Props {
 }
 
 const RelatedProducts: React.FC<Props> = ({ products }) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
-
   return (
     <Box component="section" sx={{ bgcolor: "background.alt", py: { xs: 8, md: 12 } }}>
       <SectionContainer>
@@ -27,7 +24,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
             borderColor: "text.primary",
             pt: 3.5,
             mb: 6,
-            fontFamily: fontItalic,
+            fontFamily: FONT_ITALIC,
             fontStyle: "italic",
             fontSize: "16px",
             letterSpacing: "0.05em",
@@ -94,7 +91,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                           alignItems: "center",
                           justifyContent: "center",
                           color: "text.disabled",
-                          fontFamily: fontItalic,
+                          fontFamily: FONT_ITALIC,
                           fontStyle: "italic",
                           fontSize: "13px",
                         }}
@@ -106,7 +103,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                   <Box sx={{ p: 2 }}>
                     <Box
                       sx={{
-                        fontFamily: fontItalic,
+                        fontFamily: FONT_ITALIC,
                         fontStyle: "italic",
                         color: "primary.main",
                         fontSize: "12px",
@@ -118,7 +115,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                     </Box>
                     <Box
                       sx={{
-                        fontFamily: fontDisplay,
+                        fontFamily: FONT_DISPLAY,
                         fontSize: "14px",
                         fontWeight: 600,
                         letterSpacing: "-0.01em",
@@ -135,7 +132,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
                     </Box>
                     <Box
                       sx={{
-                        fontFamily: fontDisplay,
+                        fontFamily: FONT_DISPLAY,
                         fontSize: "15px",
                         fontWeight: 700,
                         letterSpacing: "-0.015em",

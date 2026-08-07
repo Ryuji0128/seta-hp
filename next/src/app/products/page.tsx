@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
-import { CACHE_TAGS } from "@/lib/cache-tags";
+import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 import ProductsHero from "./_components/ProductsHero";
 import ProductsGrid from "./_components/ProductsGrid";
 import ProductsBespokeCta from "./_components/ProductsBespokeCta";
@@ -28,7 +28,7 @@ const getPublishedProducts = unstable_cache(
     });
   },
   ["published-products"],
-  { revalidate: 3600, tags: [CACHE_TAGS.products] }
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.products] }
 );
 
 async function getProducts(category?: string, sort?: string) {

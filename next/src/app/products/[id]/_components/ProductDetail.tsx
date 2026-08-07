@@ -13,8 +13,6 @@ interface Props {
 // サーバーコンポーネント: フォントは themeConstants から直接参照する
 // （useTheme のためだけにクライアント化しない。インタラクティブな画像ギャラリーのみ client リーフ）
 const ProductDetail: React.FC<Props> = ({ product }) => {
-  const fontDisplay = FONT_DISPLAY;
-  const fontItalic = FONT_ITALIC;
 
   const tags = parseTags(product.tags);
   const productImages = parseProductImages(product.images, product.image);
@@ -76,7 +74,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
           >
             <Box
               sx={{
-                fontFamily: fontItalic,
+                fontFamily: FONT_ITALIC,
                 fontStyle: "italic",
                 color: "primary.main",
                 fontSize: "14px",
@@ -102,7 +100,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
           <Box
             component="h1"
             sx={{
-              fontFamily: fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontSize: "clamp(28px, 3.5vw, 44px)",
               fontWeight: 700,
               letterSpacing: "-0.03em",
@@ -128,7 +126,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
           >
             <Box
               sx={{
-                fontFamily: fontDisplay,
+                fontFamily: FONT_DISPLAY,
                 fontSize: "44px",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
@@ -302,7 +300,7 @@ const ProductDetail: React.FC<Props> = ({ product }) => {
               lineHeight: 1.7,
             }}
           >
-            <Box sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: "13px", color: "text.primary", mb: 1, letterSpacing: "-0.01em" }}>
+            <Box sx={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: "13px", color: "text.primary", mb: 1, letterSpacing: "-0.01em" }}>
               Made-to-order
             </Box>
             一品から制作します。サイズや形状のカスタマイズも可能ですので、お気軽にご相談ください。

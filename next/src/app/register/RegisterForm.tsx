@@ -2,16 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Box, TextField, Button, InputAdornment, IconButton } from "@mui/material";
+import { Box, TextField, Button, InputAdornment } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { signIn } from "next-auth/react";
 import AuthCard from "@/components/auth/AuthCard";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { AUTH_SUBMIT_BUTTON_SX } from "@/components/auth/authStyles";
+import { AuthEmailField, AuthPasswordField } from "@/components/auth/AuthFields";
 import { apiJson } from "@/lib/api-client";
 import { RegistrationSchema } from "@/lib/validation";
 
@@ -101,69 +98,22 @@ export default function RegisterForm({ isGoogleEnabled }: RegisterFormProps) {
           }}
         />
 
-        <TextField
-          fullWidth
-          label="メールアドレス"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          sx={{ mb: 2 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlinedIcon sx={{ color: "#999" }} />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        <AuthEmailField value={email} onChange={(event) => setEmail(event.target.value)} />
 
-        <TextField
-          fullWidth
-          label="パスワード"
-          type={showPassword ? "text" : "password"}
+        <AuthPasswordField
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
+          onChange={(event) => setPassword(event.target.value)}
+          visible={showPassword}
+          onToggleVisibility={() => setShowPassword((visible) => !visible)}
           helperText="8文字以上、大文字・小文字・数字をそれぞれ含む"
-          sx={{ mb: 2 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon sx={{ color: "#999" }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
         />
 
-        <TextField
-          fullWidth
+        <AuthPasswordField
           label="パスワード（確認）"
-          type={showPassword ? "text" : "password"}
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          sx={{ mb: 3 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon sx={{ color: "#999" }} />
-                </InputAdornment>
-              ),
-            },
-          }}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          visible={showPassword}
+          marginBottom={3}
         />
 
         <Button

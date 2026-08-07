@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
 import { badRequestResponse, validationErrorResponse } from "@/lib/api-response";
-import { handleApiError, isErrorResponse, parseJsonBody, requireRole } from "@/lib/api-utils";
+import { handleApiError, isErrorResponse, parseJsonBody, requireAdmin } from "@/lib/api-utils";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateInquiry } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     // 認証・権限チェック（ADMINのみ）
-    const session = await requireRole(["ADMIN"]);
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
     const { searchParams } = new URL(req.url);
@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     // 認証・権限チェック（ADMINのみ）
-    const session = await requireRole(["ADMIN"]);
+    const session = await requireAdmin();
     if (isErrorResponse(session)) return session;
 
     const body = await parseJsonBody(req);

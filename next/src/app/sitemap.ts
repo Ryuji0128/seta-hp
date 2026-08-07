@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPrismaClient } from "@/lib/db";
+import { SITE_URL } from "@/lib/site-config";
 
 /**
  * サイトマップ（/sitemap.xml）
@@ -9,8 +10,6 @@ import { getPrismaClient } from "@/lib/db";
  * ビルド時（DB 未接続）に評価されないよう force-dynamic を指定する。
  */
 export const dynamic = "force-dynamic";
-
-const SITE_URL = "https://kaza-love.com";
 
 // sitemap に含める公開・インデックス対象の静的ページ
 // （/login・/register・各 *-manage・/news は noindex のため除外）

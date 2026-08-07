@@ -13,16 +13,14 @@ echo "=========================================="
 echo "SSL証明書更新開始: $(date)"
 echo "=========================================="
 
-# certbotで証明書更新を試行
-docker compose run --rm certbot renew --webroot -w /var/www/certbot --quiet
-
-# 更新があった場合、Nginxをリロード
-if [ $? -eq 0 ]; then
-    echo "証明書更新完了。Nginxをリロードします..."
+if docker compose run --rm certbot renew --webroot -w /var/www/certbot --quiet; then
+    # certbot renew は更新不要の場合も成功するため、安全のため毎回設定を再読込する。
+    echo "証明書の確認完了。Nginxをリロードします..."
     docker compose exec -T nginx nginx -s reload
     echo "Nginxリロード完了"
 else
-    echo "証明書の更新はありませんでした"
+    echo "証明書更新処理に失敗しました" >&2
+    exit 1
 fi
 
 echo "=========================================="

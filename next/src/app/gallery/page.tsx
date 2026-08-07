@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
-import { CACHE_TAGS } from "@/lib/cache-tags";
+import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 import GalleryHero from "./_components/GalleryHero";
 import GalleryGrid from "./_components/GalleryGrid";
 import GalleryCta from "./_components/GalleryCta";
@@ -30,7 +30,7 @@ const getWorks = unstable_cache(
     });
   },
   ["published-works"],
-  { revalidate: 3600, tags: [CACHE_TAGS.works] }
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: [CACHE_TAGS.works] }
 );
 
 export default async function GalleryPage() {

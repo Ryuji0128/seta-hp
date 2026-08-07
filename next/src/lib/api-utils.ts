@@ -18,7 +18,7 @@ type UserRole = "ADMIN" | "EDITOR" | "VIEWER";
  * 認証と権限をまとめて検証する。
  * 未認証なら401、権限不足なら403のレスポンスを、検証通過ならセッションを返す。
  */
-export async function requireRole(
+async function requireRole(
   roles: UserRole[],
   forbiddenMessage: string = "権限がありません"
 ): Promise<Session | NextResponse> {
@@ -30,6 +30,14 @@ export async function requireRole(
     return forbiddenResponse(forbiddenMessage);
   }
   return session;
+}
+
+export function requireEditor(): Promise<Session | NextResponse> {
+  return requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+}
+
+export function requireAdmin(): Promise<Session | NextResponse> {
+  return requireRole(["ADMIN"], "管理者権限が必要です");
 }
 
 /**
@@ -46,6 +54,20 @@ export async function parseJsonBody(req: Request): Promise<any | NextResponse> {
       { status: 400 }
     );
   }
+}
+
+export async function parseJsonWithSchema<T extends z.ZodTypeAny>(
+  req: Request,
+  schema: T
+): Promise<z.infer<T> | NextResponse> {
+  const body = await parseJsonBody(req);
+  if (isErrorResponse(body)) return body;
+
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return badRequestResponse(parsed.error.errors[0].message);
+  }
+  return parsed.data;
 }
 
 export function isErrorResponse(value: unknown): value is NextResponse {
