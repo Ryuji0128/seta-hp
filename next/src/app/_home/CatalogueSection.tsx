@@ -7,11 +7,11 @@ import {
 } from "@/components/product/ProductCardPrimitives";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Link from "next/link";
-import type { CatalogueProduct } from "./getCatalogueProducts";
+import type { ProductSummary } from "@/lib/types/product";
 import SplitSectionHeading from "./SplitSectionHeading";
 
 interface CatalogueSectionProps {
-  products: CatalogueProduct[];
+  products: ProductSummary[];
 }
 
 // 標準3型の英語ティア名。商品名から「N枚」を読み取り、Ref番号やバッジを導出する。

@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
   workflow_dispatch:
 
 concurrency:
-  group: deploy-production
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -19,6 +24,21 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/app_db
+    services:
+      mysql:
+        image: mysql:8.0.40
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: app_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
 
     steps:
       - name: Checkout repository
@@ -35,6 +55,10 @@ jobs:
         working-directory: ./next
         run: yarn install --frozen-lockfile
 
+      - name: Replay migrations on a fresh database
+        working-directory: ./next
+        run: yarn prisma migrate deploy
+
       - name: Run lint
         working-directory: ./next
         run: yarn lint
@@ -49,6 +73,7 @@ jobs:
 
   build-and-push:
     needs: ci
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read

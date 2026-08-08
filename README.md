@@ -58,7 +58,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 cd next
 yarn install
 npx prisma generate
-npx prisma db push
+npx prisma migrate deploy
 npx prisma db seed    # シードデータ投入（任意）
 yarn dev              # http://localhost:3000
 ```
@@ -143,7 +143,7 @@ yarn typecheck        # 型チェック (.next を再生成してから実行)
 
 # Prisma
 npx prisma generate   # Client 再生成
-npx prisma db push    # スキーマを DB に反映
+npx prisma migrate deploy # migrationを空DBから順番に適用
 npx prisma studio     # DB GUI ツール
 npx prisma db seed    # シードデータ投入
 ```
@@ -198,11 +198,11 @@ npx prisma db seed    # シードデータ投入
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
-| POST | `/api/auth/[...nextauth]` | NextAuth 認証 | - |
-| GET/POST/PUT/DELETE | `/api/products` | 商品 CRUD | 読取: 公開のみ無認証 / 非公開取得・書込: ADMIN/EDITOR |
-| GET/POST/PUT/DELETE | `/api/works` | 実績 CRUD | 書込: ADMIN/EDITOR |
-| GET/POST/PUT/DELETE | `/api/news` | ニュース CRUD | 書込: ADMIN/EDITOR |
-| GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET: 要認証 / DELETE: ADMIN |
+| GET/POST | `/api/auth/[...nextauth]` | NextAuth 認証 | - |
+| GET/POST/PUT/DELETE | `/api/products` | 商品 CRUD | GET公開（非公開取得はADMIN/EDITOR）/ POST・PUT: ADMIN/EDITOR / DELETE: ADMIN |
+| GET/POST/PUT/DELETE | `/api/works` | 実績 CRUD | GET公開 / POST・PUT: ADMIN/EDITOR / DELETE: ADMIN |
+| GET/POST/PUT/DELETE | `/api/news` | ニュース CRUD | GET公開 / POST・PUT: ADMIN/EDITOR / DELETE: ADMIN |
+| GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET・DELETE: ADMIN |
 | POST | `/api/recaptcha` | reCAPTCHA 検証 | - (レート制限あり) |
 | POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
 | POST | `/api/upload` | 画像アップロード | ADMIN/EDITOR |
@@ -220,7 +220,7 @@ npx prisma db seed    # シードデータ投入
 | **Work** | 実績・ポートフォリオ |
 | **News** | ニュース記事（JSON コンテンツ） |
 | **Inquiry** | お問い合わせ |
-| **Account / Session** | NextAuth 認証関連 |
+| **Account** | Google OAuthアカウント連携（セッション自体はJWT Cookie） |
 | **ReviewComment / ReviewCommentReply** | 社内レビュー用ページコメントと返信 |
 
 ### 商品カテゴリ

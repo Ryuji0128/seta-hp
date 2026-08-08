@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { apiJson } from "@/lib/api-client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { apiJson, isAbortError } from "@/lib/api-client";
 
 interface UseCrudResourceOptions {
   /** 書き込み先エンドポイント（POST/PUT/DELETE） */
@@ -37,15 +37,23 @@ export function useCrudResource<T extends { id: number }>({
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   const refetch = useCallback(async () => {
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
     setLoading(true);
+
     try {
       const baseUrl = listUrl ?? endpoint;
       const separator = baseUrl.includes("?") ? "&" : "?";
       const data = await apiJson<PaginatedResourceResponse>(
-        `${baseUrl}${separator}page=${page}&limit=${pageSize}`
+        `${baseUrl}${separator}page=${page}&limit=${pageSize}`,
+        { signal: controller.signal }
       );
+      if (controller.signal.aborted) return;
+
       const nextItems = (data[listKey] as T[]) ?? [];
       const nextTotal = typeof data.total === "number" ? data.total : nextItems.length;
       const lastPage = Math.max(1, Math.ceil(nextTotal / pageSize));
@@ -57,14 +65,20 @@ export function useCrudResource<T extends { id: number }>({
         setItems(nextItems);
       }
     } catch (error) {
-      console.error(`${label}一覧の取得に失敗:`, error);
+      if (!isAbortError(error)) {
+        console.error(`${label}一覧の取得に失敗:`, error);
+      }
     } finally {
-      setLoading(false);
+      if (requestControllerRef.current === controller) {
+        requestControllerRef.current = null;
+        setLoading(false);
+      }
     }
   }, [endpoint, listUrl, listKey, label, page, pageSize]);
 
   useEffect(() => {
-    refetch();
+    void refetch();
+    return () => requestControllerRef.current?.abort();
   }, [refetch]);
 
   /** 保存（id 指定で更新・省略で作成）。成功で true、失敗は alert 表示して false。 */
@@ -113,8 +127,6 @@ export function useCrudResource<T extends { id: number }>({
     remove,
     pagination: {
       page,
-      pageSize,
-      total,
       totalPages: Math.max(1, Math.ceil(total / pageSize)),
       setPage,
     },
