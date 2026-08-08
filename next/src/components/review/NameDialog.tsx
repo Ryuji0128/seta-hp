@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { REVIEW_MAX_NAME } from "@/lib/review-constants";
 
 interface NameDialogProps {
   open: boolean;
@@ -41,6 +42,7 @@ export default function NameDialog({
           placeholder="例: 山田"
           value={nameDraft}
           onChange={(e) => onNameDraftChange(e.target.value)}
+          slotProps={{ htmlInput: { maxLength: REVIEW_MAX_NAME } }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.nativeEvent.isComposing) {
               e.preventDefault();

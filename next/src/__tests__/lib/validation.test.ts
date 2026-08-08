@@ -183,6 +183,15 @@ describe("管理APIスキーマ", () => {
     }
   });
 
+  it("お知らせobject形式の空本文を拒否する", () => {
+    const result = NewsCreateSchema.safeParse({
+      title: "公開日",
+      contents: { text: "" },
+      date: "2026-08-07",
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("お知らせの必須項目不足は従来の共通メッセージを返す", () => {
     const result = NewsCreateSchema.safeParse({ title: "公開日", date: "2026-08-07" });
     expect(result.success).toBe(false);

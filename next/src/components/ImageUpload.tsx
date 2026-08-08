@@ -10,11 +10,8 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
-import {
-  IMAGE_ACCEPT,
-  IMAGE_UPLOAD_HINT,
-  useImageUpload,
-} from "@/lib/hooks/useImageUpload";
+import { IMAGE_ACCEPT, IMAGE_UPLOAD_HINT } from "@/lib/image-upload-constants";
+import { useImageUpload } from "@/lib/hooks/useImageUpload";
 
 interface ImageUploadProps {
   value: string;

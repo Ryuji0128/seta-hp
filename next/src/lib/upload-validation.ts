@@ -1,3 +1,10 @@
+import {
+  ALLOWED_IMAGE_TYPES,
+  type AllowedImageType,
+} from "@/lib/image-upload-constants";
+
+export { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from "@/lib/image-upload-constants";
+
 /**
  * ファイルのマジックナンバー（先頭バイト列）によるMIMEタイプ検証
  */
@@ -26,14 +33,9 @@ export function getActualMimeType(buffer: Buffer): string | null {
   return null;
 }
 
-export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
-type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
-
 export function isAllowedImageType(mimeType: string): mimeType is AllowedImageType {
   return (ALLOWED_IMAGE_TYPES as readonly string[]).includes(mimeType);
 }
-export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-
 const MIME_TO_EXT: Record<AllowedImageType, string> = {
   "image/jpeg": ".jpg",
   "image/png": ".png",

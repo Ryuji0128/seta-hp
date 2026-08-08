@@ -3,9 +3,6 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { uploadImage } from "@/lib/api-client";
 
-export const IMAGE_ACCEPT = "image/jpeg,image/png,image/gif,image/webp";
-export const IMAGE_UPLOAD_HINT = "JPG, PNG, GIF, WebP (最大5MB)";
-
 interface UseImageUploadOptions {
   currentCount: number;
   maxFiles: number;

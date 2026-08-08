@@ -27,7 +27,7 @@ export default function NotFound() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const appBarHeight = isMobile
     ? theme.custom.header.height.mobile
-    : theme.custom.header.height.desktop; // モバイル: 56px, デスクトップ: 64px
+    : theme.custom.header.height.desktop;
 
   const [triangles, setTriangles] = useState<
     {

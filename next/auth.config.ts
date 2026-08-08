@@ -2,6 +2,7 @@
 import { getPrismaClient } from "@/lib/db";
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import bcryptjs from "bcryptjs";
+import { DEFAULT_USER_ROLE, normalizeUserRole } from "@/lib/roles";
 import { isGoogleAuthEnabled } from "@/lib/runtime-config";
 import { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
@@ -106,7 +107,7 @@ const authConfig = {
               email: user.email,
               name: user.name || "Google User",
               image: user.image || null,
-              role: "VIEWER",
+              role: DEFAULT_USER_ROLE,
             },
           });
         } catch (error) {
@@ -138,7 +139,7 @@ const authConfig = {
           where: { email: token.email as string },
           select: { role: true, image: true },
         });
-        token.role = dbUser?.role || "VIEWER";
+        token.role = dbUser?.role ?? DEFAULT_USER_ROLE;
         if (dbUser?.image) {
           token.picture = dbUser.image;
         }
@@ -152,7 +153,7 @@ const authConfig = {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
-        session.user.role = (token.role as "ADMIN" | "EDITOR" | "VIEWER") ?? "VIEWER";
+        session.user.role = normalizeUserRole(token.role);
         if (token.picture) {
           session.user.image = token.picture as string;
         }

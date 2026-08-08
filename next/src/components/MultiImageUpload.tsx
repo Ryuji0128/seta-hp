@@ -9,11 +9,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import {
-  IMAGE_ACCEPT,
-  IMAGE_UPLOAD_HINT,
-  useImageUpload,
-} from "@/lib/hooks/useImageUpload";
+import { IMAGE_ACCEPT, IMAGE_UPLOAD_HINT } from "@/lib/image-upload-constants";
+import { useImageUpload } from "@/lib/hooks/useImageUpload";
 
 const MAX_IMAGES = 10;
 

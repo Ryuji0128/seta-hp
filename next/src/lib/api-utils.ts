@@ -11,32 +11,32 @@ import {
   notFoundResponse,
   unauthorizedResponse,
 } from "@/lib/api-response";
-import type { UserRole } from "@/lib/roles";
+import { isAdminRole, isEditorRole } from "@/lib/roles";
 
 /**
  * 認証と権限をまとめて検証する。
  * 未認証なら401、権限不足なら403のレスポンスを、検証通過ならセッションを返す。
  */
 async function requireRole(
-  roles: UserRole[],
+  isAllowed: (role: unknown) => boolean,
   forbiddenMessage: string = "権限がありません"
 ): Promise<Session | NextResponse> {
   const session = await auth();
   if (!session?.user) {
     return unauthorizedResponse();
   }
-  if (!session.user.role || !roles.includes(session.user.role)) {
+  if (!isAllowed(session.user.role)) {
     return forbiddenResponse(forbiddenMessage);
   }
   return session;
 }
 
 export function requireEditor(): Promise<Session | NextResponse> {
-  return requireRole(["ADMIN", "EDITOR"], "編集権限が必要です");
+  return requireRole(isEditorRole, "編集権限が必要です");
 }
 
 export function requireAdmin(): Promise<Session | NextResponse> {
-  return requireRole(["ADMIN"], "管理者権限が必要です");
+  return requireRole(isAdminRole, "管理者権限が必要です");
 }
 
 /**
@@ -71,6 +71,32 @@ export async function parseJsonWithSchema<T extends z.ZodTypeAny>(
 
 export function isErrorResponse(value: unknown): value is NextResponse {
   return value instanceof NextResponse;
+}
+
+async function parseAuthorizedJson<T extends z.ZodTypeAny>(
+  req: Request,
+  schema: T,
+  authorize: () => Promise<Session | NextResponse>
+): Promise<z.infer<T> | NextResponse> {
+  const session = await authorize();
+  if (isErrorResponse(session)) return session;
+  return parseJsonWithSchema(req, schema);
+}
+
+/** EDITOR以上の認証とJSONスキーマ検証を一度に行う。 */
+export function parseEditorJson<T extends z.ZodTypeAny>(
+  req: Request,
+  schema: T
+): Promise<z.infer<T> | NextResponse> {
+  return parseAuthorizedJson(req, schema, requireEditor);
+}
+
+/** ADMIN認証とJSONスキーマ検証を一度に行う。 */
+export function parseAdminJson<T extends z.ZodTypeAny>(
+  req: Request,
+  schema: T
+): Promise<z.infer<T> | NextResponse> {
+  return parseAuthorizedJson(req, schema, requireAdmin);
 }
 
 /**

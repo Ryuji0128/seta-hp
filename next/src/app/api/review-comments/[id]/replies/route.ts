@@ -4,23 +4,20 @@
  * POST   /api/review-comments/:id/replies            … 返信追加
  * DELETE /api/review-comments/:id/replies?replyId=N  … 返信削除
  *
- * 注意: DELETE は commentId と replyId の組で絞ること。replyId 単独で消すと
- *       任意のコメントの返信を別 URL から消せてしまう(権限問題)。
+ * DELETE はcommentIdとreplyIdの組で絞り、別コメントの返信を削除できないようにする。
  */
 
 import { getPrismaClient } from "@/lib/db";
+import { badRequestResponse, notFoundResponse } from "@/lib/api-response";
 import {
-  badRequestResponse,
-  internalErrorResponse,
-  notFoundResponse,
-} from "@/lib/api-response";
-import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+  handleApiError,
+  isErrorResponse,
+  parseJsonWithSchema,
+} from "@/lib/api-utils";
 import { reviewReplySelect } from "@/lib/review-comment-query";
+import { ReviewReplyCreateSchema } from "@/lib/review-validation";
 import {
-  cleanReviewInput as clean,
-  parseReviewId as parseId,
-  REVIEW_MAX_CONTENT as MAX_CONTENT,
-  REVIEW_MAX_NAME as MAX_NAME,
+  parseReviewId,
   reviewWriteGuard,
 } from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
@@ -35,28 +32,23 @@ export async function POST(
   if (blocked) return blocked;
 
   const { id: rawId } = await params;
-  const commentId = parseId(rawId);
-  if (!commentId)
-    return badRequestResponse("invalid id");
+  const commentId = parseReviewId(rawId);
+  if (!commentId) return badRequestResponse("invalid id");
 
   try {
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const authorName = clean(body.authorName, MAX_NAME);
-    const content = clean(body.content, MAX_CONTENT);
-
-    if (!authorName || !content) {
-      return badRequestResponse("authorName / content は必須です");
-    }
+    const data = await parseJsonWithSchema(req, ReviewReplyCreateSchema);
+    if (isErrorResponse(data)) return data;
 
     const reply = await prisma.reviewCommentReply.create({
-      data: { commentId, authorName, content },
+      data: { commentId, ...data },
       select: reviewReplySelect,
     });
     return NextResponse.json({ reply }, { status: 201 });
   } catch (error) {
-    console.error("レビュー返信作成エラー:", error);
-    return internalErrorResponse("作成に失敗しました");
+    return handleApiError(error, {
+      log: "レビュー返信作成エラー",
+      message: "作成に失敗しました",
+    });
   }
 }
 
@@ -68,13 +60,11 @@ export async function DELETE(
   if (blocked) return blocked;
 
   const { id: rawId } = await params;
-  const commentId = parseId(rawId);
-  if (!commentId)
-    return badRequestResponse("invalid id");
+  const commentId = parseReviewId(rawId);
+  if (!commentId) return badRequestResponse("invalid id");
 
-  const replyId = parseId(req.nextUrl.searchParams.get("replyId"));
-  if (!replyId)
-    return badRequestResponse("replyId is required");
+  const replyId = parseReviewId(req.nextUrl.searchParams.get("replyId"));
+  if (!replyId) return badRequestResponse("replyId is required");
 
   try {
     const result = await prisma.reviewCommentReply.deleteMany({
@@ -85,7 +75,9 @@ export async function DELETE(
     }
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("レビュー返信削除エラー:", error);
-    return internalErrorResponse("削除に失敗しました");
+    return handleApiError(error, {
+      log: "レビュー返信削除エラー",
+      message: "削除に失敗しました",
+    });
   }
 }

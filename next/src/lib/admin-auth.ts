@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
+import { isEditorRole } from "@/lib/roles";
 
 /**
  * 管理ページ共通の認証ガード。
@@ -13,7 +14,7 @@ export async function requireAdminOrEditor(): Promise<Session> {
     redirect("/login");
   }
 
-  if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
+  if (!isEditorRole(session.user.role)) {
     redirect("/");
   }
 

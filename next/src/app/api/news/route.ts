@@ -4,16 +4,19 @@ import { parsePagination } from "@/lib/pagination";
 import {
   handleApiError,
   isErrorResponse,
-  parseJsonWithSchema,
-  requireAdmin,
-  requireEditor,
+  parseEditorJson,
 } from "@/lib/api-utils";
 import {
   NewsCreateSchema,
   NewsUpdateSchema,
-  RequiredIdSchema,
 } from "@/lib/validation";
 import xss from "xss";
+import { deleteManagedResource } from "@/lib/managed-resource-route";
+import { getNewsText, type NewsContents } from "@/lib/types/news";
+
+const sanitizeNewsContents = (contents: NewsContents) => ({
+  text: xss(getNewsText(contents)),
+});
 
 // お知らせ一覧取得
 export async function GET(req: NextRequest) {
@@ -40,20 +43,15 @@ export async function GET(req: NextRequest) {
 // お知らせ作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireEditor();
-    if (isErrorResponse(session)) return session;
-
-    const prisma = getPrismaClient();
-    const parsed = await parseJsonWithSchema(req, NewsCreateSchema);
+    const parsed = await parseEditorJson(req, NewsCreateSchema);
     if (isErrorResponse(parsed)) return parsed;
+    const prisma = getPrismaClient();
     const { title, contents, date, url } = parsed;
-
-    const sanitizedContents = typeof contents === "string" ? xss(contents) : contents;
 
     const news = await prisma.news.create({
       data: {
         title: xss(title),
-        contents: sanitizedContents,
+        contents: sanitizeNewsContents(contents),
         date,
         url: url ? xss(url) : null,
       },
@@ -68,23 +66,16 @@ export async function POST(req: NextRequest) {
 // お知らせ更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await requireEditor();
-    if (isErrorResponse(session)) return session;
-
-    const prisma = getPrismaClient();
-    const parsed = await parseJsonWithSchema(req, NewsUpdateSchema);
+    const parsed = await parseEditorJson(req, NewsUpdateSchema);
     if (isErrorResponse(parsed)) return parsed;
+    const prisma = getPrismaClient();
     const { id, title, contents, date, url } = parsed;
-
-    const sanitizedContents = contents !== undefined
-      ? (typeof contents === "string" ? xss(contents) : contents)
-      : undefined;
 
     const news = await prisma.news.update({
       where: { id },
       data: {
         title: title ? xss(title) : undefined,
-        contents: sanitizedContents,
+        contents: contents !== undefined ? sanitizeNewsContents(contents) : undefined,
         date,
         url: url !== undefined ? (url ? xss(url) : null) : undefined,
       },
@@ -102,25 +93,13 @@ export async function PUT(req: NextRequest) {
 
 // お知らせ削除
 export async function DELETE(req: NextRequest) {
-  try {
-    const session = await requireAdmin();
-    if (isErrorResponse(session)) return session;
-
-    const prisma = getPrismaClient();
-    const parsed = await parseJsonWithSchema(req, RequiredIdSchema);
-    if (isErrorResponse(parsed)) return parsed;
-    const { id } = parsed;
-
-    await prisma.news.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ message: "お知らせを削除しました" });
-  } catch (error) {
-    return handleApiError(error, {
-      log: "お知らせ削除エラー",
-      message: "お知らせの削除に失敗しました",
-      notFoundMessage: "指定されたお知らせが見つかりません",
-    });
-  }
+  const prisma = getPrismaClient();
+  return deleteManagedResource(req, {
+    findById: (id) => prisma.news.findUnique({ where: { id }, select: { id: true } }),
+    deleteById: (id) => prisma.news.delete({ where: { id } }),
+    successMessage: "お知らせを削除しました",
+    notFoundMessage: "指定されたお知らせが見つかりません",
+    errorLog: "お知らせ削除エラー",
+    errorMessage: "お知らせの削除に失敗しました",
+  });
 }

@@ -5,41 +5,105 @@
 # - 同一問題の連続通知はクールダウンで抑止
 # - コンテナの自動復旧は各 compose の restart:unless-stopped に委ねる
 #
-# cron例（15分毎）:
-#   */15 * * * * /home/ubuntu/seta-hp/scripts/monitor.sh >> /home/ubuntu/monitor.log 2>&1
+# cron例（5分毎）:
+#   */5 * * * * /home/ubuntu/seta-hp/scripts/monitor.sh >> /home/ubuntu/monitor.log 2>&1
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 STATE_FILE="${MONITOR_STATE_FILE:-$HOME/.monitor_state}"
-COOLDOWN_SEC="${MONITOR_COOLDOWN_SEC:-10800}"          # 同一問題の再通知抑止(既定3h)
-DISK_THRESHOLD="${MONITOR_DISK_PCT:-85}"               # ディスク使用率の警告閾値(%)
-MEM_MIN_MB="${MONITOR_MEM_MIN_MB:-120}"                # 空きメモリの警告閾値(MB)
-# health は持つが healthcheck が誤検知しがちなコンテナ（サイト到達で別途判定）
-HEALTH_SKIP="${MONITOR_HEALTH_SKIP:-nginx_proxy}"
-EXPECTED_CONTAINERS="${MONITOR_CONTAINERS:-next_app nginx_proxy mysql_db designer-prod-designer-backend-1 designer-prod-designer-frontend-1 designer-prod-designer-mysql-1}"
+COOLDOWN_SEC="${MONITOR_COOLDOWN_SEC:-10800}"       # 同一問題の再通知抑止(既定3h)
+DISK_THRESHOLD="${MONITOR_DISK_PCT:-85}"            # ディスク使用率の警告閾値(%)
+MEM_MIN_MB="${MONITOR_MEM_MIN_MB:-120}"             # 空きメモリの警告閾値(MB)
+HEALTH_SKIP="${MONITOR_HEALTH_SKIP:-nginx_proxy}"   # サイト到達で別途判定するコンテナ
+EXPECTED_CONTAINERS="${MONITOR_CONTAINERS:-next_app nginx_proxy mysql_db}"
 SITE_URL="${MONITOR_SITE_URL:-https://kaza-love.com/api/health}"
+MONITOR_DESIGNER="${MONITOR_DESIGNER:-1}"
+MONITOR_SEND_EMAIL="${MONITOR_SEND_EMAIL:-1}"
 DESIGNER_URL="${MONITOR_DESIGNER_URL:-https://designer.kaza-love.com/}"
+DESIGNER_PROJECT_DIR="${DESIGNER_PROJECT_DIR:-$(dirname "$PROJECT_DIR")/display_design}"
+DESIGNER_ENV_FILE="${DESIGNER_ENV_FILE:-}"
+DESIGNER_COMPOSE_FILE="${DESIGNER_COMPOSE_FILE:-}"
+DESIGNER_SERVICES="${MONITOR_DESIGNER_SERVICES:-}"
 
 problems=""
 add() { problems+="- $1"$'\n'; }
 
-# --- コンテナ稼働・health ---
-for c in $EXPECTED_CONTAINERS; do
-  st="$(docker inspect --format '{{.State.Status}}' "$c" 2>/dev/null || echo missing)"
-  if [ "$st" != "running" ]; then add "コンテナ $c が起動していない (状態: $st)"; continue; fi
-  case " $HEALTH_SKIP " in *" $c "*) : ;; *)
-    hc="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$c" 2>/dev/null)"
-    [ "$hc" = "unhealthy" ] && add "コンテナ $c が unhealthy"
-  ;; esac
+check_container() {
+  local label="$1"
+  local ref="$2"
+  local st hc
+  st="$(docker inspect --format '{{.State.Status}}' "$ref" 2>/dev/null || echo missing)"
+  if [ "$st" != "running" ]; then
+    add "コンテナ $label が起動していない (状態: $st)"
+    return
+  fi
+  case " $HEALTH_SKIP " in
+    *" $label "*|*" $ref "*) return ;;
+  esac
+  hc="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$ref" 2>/dev/null)"
+  [ "$hc" = "unhealthy" ] && add "コンテナ $label が unhealthy"
+}
+
+configure_designer_compose() {
+  if [ -z "$DESIGNER_ENV_FILE" ]; then
+    if [ -f "$DESIGNER_PROJECT_DIR/.env.prod" ]; then
+      DESIGNER_ENV_FILE="$DESIGNER_PROJECT_DIR/.env.prod"
+    else
+      DESIGNER_ENV_FILE="$DESIGNER_PROJECT_DIR/.env"
+    fi
+  fi
+  if [ -z "$DESIGNER_COMPOSE_FILE" ]; then
+    if [ "$(basename "$DESIGNER_ENV_FILE")" = ".env.prod" ] && [ -f "$DESIGNER_PROJECT_DIR/docker-compose.prod.yml" ]; then
+      DESIGNER_COMPOSE_FILE="$DESIGNER_PROJECT_DIR/docker-compose.prod.yml"
+    else
+      DESIGNER_COMPOSE_FILE="$DESIGNER_PROJECT_DIR/docker-compose.yml"
+    fi
+  fi
+}
+
+designer_compose() {
+  docker compose --project-directory "$DESIGNER_PROJECT_DIR" --env-file "$DESIGNER_ENV_FILE" \
+    -f "$DESIGNER_COMPOSE_FILE" "$@"
+}
+
+# --- HPコンテナ稼働・health ---
+for container in $EXPECTED_CONTAINERS; do
+  check_container "$container" "$container"
 done
+
+# --- Designerコンテナ稼働・health（Composeのサービス名から動的解決） ---
+if [ "$MONITOR_DESIGNER" != "0" ]; then
+  configure_designer_compose
+  if [ ! -f "$DESIGNER_ENV_FILE" ] || [ ! -f "$DESIGNER_COMPOSE_FILE" ]; then
+    add "DesignerのenvまたはComposeファイルがない ($DESIGNER_ENV_FILE / $DESIGNER_COMPOSE_FILE)"
+  else
+    if [ -z "$DESIGNER_SERVICES" ]; then
+      DESIGNER_SERVICES="$(designer_compose config --services 2>/dev/null | awk '/(^|-)mysql$|(^|-)backend$|(^|-)frontend$/{print}')"
+    fi
+    if [ -z "$DESIGNER_SERVICES" ]; then
+      add "Designerの監視対象サービスをCompose設定から特定できない"
+    else
+      for service in $DESIGNER_SERVICES; do
+        container_id="$(designer_compose ps -a -q "$service" 2>/dev/null)"
+        if [ -z "$container_id" ]; then
+          add "Designerサービス $service のコンテナが存在しない"
+        else
+          check_container "Designer/$service" "$container_id"
+        fi
+      done
+    fi
+  fi
+fi
 
 # --- サイト到達(end-to-end) ---
 code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$SITE_URL" 2>/dev/null || echo 000)"
 [ "$code" = "200" ] || add "サイト($SITE_URL)が異常 (HTTP $code)"
-# designer はゲートで未ログインは 302。502/000 等なら異常。
-dcode="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$DESIGNER_URL" 2>/dev/null || echo 000)"
-case "$dcode" in 200|301|302|401|403) : ;; *) add "designer($DESIGNER_URL)が異常 (HTTP $dcode)";; esac
+if [ "$MONITOR_DESIGNER" != "0" ]; then
+  # Designerはゲートで未ログイン時302。502/000等なら異常。
+  dcode="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$DESIGNER_URL" 2>/dev/null || echo 000)"
+  case "$dcode" in 200|301|302|401|403) : ;; *) add "designer($DESIGNER_URL)が異常 (HTTP $dcode)";; esac
+fi
 
 # --- ディスク ---
 disk="$(df / | awk 'NR==2{gsub("%","",$5); print $5}')"
@@ -73,7 +137,7 @@ echo "$hash_now $now" > "$STATE_FILE"
 # --- メール通知（SMTP from next/.env） ---
 set -a; [ -f "$PROJECT_DIR/next/.env" ] && . "$PROJECT_DIR/next/.env"; set +a
 ALERT_TO="${MONITOR_ALERT_TO:-${CONTACT_TO_EMAIL:-${SMTP_USER:-}}}"
-if [ -n "${SMTP_HOST:-}" ] && [ -n "$ALERT_TO" ]; then
+if [ "$MONITOR_SEND_EMAIL" != "0" ] && [ -n "${SMTP_HOST:-}" ] && [ -n "$ALERT_TO" ]; then
   export MAIL_TO="$ALERT_TO"
   export MAIL_SUBJECT="[kaza-love監視] 異常検知 $ts"
   export MAIL_BODY="サーバー($(hostname))で異常を検知しました。
@@ -105,5 +169,5 @@ except Exception as e:
     print("alert mail FAILED:", e)
 PY
 else
-  echo "[$ts] SMTP未設定のためメール送信スキップ(ログのみ)"
+  echo "[$ts] メール通知無効またはSMTP未設定のため送信スキップ(ログのみ)"
 fi
