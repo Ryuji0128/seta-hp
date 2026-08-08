@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { getManagementPermissions } from "@/lib/management-permissions";
-import { isAdminRole, isEditorRole } from "@/lib/roles";
+import {
+  DEFAULT_USER_ROLE,
+  isAdminRole,
+  isEditorRole,
+  normalizeUserRole,
+} from "@/lib/roles";
 
 describe("getManagementPermissions", () => {
   it.each([
@@ -20,5 +25,7 @@ describe("role predicates", () => {
     expect(isEditorRole("VIEWER")).toBe(false);
     expect(isAdminRole("ADMIN")).toBe(true);
     expect(isAdminRole("EDITOR")).toBe(false);
+    expect(normalizeUserRole("ADMIN")).toBe("ADMIN");
+    expect(normalizeUserRole("unknown")).toBe(DEFAULT_USER_ROLE);
   });
 });

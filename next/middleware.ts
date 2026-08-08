@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { isEditorRole } from "@/lib/roles";
 
 /**
  * 管理ページの多層防御（#248）。
@@ -13,7 +14,7 @@ export default auth((req) => {
 
   // 権限不足（ADMIN/EDITOR 以外）→ トップへ
   const role = req.auth.user?.role;
-  if (role !== "ADMIN" && role !== "EDITOR") {
+  if (!isEditorRole(role)) {
     return Response.redirect(new URL("/", req.nextUrl));
   }
 });

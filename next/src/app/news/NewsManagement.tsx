@@ -12,7 +12,7 @@ import { useCrudResource } from "@/lib/hooks/useCrudResource";
 import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
 import { useResourceEditor } from "@/lib/hooks/useResourceEditor";
 import { getManagementPermissions } from "@/lib/management-permissions";
-import type { News } from "@/lib/types/news";
+import { getNewsText, type News } from "@/lib/types/news";
 
 interface NewsManagementProps {
   session: Session;
@@ -34,7 +34,7 @@ const createNewsForm = (): NewsForm => ({
 
 const editNewsForm = (news: News): NewsForm => ({
   title: news.title,
-  contents: news.contents?.text || "",
+  contents: getNewsText(news.contents),
   date: dayjs(news.date).format("YYYY-MM-DD"),
   url: news.url || "",
 });
@@ -89,7 +89,7 @@ const NewsManagement: React.FC<NewsManagementProps> = ({ session }) => {
             whiteSpace: "nowrap",
           }}
         >
-          {news.contents?.text || ""}
+          {getNewsText(news.contents)}
         </Box>
       ),
     },

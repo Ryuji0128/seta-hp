@@ -1,3 +1,5 @@
+import { isAdminRole, isEditorRole } from "@/lib/roles";
+
 interface ManagementPermissions {
   canEdit: boolean;
   canDelete: boolean;
@@ -10,4 +12,3 @@ export function getManagementPermissions(role?: string | null): ManagementPermis
     canDelete: isAdminRole(role),
   };
 }
-import { isAdminRole, isEditorRole } from "@/lib/roles";

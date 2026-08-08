@@ -17,7 +17,7 @@ import { useState, type MouseEvent } from "react";
 import SectionContainer from "@/components/SectionContainer";
 import XIcon from "@/components/XIcon";
 import { X_PROFILE_URL } from "@/lib/site-config";
-import { FONT_DISPLAY } from "@/theme/themeConstants";
+import { FONT_DISPLAY, HEADER_HEIGHTS } from "@/theme/themeConstants";
 
 // next-auth のクライアントJSは遅延チャンクに分離（初期バンドル削減 #245）
 const UserAuthMenu = dynamic(() => import("@/components/UserAuthMenu"), {
@@ -67,7 +67,7 @@ export default function Header() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              minHeight: { xs: 60, md: 72 },
+              minHeight: { xs: HEADER_HEIGHTS.mobile, md: HEADER_HEIGHTS.desktop },
             }}
           >
             {/* Brand */}
@@ -213,7 +213,7 @@ export default function Header() {
           </Toolbar>
         </SectionContainer>
       </AppBar>
-      <Box sx={{ height: { xs: 60, md: 72 } }} />
+      <Box sx={{ height: { xs: HEADER_HEIGHTS.mobile, md: HEADER_HEIGHTS.desktop } }} />
     </>
   );
 }

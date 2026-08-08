@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { REVIEW_MAX_CONTENT } from "@/lib/review-constants";
 import { type ReviewComment, Z_OVERLAY, formatDate } from "./types";
 
 interface CommentPopoverProps {
@@ -102,6 +103,7 @@ export default function CommentPopover({
             placeholder={authorName ? "返信を書く…" : "先に名前を設定してください"}
             value={replyDraft}
             onChange={(e) => onReplyDraftChange(e.target.value)}
+            slotProps={{ htmlInput: { maxLength: REVIEW_MAX_CONTENT } }}
             disabled={!authorName}
           />
           <IconButton

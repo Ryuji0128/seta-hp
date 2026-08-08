@@ -180,7 +180,8 @@ const newsContentsSchema = z.custom<string | { text: string }>(
     (typeof value === "object" &&
       value !== null &&
       "text" in value &&
-      typeof value.text === "string"),
+      typeof value.text === "string" &&
+      value.text.length > 0),
   { message: newsRequiredMessage }
 );
 

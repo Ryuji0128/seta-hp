@@ -71,6 +71,13 @@ jobs:
         working-directory: ./next
         run: yarn test
 
+      - name: Build production application
+        working-directory: ./next
+        run: yarn build
+
+      - name: Validate Nginx configuration
+        run: bash scripts/test-nginx-config.sh
+
   build-and-push:
     needs: ci
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
@@ -157,36 +164,43 @@ jobs:
             done
             git checkout "${IMAGE_TAG}" -- docker-compose.yml nginx/ scripts/ fail2ban/ logwatch/
 
-            # 現在のIMAGE_TAGを保持（ロールバック用）
-            PREV_TAG=$(grep '^IMAGE_TAG=' .env 2>/dev/null | cut -d= -f2 || echo "")
-            echo "Previous IMAGE_TAG: ${PREV_TAG:-none}"
-
             # レジストリログイン
             echo "${GH_PAT}" | docker login "${REGISTRY}" -u "${GH_USERNAME}" --password-stdin
 
             # 指定SHAのイメージをpull
             docker pull "${FULL_IMAGE}"
 
-            # .envからDATABASE_URLを取得（Composeと同じ設定源）
-            DB_URL=$(grep '^DATABASE_URL=' next/.env 2>/dev/null | cut -d= -f2- || echo "")
-            if [ -z "${DB_URL}" ]; then
-              DB_URL="mysql://app_user:${MYSQL_PASSWORD:-app_pass}@mysql:3306/app_db"
-            fi
+            # アプリ停止前に、同期したテンプレートとentrypointでNginx設定を検証する。
+            echo "Validating Nginx configuration..."
+            IMAGE_TAG="${IMAGE_TAG}" docker compose -f docker-compose.yml run --rm --no-deps \
+              -e NGINX_TEST_ONLY=1 nginx
 
-            # マイグレーションを先に実行（失敗時はデプロイ中止）
+            # 現在のIMAGE_TAGを保持（障害調査・手動ロールバック用）
+            PREV_TAG=$(grep '^IMAGE_TAG=' .env 2>/dev/null | cut -d= -f2 || echo "")
+            echo "Previous IMAGE_TAG: ${PREV_TAG:-none}"
+
+            # 破壊的migration中に旧Prisma Clientが削除列へアクセスしないよう、
+            # ここから新アプリのhealth確認までは明示的なメンテナンス時間とする。
+            echo "Stopping the previous application for database maintenance..."
+            docker compose -f docker-compose.yml stop next
+
+            # Composeと同じenv_file/environmentを使い、対象イメージでmigrationする。
+            # 失敗時に旧アプリを自動復帰すると新schemaとの非互換があり得るため停止状態を維持する。
             echo "Running database migrations..."
-            docker run --rm \
-              --network seta-hp_default \
-              -e DATABASE_URL="${DB_URL}" \
-              "${FULL_IMAGE}" \
+            if ! IMAGE_TAG="${IMAGE_TAG}" docker compose -f docker-compose.yml run --rm --no-deps next \
               node node_modules/prisma/build/index.js migrate deploy
+            then
+              echo "ERROR: Database migration failed. The previous application remains stopped to protect schema compatibility."
+              echo "Previous IMAGE_TAG: ${PREV_TAG:-none}"
+              exit 1
+            fi
 
             # IMAGE_TAGを.envに書き出してcompose起動
             echo "Updating IMAGE_TAG=${IMAGE_TAG}"
             sed -i '/^IMAGE_TAG=/d' .env 2>/dev/null || true
             echo "IMAGE_TAG=${IMAGE_TAG}" >> .env
 
-            # アプリ更新（nextのみ再作成、mysql/nginxは変更なければそのまま）
+            # アプリ更新
             docker compose -f docker-compose.yml up -d --no-deps next
 
             # ヘルスチェック（ホスト側からcurlで確認）
@@ -206,17 +220,33 @@ jobs:
               sleep 5
             done
 
-            # SSL証明書の確認・更新
+            # SSL証明書を準備してからNginxを一度だけ再作成する。
             CERT_PATH="./certbot/conf/live/${SERVER_NAME:-kaza-love.com}/fullchain.pem"
             if [ ! -f "$CERT_PATH" ]; then
               echo "SSL certificate not found. Obtaining..."
               docker compose --profile certbot run --rm certbot
-              docker compose -f docker-compose.yml restart nginx
             else
               echo "Checking SSL certificate renewal..."
               docker compose --profile certbot run --rm certbot renew --quiet || true
-              docker compose -f docker-compose.yml exec -T nginx nginx -s reload || true
             fi
+
+            # 同期したentrypoint/templateと更新済み証明書を確実に反映し、外部経路のhealthも確認する。
+            echo "Recreating Nginx with the deployed configuration..."
+            docker compose -f docker-compose.yml up -d --no-deps --force-recreate nginx
+            echo "Waiting for Nginx health check..."
+            for i in $(seq 1 20); do
+              NGINX_HEALTH=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' nginx_proxy 2>/dev/null || echo missing)
+              if [ "${NGINX_HEALTH}" = "healthy" ]; then
+                echo "Nginx health check passed!"
+                break
+              fi
+              if [ "$i" -eq 20 ]; then
+                echo "ERROR: Nginx health check failed after 100s (status: ${NGINX_HEALTH})."
+                docker compose -f docker-compose.yml logs nginx --tail=40
+                exit 1
+              fi
+              sleep 5
+            done
 
             # 古いイメージのクリーンアップ（直近3世代を保持、CreatedAtで時系列ソート）
             echo "Cleaning up old images..."

@@ -14,6 +14,7 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiJson, isAbortError } from "@/lib/api-client";
+import { REVIEW_MAX_NAME } from "@/lib/review-constants";
 
 import CommentPopover from "./review/CommentPopover";
 import CommentsDrawer from "./review/CommentsDrawer";
@@ -149,7 +150,7 @@ export default function ReviewOverlay() {
   };
 
   const confirmName = () => {
-    const trimmed = nameDraft.trim().slice(0, 80);
+    const trimmed = nameDraft.trim().slice(0, REVIEW_MAX_NAME);
     if (!trimmed) return;
     setAuthorName(trimmed);
     writeStoredName(trimmed);

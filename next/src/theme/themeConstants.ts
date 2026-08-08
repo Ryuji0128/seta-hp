@@ -47,6 +47,7 @@ const FONT_BODY =
 export const FONT_ITALIC = 'var(--font-cormorant), serif';
 export const COLOR_PRIMARY = "#B45309";
 export const COLOR_DARK_ACCENT = "#E5AC60";
+export const HEADER_HEIGHTS = { mobile: 60, desktop: 72 } as const;
 
 export const themeConstants = {
   palette: {
@@ -218,10 +219,7 @@ export const themeConstants = {
   },
   custom: {
     header: {
-      height: {
-        mobile: 60,
-        desktop: 72,
-      },
+      height: HEADER_HEIGHTS,
     },
     fonts: {
       display: FONT_DISPLAY,

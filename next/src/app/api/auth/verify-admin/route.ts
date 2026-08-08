@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { isAdminRole } from "@/lib/roles";
 import { NextResponse } from "next/server";
 
 /**
@@ -24,7 +25,7 @@ export async function GET() {
     return new NextResponse(null, { status: 401 });
   }
 
-  if (session.user.role !== "ADMIN") {
+  if (!isAdminRole(session.user.role)) {
     return new NextResponse(null, { status: 403 });
   }
 

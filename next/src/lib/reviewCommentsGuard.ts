@@ -8,7 +8,6 @@
 import { NextResponse } from "next/server";
 import type { RateLimitConfig } from "@/lib/rate-limit";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
-import xss from "xss";
 
 export function reviewCommentsDisabledResponse(): NextResponse | null {
   if (process.env.NEXT_PUBLIC_ENABLE_COMMENTS !== "true") {
@@ -28,16 +27,6 @@ export async function reviewWriteGuard(
   const pathname = new URL(req.url).pathname;
   const { limited } = await enforceRateLimit(req, `review:${pathname}`, config);
   return limited;
-}
-
-// 各レビューコメントAPIルートで共通の入力上限
-export const REVIEW_MAX_CONTENT = 2000;
-export const REVIEW_MAX_NAME = 80;
-export const REVIEW_MAX_PAGE_URL = 500;
-
-/** 入力をサニタイズして上限長に丸める */
-export function cleanReviewInput(value: unknown, max: number): string {
-  return xss(String(value ?? "")).trim().slice(0, max);
 }
 
 /** 正の整数IDのみ許可する */

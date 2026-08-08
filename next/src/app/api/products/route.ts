@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { parsePagination } from "@/lib/pagination";
 import { notFoundResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
-  parseJsonWithSchema,
-  requireAdmin,
-  requireEditor,
+  parseEditorJson,
   sanitizeTags,
 } from "@/lib/api-utils";
-import { ProductCreateSchema, ProductUpdateSchema, RequiredIdSchema } from "@/lib/validation";
+import { ProductCreateSchema, ProductUpdateSchema } from "@/lib/validation";
+import {
+  deleteManagedResource,
+  getPublishedListParams,
+} from "@/lib/managed-resource-route";
 import { collectImageUrls, deleteUnusedUploadedFiles } from "@/lib/uploaded-files";
 import { revalidateProductPages } from "@/lib/cache-tags";
 import xss from "xss";
@@ -20,16 +21,9 @@ import xss from "xss";
 export async function GET(req: NextRequest) {
   try {
     const prisma = getPrismaClient();
-    const { searchParams } = new URL(req.url);
-    const includeUnpublished = searchParams.get("includeUnpublished") === "true";
-
-    // 認証・権限チェック（非公開商品を含める場合はADMIN/EDITORのみ）
-    if (includeUnpublished) {
-      const session = await requireEditor();
-      if (isErrorResponse(session)) return session;
-    }
-
-    const { page, limit, skip } = parsePagination(searchParams);
+    const params = await getPublishedListParams(req);
+    if (isErrorResponse(params)) return params;
+    const { includeUnpublished, page, limit, skip } = params;
 
     const where = includeUnpublished ? {} : { isPublished: true };
     const [products, total] = await Promise.all([
@@ -64,12 +58,9 @@ export async function GET(req: NextRequest) {
 // 商品作成
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireEditor();
-    if (isErrorResponse(session)) return session;
-
-    const prisma = getPrismaClient();
-    const parsed = await parseJsonWithSchema(req, ProductCreateSchema);
+    const parsed = await parseEditorJson(req, ProductCreateSchema);
     if (isErrorResponse(parsed)) return parsed;
+    const prisma = getPrismaClient();
     const {
       name,
       description,
@@ -109,12 +100,9 @@ export async function POST(req: NextRequest) {
 // 商品更新
 export async function PUT(req: NextRequest) {
   try {
-    const session = await requireEditor();
-    if (isErrorResponse(session)) return session;
-
-    const prisma = getPrismaClient();
-    const parsed = await parseJsonWithSchema(req, ProductUpdateSchema);
+    const parsed = await parseEditorJson(req, ProductUpdateSchema);
     if (isErrorResponse(parsed)) return parsed;
+    const prisma = getPrismaClient();
     const {
       id,
       name,
@@ -167,35 +155,17 @@ export async function PUT(req: NextRequest) {
 
 // 商品削除
 export async function DELETE(req: NextRequest) {
-  try {
-    const session = await requireAdmin();
-    if (isErrorResponse(session)) return session;
-
-    const prisma = getPrismaClient();
-    const parsed = await parseJsonWithSchema(req, RequiredIdSchema);
-    if (isErrorResponse(parsed)) return parsed;
-    const { id } = parsed;
-
-    // 存在確認
-    const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) {
-      return notFoundResponse("指定された商品が見つかりません");
-    }
-
-    await prisma.product.delete({
-      where: { id },
-    });
-
-    await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
-
-    revalidateProductPages();
-
-    return NextResponse.json({ message: "商品を削除しました" });
-  } catch (error) {
-    return handleApiError(error, {
-      log: "商品削除エラー",
-      message: "商品の削除に失敗しました",
-      notFoundMessage: "指定された商品が見つかりません",
-    });
-  }
+  const prisma = getPrismaClient();
+  return deleteManagedResource(req, {
+    findById: (id) => prisma.product.findUnique({ where: { id } }),
+    deleteById: (id) => prisma.product.delete({ where: { id } }),
+    afterDelete: async (existing) => {
+      await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
+      revalidateProductPages();
+    },
+    successMessage: "商品を削除しました",
+    notFoundMessage: "指定された商品が見つかりません",
+    errorLog: "商品削除エラー",
+    errorMessage: "商品の削除に失敗しました",
+  });
 }
