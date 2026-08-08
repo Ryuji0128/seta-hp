@@ -8,14 +8,19 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { badRequestResponse, internalErrorResponse } from "@/lib/api-response";
-import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { badRequestResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonWithSchema,
+} from "@/lib/api-utils";
+import { REVIEW_MAX_PAGE_URL } from "@/lib/review-constants";
 import { reviewCommentSelect } from "@/lib/review-comment-query";
 import {
-  cleanReviewInput as clean,
-  REVIEW_MAX_CONTENT as MAX_CONTENT,
-  REVIEW_MAX_NAME as MAX_NAME,
-  REVIEW_MAX_PAGE_URL as MAX_PAGE_URL,
+  cleanReviewInput,
+  ReviewCommentCreateSchema,
+} from "@/lib/review-validation";
+import {
   reviewCommentsDisabledResponse,
   reviewWriteGuard,
 } from "@/lib/reviewCommentsGuard";
@@ -27,21 +32,26 @@ export async function GET(req: NextRequest) {
   const disabled = reviewCommentsDisabledResponse();
   if (disabled) return disabled;
 
-  const page = req.nextUrl.searchParams.get("page");
-  if (!page) {
+  const pageUrl = cleanReviewInput(
+    req.nextUrl.searchParams.get("page"),
+    REVIEW_MAX_PAGE_URL
+  );
+  if (!pageUrl) {
     return badRequestResponse("page is required");
   }
 
   try {
     const comments = await prisma.reviewComment.findMany({
-      where: { pageUrl: page },
+      where: { pageUrl },
       orderBy: { createdAt: "asc" },
       select: reviewCommentSelect,
     });
     return NextResponse.json({ comments });
   } catch (error) {
-    console.error("レビューコメント取得エラー:", error);
-    return internalErrorResponse("取得に失敗しました");
+    return handleApiError(error, {
+      log: "レビューコメント取得エラー",
+      message: "取得に失敗しました",
+    });
   }
 }
 
@@ -50,41 +60,19 @@ export async function POST(req: NextRequest) {
   if (blocked) return blocked;
 
   try {
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const pageUrl = clean(body.pageUrl, MAX_PAGE_URL);
-    const authorName = clean(body.authorName, MAX_NAME);
-    const content = clean(body.content, MAX_CONTENT);
-    const xRatio = Number(body.xRatio);
-    const yAbsolute = Number(body.yAbsolute);
-
-    if (!pageUrl || !authorName || !content) {
-      return badRequestResponse("pageUrl / authorName / content は必須です");
-    }
-    if (
-      !Number.isFinite(xRatio) ||
-      !Number.isFinite(yAbsolute) ||
-      xRatio < 0 ||
-      xRatio > 1 ||
-      yAbsolute < 0
-    ) {
-      return badRequestResponse("座標が不正です");
-    }
+    const data = await parseJsonWithSchema(req, ReviewCommentCreateSchema);
+    if (isErrorResponse(data)) return data;
 
     const created = await prisma.reviewComment.create({
-      data: {
-        pageUrl,
-        authorName,
-        content,
-        xRatio,
-        yAbsolute,
-      },
+      data,
       select: reviewCommentSelect,
     });
 
     return NextResponse.json({ comment: created }, { status: 201 });
   } catch (error) {
-    console.error("レビューコメント作成エラー:", error);
-    return internalErrorResponse("作成に失敗しました");
+    return handleApiError(error, {
+      log: "レビューコメント作成エラー",
+      message: "作成に失敗しました",
+    });
   }
 }

@@ -1,3 +1,5 @@
+import { REVIEW_MAX_NAME, type ReviewStatus } from "@/lib/review-constants";
+
 interface Reply {
   id: number;
   authorName: string;
@@ -11,7 +13,7 @@ export interface ReviewComment {
   yAbsolute: number;
   authorName: string;
   content: string;
-  status: "open" | "resolved";
+  status: ReviewStatus;
   createdAt: string;
   replies: Reply[];
 }
@@ -23,7 +25,10 @@ export const Z_PIN = 1399;
 export function readStoredName(): string {
   if (typeof window === "undefined") return "";
   try {
-    return window.localStorage.getItem(NAME_STORAGE_KEY) ?? "";
+    return (window.localStorage.getItem(NAME_STORAGE_KEY) ?? "").slice(
+      0,
+      REVIEW_MAX_NAME
+    );
   } catch {
     return "";
   }
@@ -31,7 +36,7 @@ export function readStoredName(): string {
 
 export function writeStoredName(value: string) {
   try {
-    window.localStorage.setItem(NAME_STORAGE_KEY, value);
+    window.localStorage.setItem(NAME_STORAGE_KEY, value.slice(0, REVIEW_MAX_NAME));
   } catch {
     /* localStorage 不可環境では無視 */
   }

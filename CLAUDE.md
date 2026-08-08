@@ -42,7 +42,6 @@ seta-hp/
 │   ├── prisma/              # Prismaスキーマ & シード
 │   └── public/              # 静的ファイル
 ├── docker-compose.yml          # 本番環境（ベース）
-├── docker-compose.override.yml # 開発環境（docker compose up で自動適用）
 ├── docker-compose.local.yml    # ローカルビルド検証用
 └── nginx/                      # Nginx設定
 ```
@@ -50,8 +49,8 @@ seta-hp/
 ## Development Commands
 
 ```bash
-# Docker開発環境の起動（override.ymlが自動適用される）
-docker compose up
+# Docker開発環境の起動
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 
 # 個別コマンド (nextディレクトリで実行)
 cd next
@@ -62,7 +61,7 @@ yarn typecheck        # 型チェック (.next を再生成してから実行)
 
 # Prisma
 npx prisma generate   # Clientの生成
-npx prisma db push    # スキーマをDBに反映
+npx prisma migrate deploy # migrationを空DBから順番に適用
 npx prisma studio     # DB GUIツール
 npx prisma db seed    # シードデータ投入
 ```
@@ -102,13 +101,13 @@ npx prisma db seed    # シードデータ投入
 - **Work**: 実績・ポートフォリオ
 - **News**: ニュース記事 (日付, タイトル, JSON contents)
 - **Inquiry**: お問い合わせ
-- **Account/Session**: NextAuth認証関連
+- **Account**: Google OAuthアカウント連携（セッション自体はJWT Cookie）
 
 ## Environment Variables
 
 開発環境は `next/.env` に設定。主要な変数:
 - `DATABASE_URL`: MySQL接続文字列
-- `AUTH_SECRET` / `NEXTAUTH_SECRET`: NextAuth暗号化キー
+- `AUTH_SECRET`: NextAuth暗号化キー
 - `NEXTAUTH_URL`: 認証コールバックURL
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: Google OAuth（任意）
 - `RECAPTCHA_SECRET_KEY`: reCAPTCHA検証用
@@ -128,12 +127,12 @@ npx prisma db seed    # シードデータ投入
 
 ### Validation
 - Zodスキーマに統一 (`src/lib/validation.ts`)
-- InquirySchema, RegistrationSchema, LoginSchema
+- InquirySchema, RegistrationSchema, Product/Work/NewsのCreate・Updateスキーマ
 - XSSサニタイズ対応（xssパッケージ）
 
 ### Rate Limiting
 - 統一されたレート制限 (`src/lib/rate-limit.ts`, 既定はDB共有ストア)
-- プリセット: register, login, contact, recaptcha, api
+- プリセット: register, login, loginIp, contact, recaptcha, review, reviewUpdate
 
 ### Session Types
 - `src/app/types/next-auth.d.ts` でSession/User/JWT型を拡張

@@ -2,6 +2,16 @@ interface ApiJsonOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
+/** AbortControllerによる意図的なキャンセルかを環境非依存で判定する。 */
+export function isAbortError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    error.name === "AbortError"
+  );
+}
+
 /**
  * クライアント側 fetch の共通ヘルパ。
  * 「JSON で送って、失敗なら data.error を Error として投げる」定型を一元化する。

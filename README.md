@@ -58,7 +58,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 cd next
 yarn install
 npx prisma generate
-npx prisma db push
+npx prisma migrate deploy
 npx prisma db seed    # シードデータ投入（任意）
 yarn dev              # http://localhost:3000
 ```
@@ -143,7 +143,7 @@ yarn typecheck        # 型チェック (.next を再生成してから実行)
 
 # Prisma
 npx prisma generate   # Client 再生成
-npx prisma db push    # スキーマを DB に反映
+npx prisma migrate deploy # migrationを空DBから順番に適用
 npx prisma studio     # DB GUI ツール
 npx prisma db seed    # シードデータ投入
 ```
@@ -198,11 +198,11 @@ npx prisma db seed    # シードデータ投入
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
-| POST | `/api/auth/[...nextauth]` | NextAuth 認証 | - |
-| GET/POST/PUT/DELETE | `/api/products` | 商品 CRUD | 読取: 公開のみ無認証 / 非公開取得・書込: ADMIN/EDITOR |
-| GET/POST/PUT/DELETE | `/api/works` | 実績 CRUD | 書込: ADMIN/EDITOR |
-| GET/POST/PUT/DELETE | `/api/news` | ニュース CRUD | 書込: ADMIN/EDITOR |
-| GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET: 要認証 / DELETE: ADMIN |
+| GET/POST | `/api/auth/[...nextauth]` | NextAuth 認証 | - |
+| GET/POST/PUT/DELETE | `/api/products` | 商品 CRUD | GET公開（非公開取得はADMIN/EDITOR）/ POST・PUT: ADMIN/EDITOR / DELETE: ADMIN |
+| GET/POST/PUT/DELETE | `/api/works` | 実績 CRUD | GET公開 / POST・PUT: ADMIN/EDITOR / DELETE: ADMIN |
+| GET/POST/PUT/DELETE | `/api/news` | ニュース CRUD | GET公開 / POST・PUT: ADMIN/EDITOR / DELETE: ADMIN |
+| GET/POST/DELETE | `/api/email` | お問い合わせ（送信・一覧・削除） | POST: レート制限 / GET・DELETE: ADMIN |
 | POST | `/api/recaptcha` | reCAPTCHA 検証 | - (レート制限あり) |
 | POST | `/api/register` | ユーザー登録 | - (レート制限あり) |
 | POST | `/api/upload` | 画像アップロード | ADMIN/EDITOR |
@@ -220,7 +220,7 @@ npx prisma db seed    # シードデータ投入
 | **Work** | 実績・ポートフォリオ |
 | **News** | ニュース記事（JSON コンテンツ） |
 | **Inquiry** | お問い合わせ |
-| **Account / Session** | NextAuth 認証関連 |
+| **Account** | Google OAuthアカウント連携（セッション自体はJWT Cookie） |
 | **ReviewComment / ReviewCommentReply** | 社内レビュー用ページコメントと返信 |
 
 ### 商品カテゴリ
@@ -400,36 +400,36 @@ App RouterのMetadata Routeでリクエスト時に生成する。
 
 GitHub Actions による自動デプロイ：
 
-1. `develop` → `main` への PR をマージ
-2. Lint 実行
-3. マルチステージビルドで Docker イメージをビルド & ghcr.io に push
-4. 本番サーバーでイメージを pull & 起動
-5. SSL 証明書の自動取得/更新
+1. PR / develop push で migration再現、Lint、型検査、テスト、production build、Nginx HTTPS設定検証を実行
+2. main push（またはworkflow_dispatch）でDockerイメージをビルドし、ghcr.ioへpush
+3. 本番で同期済みNginx設定を事前検証
+4. 旧アプリを停止して対象イメージからDB migrationを実行（短いメンテナンス時間）
+5. 新アプリの直接healthを確認
+6. SSL証明書を準備し、Nginxを強制再作成して外部経路のhealthを確認
+
+migration失敗時は、新schemaと旧Prisma Clientの非互換を避けるため旧アプリを自動復帰せず停止状態を維持します。ログと直前の`IMAGE_TAG`を確認して手動復旧してください。
 
 ### 手動デプロイ
 
-```bash
-ssh your-server
-cd ~/seta-hp
-git pull origin main
-docker compose pull
-docker compose up -d
-```
+GitHub Actions の `Deploy_Production` を `workflow_dispatch` で実行してください。`docker compose pull && docker compose up -d` の直接実行は、migration・Nginx設定検証・設定再生成を迂回するため運用手順として使用しません。
 
 ## 運用スクリプト
 
 | スクリプト | 説明 |
 |-----------|------|
 | `scripts/renew-ssl.sh` | SSL 証明書の更新 |
-| `scripts/backup-db.sh` | DB バックアップ（14日間保持） |
-| `scripts/monitor.sh` | サービス死活監視 |
+| `scripts/backup-db.sh` | EC / Designer DB バックアップ（14日間保持、DBごとに最低3件） |
+| `scripts/monitor.sh` | EC / Designer のComposeサービスと外部経路を監視 |
 | `scripts/setup-monitoring.sh` | 監視環境セットアップ |
 
 ```bash
-# cron 設定例
-0 2 * * * /root/seta-hp/scripts/backup-db.sh >> /var/log/backup.log 2>&1
-0 3 * * * /root/seta-hp/scripts/renew-ssl.sh >> /var/log/ssl-renew.log 2>&1
+# scripts/setup-monitoring.sh が作成する主要cron
+*/5 * * * * /home/ubuntu/seta-hp/scripts/monitor.sh >> /var/log/monitor.log 2>&1
+0 4 * * * /home/ubuntu/seta-hp/scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
+0 3 1 * * /home/ubuntu/seta-hp/scripts/renew-ssl.sh >> /var/log/certbot-renew.log 2>&1
 ```
+
+Designerが別パスの場合は `DESIGNER_PROJECT_DIR`、`DESIGNER_ENV_FILE`、`DESIGNER_COMPOSE_FILE` で指定できます。意図的に対象外にする場合だけ、バックアップは `BACKUP_DESIGNER=0`、監視は `MONITOR_DESIGNER=0` を設定します。監視動作だけを確認するときは `MONITOR_SEND_EMAIL=0` で通知を抑止できます。
 
 ## 事業者情報
 

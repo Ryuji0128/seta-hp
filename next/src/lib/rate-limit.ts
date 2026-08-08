@@ -110,12 +110,11 @@ async function checkDatabaseRateLimit(
   await maybeCleanupExpiredRateLimits(now);
 
   await prisma.$executeRaw`
-    INSERT INTO ApiRateLimit (identifier, count, resetAt, createdAt, updatedAt)
-    VALUES (${key}, 1, ${resetAt}, NOW(), NOW())
+    INSERT INTO ApiRateLimit (identifier, count, resetAt)
+    VALUES (${key}, 1, ${resetAt})
     ON DUPLICATE KEY UPDATE
       count = IF(resetAt < NOW(), 1, count + 1),
-      resetAt = IF(resetAt < NOW(), ${resetAt}, resetAt),
-      updatedAt = NOW()
+      resetAt = IF(resetAt < NOW(), ${resetAt}, resetAt)
   `;
 
   const rows = await prisma.$queryRaw<Array<{ count: number; resetAt: Date }>>`

@@ -6,12 +6,17 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { badRequestResponse, internalErrorResponse } from "@/lib/api-response";
+import { badRequestResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  isErrorResponse,
+  parseJsonWithSchema,
+} from "@/lib/api-utils";
 import { RATE_LIMITS } from "@/lib/rate-limit";
 import { reviewCommentSelect } from "@/lib/review-comment-query";
-import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { ReviewStatusUpdateSchema } from "@/lib/review-validation";
 import {
-  parseReviewId as parseId,
+  parseReviewId,
   reviewWriteGuard,
 } from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
@@ -26,23 +31,25 @@ export async function PATCH(
   if (blocked) return blocked;
 
   const { id: rawId } = await params;
-  const id = parseId(rawId);
+  const id = parseReviewId(rawId);
   if (!id) return badRequestResponse("invalid id");
 
   try {
-    const body = await parseJsonBody(req);
-    if (isErrorResponse(body)) return body;
-    const status = body.status === "resolved" ? "resolved" : "open";
+    const data = await parseJsonWithSchema(req, ReviewStatusUpdateSchema);
+    if (isErrorResponse(data)) return data;
 
     const updated = await prisma.reviewComment.update({
       where: { id },
-      data: { status },
+      data,
       select: reviewCommentSelect,
     });
     return NextResponse.json({ comment: updated });
   } catch (error) {
-    console.error("レビューコメント更新エラー:", error);
-    return internalErrorResponse("更新に失敗しました");
+    return handleApiError(error, {
+      log: "レビューコメント更新エラー",
+      message: "更新に失敗しました",
+      notFoundMessage: "コメントが見つかりません",
+    });
   }
 }
 
@@ -54,14 +61,17 @@ export async function DELETE(
   if (blocked) return blocked;
 
   const { id: rawId } = await params;
-  const id = parseId(rawId);
+  const id = parseReviewId(rawId);
   if (!id) return badRequestResponse("invalid id");
 
   try {
     await prisma.reviewComment.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("レビューコメント削除エラー:", error);
-    return internalErrorResponse("削除に失敗しました");
+    return handleApiError(error, {
+      log: "レビューコメント削除エラー",
+      message: "削除に失敗しました",
+      notFoundMessage: "コメントが見つかりません",
+    });
   }
 }

@@ -7,7 +7,6 @@ import {
 } from "@/components/product/ProductCardPrimitives";
 import { FONT_DISPLAY, FONT_ITALIC } from "@/theme/themeConstants";
 import Link from "next/link";
-import { normalizeImageUrl } from "@/lib/images";
 import { type ProductSummary } from "@/lib/types/product";
 import { formatRefNumber } from "@/lib/format";
 
@@ -48,7 +47,6 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
         >
           {products.map((p) => {
             const ref = formatRefNumber(p.id);
-            const imageUrl = normalizeImageUrl(p.image);
             return (
               <Link
                 key={p.id}
@@ -57,7 +55,7 @@ const RelatedProducts: React.FC<Props> = ({ products }) => {
               >
                 <ProductCardFrame hoverShadow={false}>
                   <ProductCardMedia
-                    src={imageUrl}
+                    src={p.image}
                     alt={p.name}
                     sizes="(max-width: 600px) 50vw, 25vw"
                     aspectRatio="1 / 1"

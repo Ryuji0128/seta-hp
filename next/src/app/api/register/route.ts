@@ -8,6 +8,7 @@ import {
   parseJsonWithSchema,
 } from "@/lib/api-utils";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { DEFAULT_USER_ROLE } from "@/lib/roles";
 import { RegistrationSchema } from "@/lib/validation";
 
 const prisma = getPrismaClient();
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
-        role: "VIEWER", // 一般ユーザーはVIEWER
+        role: DEFAULT_USER_ROLE,
       },
     });
 

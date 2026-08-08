@@ -21,6 +21,20 @@ proxy_send_timeout 60s;
 proxy_read_timeout 60s;
 EOFINC
 
+# Designer API/Django adminで共有する認証境界。
+# nginx変数は実行時評価のためエスケープし、共有秘密だけentrypointで展開する。
+cat > /etc/nginx/conf.d/designer_authenticated_backend.inc << EOFINC
+auth_request /__auth;
+auth_request_set \$auth_email \$upstream_http_x_user_email;
+proxy_pass \$designer_back;
+include /etc/nginx/conf.d/proxy_headers.inc;
+# HPセッションCookieはDesignerへ渡さず、Designer自身のcsrf/sessionだけを保持する。
+proxy_set_header Cookie \$designer_cookie;
+# クライアント供給値を上書きし、認証済みユーザーと共有秘密だけを下流へ渡す。
+proxy_set_header X-Remote-User \$auth_email;
+proxy_set_header X-SSO-Auth "${PROXY_SSO_SECRET}";
+EOFINC
+
 # HTTPS/HTTP fallbackで共通の静的アセットlocation。serverコンテキストからincludeする。
 cat > /etc/nginx/conf.d/site_static_locations.inc <<'EOFINC'
 location /uploads/ {
@@ -289,29 +303,14 @@ server {
     # Designer API（同一オリジン → CORS不要）。
     location /api/ {
         limit_req zone=designer burst=30 nodelay;
-        auth_request /__auth;
-        auth_request_set \$auth_email \$upstream_http_x_user_email;
-        proxy_pass \$designer_back;
-        include /etc/nginx/conf.d/proxy_headers.inc;
-        # ★HPセッションCookieは Designer に渡さない（designer自身のcsrf/sessionのみ）。
-        proxy_set_header Cookie \$designer_cookie;
-        # ★なりすまし対策: クライアント供給の X-Remote-User を必ず上書き。
-        proxy_set_header X-Remote-User \$auth_email;
-        # ★同一network内の他コンテナからの偽装防止: 共有秘密(未設定なら空=Django側も非強制)。
-        proxy_set_header X-SSO-Auth "${PROXY_SSO_SECRET}";
+        include /etc/nginx/conf.d/designer_authenticated_backend.inc;
         include /etc/nginx/conf.d/proxy_timeouts.inc;
     }
 
     # Django admin（到達者は全員HPのADMIN。SSO側で is_staff/superuser を付与済み）。
     location /admin/ {
         limit_req zone=designer burst=30 nodelay;
-        auth_request /__auth;
-        auth_request_set \$auth_email \$upstream_http_x_user_email;
-        proxy_pass \$designer_back;
-        include /etc/nginx/conf.d/proxy_headers.inc;
-        proxy_set_header Cookie \$designer_cookie;
-        proxy_set_header X-Remote-User \$auth_email;
-        proxy_set_header X-SSO-Auth "${PROXY_SSO_SECRET}";
+        include /etc/nginx/conf.d/designer_authenticated_backend.inc;
     }
 
     # Django / DRF の静的ファイル。Cookie不要なので全除去。

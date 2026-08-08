@@ -13,7 +13,8 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { apiJson } from "@/lib/api-client";
+import { apiJson, isAbortError } from "@/lib/api-client";
+import { REVIEW_MAX_NAME } from "@/lib/review-constants";
 
 import CommentPopover from "./review/CommentPopover";
 import CommentsDrawer from "./review/CommentsDrawer";
@@ -58,21 +59,30 @@ export default function ReviewOverlay() {
     setAuthorName(readStoredName());
   }, []);
 
-  const refetch = useCallback(async () => {
-    try {
-      const data = await apiJson<{ comments: ReviewComment[] }>(
-        `/api/review-comments?page=${encodeURIComponent(pathname)}`,
-        { cache: "no-store" }
-      );
-      setComments(Array.isArray(data.comments) ? data.comments : []);
-    } catch (err) {
-      console.error("review comments fetch error:", err);
-    }
-  }, [pathname]);
-
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    const controller = new AbortController();
+    setComments([]);
+    setOpenCommentId(null);
+    setPendingPin(null);
+    setDraftContent("");
+
+    void apiJson<{ comments: ReviewComment[] }>(
+      `/api/review-comments?page=${encodeURIComponent(pathname)}`,
+      { cache: "no-store", signal: controller.signal }
+    )
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setComments(Array.isArray(data.comments) ? data.comments : []);
+        }
+      })
+      .catch((error) => {
+        if (!isAbortError(error)) {
+          console.error("review comments fetch error:", error);
+        }
+      });
+
+    return () => controller.abort();
+  }, [pathname]);
 
   // ピン作成モード: クリック時にピン座標を取得
   useEffect(() => {
@@ -140,7 +150,7 @@ export default function ReviewOverlay() {
   };
 
   const confirmName = () => {
-    const trimmed = nameDraft.trim().slice(0, 80);
+    const trimmed = nameDraft.trim().slice(0, REVIEW_MAX_NAME);
     if (!trimmed) return;
     setAuthorName(trimmed);
     writeStoredName(trimmed);

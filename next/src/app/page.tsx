@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import HeroSection from "./_home/HeroSection";
 import MarqueeSection from "./_home/MarqueeSection";
 import CatalogueSection from "./_home/CatalogueSection";
-import { getHomeProductData } from "./_home/getCatalogueProducts";
+import { getHomeProductData } from "./_home/getHomeProductData";
 import FeaturesSection from "./_home/FeaturesSection";
 import QuizTeaserSection from "./_home/QuizTeaserSection";
 import CTASection from "./_home/CTASection";

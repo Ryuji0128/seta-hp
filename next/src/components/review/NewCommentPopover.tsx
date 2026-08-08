@@ -1,5 +1,6 @@
 import { Box, Button, Popover, Stack, TextField, Typography } from "@mui/material";
 import { type RefObject } from "react";
+import { REVIEW_MAX_CONTENT } from "@/lib/review-constants";
 import { Z_OVERLAY, Z_PIN } from "./types";
 
 interface PendingPin {
@@ -61,6 +62,7 @@ export default function NewCommentPopover({
             placeholder="気になる点を入力…"
             value={draftContent}
             onChange={(e) => onDraftContentChange(e.target.value)}
+            slotProps={{ htmlInput: { maxLength: REVIEW_MAX_CONTENT } }}
             autoFocus
             sx={{ mt: 1 }}
           />
