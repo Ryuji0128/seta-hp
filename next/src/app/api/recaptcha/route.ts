@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { isErrorResponse, parseJsonBody } from "@/lib/api-utils";
+import { successResponse } from "@/lib/api-response";
 
 export async function POST(req: NextRequest) {
   // レート制限チェック
@@ -62,10 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     // トークンが有効でスコアが閾値以上の場合
-    return NextResponse.json(
-      { success: true, message: 'Verification successful' },
-      { status: 200 }
-    );
+    return successResponse();
   } catch (error) {
     console.error("reCAPTCHA 検証エラー:", error);
     return NextResponse.json({ success: false, error: "reCAPTCHA 検証に失敗しました。" }, { status: 500 });

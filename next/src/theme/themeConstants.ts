@@ -13,8 +13,6 @@ declare module "@mui/material/styles" {
       };
       fonts: {
         display: string;
-        body: string;
-        italic: string;
       };
     };
   }
@@ -28,8 +26,6 @@ declare module "@mui/material/styles" {
       };
       fonts: {
         display: string;
-        body: string;
-        italic: string;
       };
     };
   }
@@ -99,20 +95,6 @@ export const themeConstants = {
       fontWeight: 800,
       lineHeight: 0.96,
       letterSpacing: "-0.04em",
-    },
-    h2: {
-      fontFamily: FONT_DISPLAY,
-      fontSize: "clamp(40px, 4.6vw, 64px)",
-      fontWeight: 700,
-      lineHeight: 1,
-      letterSpacing: "-0.035em",
-    },
-    h3: {
-      fontFamily: FONT_DISPLAY,
-      fontSize: "clamp(28px, 3vw, 44px)",
-      fontWeight: 700,
-      lineHeight: 1.1,
-      letterSpacing: "-0.03em",
     },
     h4: {
       fontFamily: FONT_DISPLAY,
@@ -223,8 +205,6 @@ export const themeConstants = {
     },
     fonts: {
       display: FONT_DISPLAY,
-      body: FONT_BODY,
-      italic: FONT_ITALIC,
     },
   },
 };

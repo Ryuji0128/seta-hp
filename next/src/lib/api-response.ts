@@ -10,6 +10,13 @@ interface ApiResponse {
 }
 
 /**
+ * 成功時にクライアントが必要とする最小レスポンスを返す。
+ */
+export function successResponse(init?: ResponseInit): NextResponse<ApiResponse> {
+  return NextResponse.json({ success: true }, init);
+}
+
+/**
  * 400 Bad Request（`{ error }` 形式・各ルートの直書きレスポンスと同形）
  */
 export function badRequestResponse(message: string): NextResponse {

@@ -8,7 +8,7 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { badRequestResponse, notFoundResponse } from "@/lib/api-response";
+import { badRequestResponse, notFoundResponse, successResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
@@ -16,10 +16,7 @@ import {
 } from "@/lib/api-utils";
 import { reviewReplySelect } from "@/lib/review-comment-query";
 import { ReviewReplyCreateSchema } from "@/lib/review-validation";
-import {
-  parseReviewId,
-  reviewWriteGuard,
-} from "@/lib/reviewCommentsGuard";
+import { parseGuardedReviewId, parseReviewId } from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = getPrismaClient();
@@ -28,12 +25,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const blocked = await reviewWriteGuard(req);
-  if (blocked) return blocked;
-
-  const { id: rawId } = await params;
-  const commentId = parseReviewId(rawId);
-  if (!commentId) return badRequestResponse("invalid id");
+  const commentId = await parseGuardedReviewId(req, params);
+  if (isErrorResponse(commentId)) return commentId;
 
   try {
     const data = await parseJsonWithSchema(req, ReviewReplyCreateSchema);
@@ -56,12 +49,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const blocked = await reviewWriteGuard(req);
-  if (blocked) return blocked;
-
-  const { id: rawId } = await params;
-  const commentId = parseReviewId(rawId);
-  if (!commentId) return badRequestResponse("invalid id");
+  const commentId = await parseGuardedReviewId(req, params);
+  if (isErrorResponse(commentId)) return commentId;
 
   const replyId = parseReviewId(req.nextUrl.searchParams.get("replyId"));
   if (!replyId) return badRequestResponse("replyId is required");
@@ -73,7 +62,7 @@ export async function DELETE(
     if (result.count === 0) {
       return notFoundResponse("not found");
     }
-    return NextResponse.json({ ok: true });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, {
       log: "レビュー返信削除エラー",

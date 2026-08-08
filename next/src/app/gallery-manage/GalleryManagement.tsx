@@ -1,23 +1,16 @@
 "use client";
 
-import {
-  Box,
-  Chip,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, TextField, Typography } from "@mui/material";
 import { Session } from "next-auth";
 import { useCallback } from "react";
 import ImageUpload from "@/components/ImageUpload";
 import DeleteConfirmDialog from "@/components/manage/DeleteConfirmDialog";
 import ResourceActions from "@/components/manage/ResourceActions";
 import FormDialog from "@/components/manage/FormDialog";
+import {
+  CategoryAndTagsFields,
+  ResourcePublishedField,
+} from "@/components/manage/ResourceFormFields";
 import ResourceTable, { type ResourceColumn } from "@/components/manage/ResourceTable";
 import { useCrudResource } from "@/lib/hooks/useCrudResource";
 import { useResourceDelete } from "@/lib/hooks/useResourceDelete";
@@ -173,26 +166,13 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
           rows={3}
           required
         />
-        <FormControl fullWidth>
-          <InputLabel>カテゴリ</InputLabel>
-          <Select
-            value={editor.form.category}
-            label="カテゴリ"
-            onChange={(e) => editor.setField("category", e.target.value)}
-          >
-            {GALLERY_CATEGORIES.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <TextField
-          label="タグ（カンマ区切り）"
-          value={editor.form.tags}
-          onChange={(e) => editor.setField("tags", e.target.value)}
-          fullWidth
-          placeholder="例: カード, ポケモン, アクリル"
+        <CategoryAndTagsFields
+          categories={GALLERY_CATEGORIES}
+          category={editor.form.category}
+          tags={editor.form.tags}
+          tagPlaceholder="例: カード, ポケモン, アクリル"
+          onCategoryChange={(category) => editor.setField("category", category)}
+          onTagsChange={(tags) => editor.setField("tags", tags)}
         />
         <Box>
           <Typography variant="body2" sx={{ mb: 1 }}>
@@ -203,14 +183,9 @@ const GalleryManagement: React.FC<GalleryManagementProps> = ({ session }) => {
             onChange={(image) => editor.setField("image", image)}
           />
         </Box>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={editor.form.isPublished}
-              onChange={(e) => editor.setField("isPublished", e.target.checked)}
-            />
-          }
-          label="公開する"
+        <ResourcePublishedField
+          checked={editor.form.isPublished}
+          onChange={(isPublished) => editor.setField("isPublished", isPublished)}
         />
       </FormDialog>
 

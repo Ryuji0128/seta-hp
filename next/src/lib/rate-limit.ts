@@ -43,7 +43,7 @@ export interface RateLimitConfig {
   windowMs: number;
 }
 
-export interface RateLimitResult {
+interface RateLimitResult {
   success: boolean;
   remaining: number;
   resetAt: number;

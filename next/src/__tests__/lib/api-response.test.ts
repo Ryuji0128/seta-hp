@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  successResponse,
   badRequestResponse,
   notFoundResponse,
   internalErrorResponse,
@@ -8,6 +9,15 @@ import {
   unauthorizedResponse,
   forbiddenResponse,
 } from "@/lib/api-response";
+
+describe("successResponse", () => {
+  it("最小成功payloadと指定したレスポンス設定を返す", async () => {
+    const res = successResponse({ status: 201, headers: { "X-Test": "ok" } });
+    expect(res.status).toBe(201);
+    expect(res.headers.get("X-Test")).toBe("ok");
+    expect(await res.json()).toEqual({ success: true });
+  });
+});
 
 describe("badRequestResponse", () => {
   it("400ステータスで{ error }形式を返す", async () => {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { notFoundResponse } from "@/lib/api-response";
+import { notFoundResponse, successResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       purchaseUrl,
     } = parsed;
 
-    const product = await prisma.product.create({
+    await prisma.product.create({
       data: {
         name: xss(name),
         description: xss(description),
@@ -87,11 +87,12 @@ export async function POST(req: NextRequest) {
         isHeroImage: isHeroImage === true,
         purchaseUrl: purchaseUrl ? xss(purchaseUrl) : null,
       },
+      select: { id: true },
     });
 
     revalidateProductPages();
 
-    return NextResponse.json({ message: "商品を作成しました", product });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, { log: "商品作成エラー", message: "商品の作成に失敗しました" });
   }
@@ -118,12 +119,15 @@ export async function PUT(req: NextRequest) {
     } = parsed;
 
     // 存在確認
-    const existing = await prisma.product.findUnique({ where: { id } });
+    const existing = await prisma.product.findUnique({
+      where: { id },
+      select: { images: true },
+    });
     if (!existing) {
       return notFoundResponse("指定された商品が見つかりません");
     }
 
-    const product = await prisma.product.update({
+    await prisma.product.update({
       where: { id },
       data: {
         name: name ? xss(name) : undefined,
@@ -137,13 +141,14 @@ export async function PUT(req: NextRequest) {
         isHeroImage: isHeroImage !== undefined ? isHeroImage === true : undefined,
         purchaseUrl: purchaseUrl !== undefined ? (purchaseUrl ? xss(purchaseUrl) : null) : undefined,
       },
+      select: { id: true },
     });
 
     await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
     revalidateProductPages();
 
-    return NextResponse.json({ message: "商品を更新しました", product });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, {
       log: "商品更新エラー",
@@ -157,13 +162,14 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const prisma = getPrismaClient();
   return deleteManagedResource(req, {
-    findById: (id) => prisma.product.findUnique({ where: { id } }),
-    deleteById: (id) => prisma.product.delete({ where: { id } }),
+    findById: (id) =>
+      prisma.product.findUnique({ where: { id }, select: { images: true } }),
+    deleteById: (id) =>
+      prisma.product.delete({ where: { id }, select: { id: true } }),
     afterDelete: async (existing) => {
       await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
       revalidateProductPages();
     },
-    successMessage: "商品を削除しました",
     notFoundMessage: "指定された商品が見つかりません",
     errorLog: "商品削除エラー",
     errorMessage: "商品の削除に失敗しました",

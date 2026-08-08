@@ -12,6 +12,7 @@ import {
 } from "@/lib/validation";
 import xss from "xss";
 import { deleteManagedResource } from "@/lib/managed-resource-route";
+import { successResponse } from "@/lib/api-response";
 import { getNewsText, type NewsContents } from "@/lib/types/news";
 
 const sanitizeNewsContents = (contents: NewsContents) => ({
@@ -48,16 +49,17 @@ export async function POST(req: NextRequest) {
     const prisma = getPrismaClient();
     const { title, contents, date, url } = parsed;
 
-    const news = await prisma.news.create({
+    await prisma.news.create({
       data: {
         title: xss(title),
         contents: sanitizeNewsContents(contents),
         date,
         url: url ? xss(url) : null,
       },
+      select: { id: true },
     });
 
-    return NextResponse.json({ message: "お知らせを作成しました", news });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, { log: "お知らせ作成エラー", message: "お知らせの作成に失敗しました" });
   }
@@ -71,7 +73,7 @@ export async function PUT(req: NextRequest) {
     const prisma = getPrismaClient();
     const { id, title, contents, date, url } = parsed;
 
-    const news = await prisma.news.update({
+    await prisma.news.update({
       where: { id },
       data: {
         title: title ? xss(title) : undefined,
@@ -79,9 +81,10 @@ export async function PUT(req: NextRequest) {
         date,
         url: url !== undefined ? (url ? xss(url) : null) : undefined,
       },
+      select: { id: true },
     });
 
-    return NextResponse.json({ message: "お知らせを更新しました", news });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, {
       log: "お知らせ更新エラー",
@@ -96,8 +99,7 @@ export async function DELETE(req: NextRequest) {
   const prisma = getPrismaClient();
   return deleteManagedResource(req, {
     findById: (id) => prisma.news.findUnique({ where: { id }, select: { id: true } }),
-    deleteById: (id) => prisma.news.delete({ where: { id } }),
-    successMessage: "お知らせを削除しました",
+    deleteById: (id) => prisma.news.delete({ where: { id }, select: { id: true } }),
     notFoundMessage: "指定されたお知らせが見つかりません",
     errorLog: "お知らせ削除エラー",
     errorMessage: "お知らせの削除に失敗しました",

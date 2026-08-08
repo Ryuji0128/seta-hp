@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getPrismaClient } from "@/lib/db";
 import bcryptjs from "bcryptjs";
-import { badRequestResponse } from "@/lib/api-response";
+import { badRequestResponse, successResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     // 既存ユーザーのチェック
     const existingUser = await prisma.user.findUnique({
       where: { email: validatedData.email },
+      select: { id: true },
     });
 
     if (existingUser) {
@@ -40,32 +41,23 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcryptjs.hash(validatedData.password, 12);
 
     // ユーザーの作成
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
         role: DEFAULT_USER_ROLE,
       },
+      select: { id: true },
     });
 
-    return NextResponse.json(
-      {
-        message: "アカウントを作成しました",
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
+    return successResponse({
+      status: 201,
+      headers: {
+        "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+        "X-RateLimit-Reset": String(rateLimitResult.resetAt),
       },
-      {
-        status: 201,
-        headers: {
-          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
-          "X-RateLimit-Reset": String(rateLimitResult.resetAt),
-        },
-      }
-    );
+    });
   } catch (error) {
     return handleApiError(error, {
       log: "Registration error",
