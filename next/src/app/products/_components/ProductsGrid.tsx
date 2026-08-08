@@ -9,7 +9,6 @@ import {
   ProductPriceRow,
 } from "@/components/product/ProductCardPrimitives";
 import { getProductCategoryLabel } from "@/lib/constants/categories";
-import { normalizeImageUrl } from "@/lib/images";
 import { parseTags, type ProductGridItem } from "@/lib/types/product";
 import { formatRefNumber } from "@/lib/format";
 
@@ -38,7 +37,6 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
             const isPopular = tags.includes("人気");
             const isNew = tags.includes("NEW");
             const ref = formatRefNumber(p.id);
-            const imageUrl = normalizeImageUrl(p.image);
 
             return (
               <Link
@@ -48,7 +46,7 @@ const ProductsGrid: React.FC<Props> = ({ products }) => {
               >
                 <ProductCardFrame>
                   <ProductCardMedia
-                    src={imageUrl}
+                    src={p.image}
                     alt={p.name}
                     sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
                     placeholder={`No. ${ref}`}

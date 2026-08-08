@@ -1,18 +1,10 @@
 import { unstable_cache } from "next/cache";
 import { getPrismaClient } from "@/lib/db";
-import { getPrimaryProductImage } from "@/lib/types/product";
+import { getPrimaryProductImage, type ProductSummary } from "@/lib/types/product";
 import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache-tags";
 
-// トップの「ラインナップ」カードに表示する商品データ。
-export type CatalogueProduct = {
-  id: number;
-  name: string;
-  price: number;
-  image: string | null;
-};
-
 type HomeProductData = {
-  catalogueProducts: CatalogueProduct[];
+  catalogueProducts: ProductSummary[];
   heroImages: string[];
 };
 

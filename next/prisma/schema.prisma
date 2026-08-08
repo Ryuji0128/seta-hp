@@ -21,8 +21,6 @@ model Account {
   id_token                 String?  @db.Text
   session_state            String?
   refresh_token_expires_in Int?
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
   User                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
@@ -32,7 +30,6 @@ model Account {
 model Inquiry {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
   name      String
   email     String
   phone     String
@@ -45,13 +42,11 @@ model Inquiry {
 }
 
 model News {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  date      DateTime
-  title     String
-  contents  Json
-  url       String?
+  id       Int      @id @default(autoincrement())
+  date     DateTime
+  title    String
+  contents Json
+  url      String?
 
   @@index([date])
 }
@@ -76,18 +71,6 @@ model Product {
   @@index([isHeroImage, isPublished])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -96,17 +79,13 @@ model User {
   emailVerified DateTime?
   role          User_role @default(VIEWER)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
   Account       Account[]
-  Session       Session[]
   Inquiry       Inquiry[]
 }
 
 model Work {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   title       String
   description String   @db.Text
   category    String
@@ -128,7 +107,6 @@ enum User_role {
 model ReviewComment {
   id         Int                  @id @default(autoincrement())
   createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
   pageUrl    String
   xRatio     Float
   yAbsolute  Float
@@ -156,8 +134,6 @@ model ApiRateLimit {
   identifier String   @unique @db.VarChar(191)
   count      Int
   resetAt    DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 
   @@index([resetAt])
 }
