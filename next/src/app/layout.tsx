@@ -119,10 +119,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-
-  verification: {
-    // Google Search Console の確認コードをここに追加
-  },
 };
 
 const jsonLd = {

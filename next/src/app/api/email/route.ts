@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
-import { validationErrorResponse } from "@/lib/api-response";
+import { successResponse, validationErrorResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
@@ -75,10 +75,10 @@ export async function POST(req: NextRequest) {
         inquiry: sanitizedData.inquiry,
         userId,
       },
+      select: { id: true, createdAt: true },
     });
 
     // 🔹 メール送信（失敗してもDB登録は成功として扱う）
-    let emailSent = true;
     try {
       const transporter = getTransporter();
       const adminAddress = process.env.CONTACT_TO_EMAIL || process.env.SMTP_USER;
@@ -119,15 +119,9 @@ export async function POST(req: NextRequest) {
       });
     } catch (emailError) {
       console.error("メール送信エラー（DB登録は完了）:", emailError);
-      emailSent = false;
     }
 
-    return NextResponse.json({
-      success: true,
-      message: emailSent
-        ? "問い合わせを登録し、メールを送信しました。"
-        : "問い合わせを登録しました。確認メールの送信に失敗しましたが、お問い合わせは受け付けております。",
-    });
+    return successResponse();
   } catch (error) {
     console.error("問い合わせ処理エラー:", error);
     return NextResponse.json(
@@ -186,9 +180,9 @@ export async function DELETE(req: NextRequest) {
 
     await prisma.inquiry.delete({
       where: { id },
+      select: { id: true },
     });
-
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     // 存在しないIDの削除は handleApiError が P2025 → 404 に変換する
     return handleApiError(error, {

@@ -5,7 +5,7 @@ import {
   parseAdminJson,
   requireEditor,
 } from "@/lib/api-utils";
-import { notFoundResponse } from "@/lib/api-response";
+import { notFoundResponse, successResponse } from "@/lib/api-response";
 import { parsePagination } from "@/lib/pagination";
 import { RequiredIdSchema } from "@/lib/validation";
 
@@ -35,7 +35,6 @@ interface DeleteManagedResourceOptions<T> {
   findById: (id: number) => Promise<T | null>;
   deleteById: (id: number) => Promise<unknown>;
   afterDelete?: (resource: T) => Promise<void> | void;
-  successMessage: string;
   notFoundMessage: string;
   errorLog: string;
   errorMessage: string;
@@ -56,7 +55,7 @@ export async function deleteManagedResource<T>(
     await options.deleteById(parsed.id);
     await options.afterDelete?.(existing);
 
-    return NextResponse.json({ message: options.successMessage });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, {
       log: options.errorLog,
