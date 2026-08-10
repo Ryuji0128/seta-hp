@@ -102,20 +102,33 @@ const stockSchema = z
     message: `在庫状況は${VALID_STOCK_OPTIONS.join(", ")}のいずれかを指定してください`,
   });
 
-const purchaseUrlSchema = z
-  .string()
-  .refine(
-    (v) => {
-      if (!v) return true;
-      try {
-        new URL(v);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    { message: "購入URLは有効なURLを指定してください" }
-  );
+// MySQL の String(VARCHAR(191)) 列に対応する最大長。超過は DB insert 前に 400 で弾く。
+const VARCHAR_MAX = 191;
+
+/**
+ * http(s) スキームのみを許可するURLスキーマを生成する。
+ * `javascript:` や `data:` などのスキームは new URL() では解析が通ってしまうため、
+ * protocol を明示的に検査して格納・描画時の XSS（例: <a href="javascript:...">）を防ぐ。
+ */
+function makeHttpUrlSchema(message: string) {
+  return z
+    .string()
+    .max(VARCHAR_MAX, { message })
+    .refine(
+      (v) => {
+        if (!v) return true;
+        try {
+          const { protocol } = new URL(v);
+          return protocol === "http:" || protocol === "https:";
+        } catch {
+          return false;
+        }
+      },
+      { message }
+    );
+}
+
+const purchaseUrlSchema = makeHttpUrlSchema("購入URLは http(s) 形式の有効なURLを指定してください");
 
 const idSchema = z
   .number({ required_error: "IDは必須です", invalid_type_error: "IDは必須です" })
@@ -126,7 +139,10 @@ const tagsSchema = z.union([z.string(), z.array(z.unknown())]).optional();
 const optionalImageSchema = z.string().optional().nullable();
 
 export const ProductCreateSchema = z.object({
-  name: z.string({ required_error: "名前は必須です" }).min(1, { message: "名前は必須です" }),
+  name: z
+    .string({ required_error: "名前は必須です" })
+    .min(1, { message: "名前は必須です" })
+    .max(VARCHAR_MAX, { message: `名前は${VARCHAR_MAX}文字以内で入力してください` }),
   description: z.string({ required_error: "説明は必須です" }).min(1, { message: "説明は必須です" }),
   price: priceSchema,
   category: productCategorySchema,
@@ -149,7 +165,10 @@ const galleryCategorySchema = z
   });
 
 export const WorkCreateSchema = z.object({
-  title: z.string({ required_error: "タイトルは必須です" }).min(1, { message: "タイトルは必須です" }),
+  title: z
+    .string({ required_error: "タイトルは必須です" })
+    .min(1, { message: "タイトルは必須です" })
+    .max(VARCHAR_MAX, { message: `タイトルは${VARCHAR_MAX}文字以内で入力してください` }),
   description: z.string({ required_error: "説明は必須です" }).min(1, { message: "説明は必須です" }),
   category: galleryCategorySchema,
   tags: tagsSchema,
@@ -186,10 +205,13 @@ const newsContentsSchema = z.custom<string | { text: string }>(
 );
 
 export const NewsCreateSchema = z.object({
-  title: z.string({ required_error: newsRequiredMessage }).min(1, { message: newsRequiredMessage }),
+  title: z
+    .string({ required_error: newsRequiredMessage })
+    .min(1, { message: newsRequiredMessage })
+    .max(VARCHAR_MAX, { message: `タイトルは${VARCHAR_MAX}文字以内で入力してください` }),
   contents: newsContentsSchema,
   date: newsDateSchema,
-  url: z.string().optional().nullable(),
+  url: makeHttpUrlSchema("URLは http(s) 形式で入力してください").optional().nullable(),
 });
 
 export const NewsUpdateSchema = NewsCreateSchema.partial().extend({

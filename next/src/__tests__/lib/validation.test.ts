@@ -140,6 +140,21 @@ describe("管理APIスキーマ", () => {
     expect(ProductCreateSchema.safeParse({ ...product, isPublished: "true" }).success).toBe(false);
   });
 
+  it("購入URLに http(s) 以外のスキーム（javascript:）を拒否する", () => {
+    expect(
+      ProductCreateSchema.safeParse({ ...product, purchaseUrl: "javascript:alert(1)" }).success
+    ).toBe(false);
+    expect(
+      ProductCreateSchema.safeParse({ ...product, purchaseUrl: "http://example.com" }).success
+    ).toBe(true);
+  });
+
+  it("商品名がVARCHAR上限(191)を超える場合は拒否する", () => {
+    expect(
+      ProductCreateSchema.safeParse({ ...product, name: "あ".repeat(192) }).success
+    ).toBe(false);
+  });
+
   it("商品更新はID必須で部分更新を許可する", () => {
     expect(ProductUpdateSchema.safeParse({ id: 1, isHeroImage: true }).success).toBe(true);
     expect(ProductUpdateSchema.safeParse({ isHeroImage: true }).success).toBe(false);
