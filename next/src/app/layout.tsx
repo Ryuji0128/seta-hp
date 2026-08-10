@@ -13,6 +13,7 @@ import {
   SITE_URL,
   X_PROFILE_URL,
 } from "@/lib/site-config";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { Cormorant_Garamond, Inter, Inter_Tight, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
@@ -119,10 +120,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-
-  verification: {
-    // Google Search Console の確認コードをここに追加
-  },
 };
 
 const jsonLd = {
@@ -156,7 +153,7 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
       </head>
       <body>

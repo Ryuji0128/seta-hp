@@ -6,7 +6,7 @@
  */
 
 import { getPrismaClient } from "@/lib/db";
-import { badRequestResponse } from "@/lib/api-response";
+import { successResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
@@ -15,10 +15,7 @@ import {
 import { RATE_LIMITS } from "@/lib/rate-limit";
 import { reviewCommentSelect } from "@/lib/review-comment-query";
 import { ReviewStatusUpdateSchema } from "@/lib/review-validation";
-import {
-  parseReviewId,
-  reviewWriteGuard,
-} from "@/lib/reviewCommentsGuard";
+import { parseGuardedReviewId } from "@/lib/reviewCommentsGuard";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = getPrismaClient();
@@ -27,12 +24,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const blocked = await reviewWriteGuard(req, RATE_LIMITS.reviewUpdate);
-  if (blocked) return blocked;
-
-  const { id: rawId } = await params;
-  const id = parseReviewId(rawId);
-  if (!id) return badRequestResponse("invalid id");
+  const id = await parseGuardedReviewId(req, params, RATE_LIMITS.reviewUpdate);
+  if (isErrorResponse(id)) return id;
 
   try {
     const data = await parseJsonWithSchema(req, ReviewStatusUpdateSchema);
@@ -57,16 +50,12 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const blocked = await reviewWriteGuard(req);
-  if (blocked) return blocked;
-
-  const { id: rawId } = await params;
-  const id = parseReviewId(rawId);
-  if (!id) return badRequestResponse("invalid id");
+  const id = await parseGuardedReviewId(req, params);
+  if (isErrorResponse(id)) return id;
 
   try {
-    await prisma.reviewComment.delete({ where: { id } });
-    return NextResponse.json({ ok: true });
+    await prisma.reviewComment.delete({ where: { id }, select: { id: true } });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, {
       log: "レビューコメント削除エラー",

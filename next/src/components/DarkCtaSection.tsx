@@ -11,7 +11,6 @@ interface DarkCtaSectionProps {
   body: ReactNode;
   /** 主ボタン（白背景）のラベル。末尾に矢印が付く */
   primaryLabel: ReactNode;
-  /** 主ボタンのリンク先（既定: お問い合わせ） */
   /** 副ボタン（枠線）のラベル */
   secondaryLabel: ReactNode;
   /** 副ボタンのリンク先 */

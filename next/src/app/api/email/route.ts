@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/db";
-import { validationErrorResponse } from "@/lib/api-response";
+import { successResponse, validationErrorResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
@@ -16,6 +16,8 @@ import type { Transporter } from "nodemailer";
 import xss from "xss";
 import { parsePagination } from "@/lib/pagination";
 import { CONTACT_EMAIL } from "@/lib/site-config";
+import { isRecaptchaEnabled } from "@/lib/runtime-config";
+import { verifyRecaptchaToken } from "@/lib/recaptcha";
 
 const prisma = getPrismaClient();
 
@@ -48,6 +50,19 @@ export async function POST(req: NextRequest) {
     const inquiryData = await parseJsonBody(req);
     if (isErrorResponse(inquiryData)) return inquiryData;
 
+    // 🔹 reCAPTCHA検証（有効時のみ、送信処理と同一ハンドラ内で実施）
+    // フォームUIを経由しない /api/email への直接POSTでスパム・任意宛先への自動返信送信
+    // （踏み台化）を防ぐため、チャレンジ通過をこのハンドラ内で必須化する。
+    if (isRecaptchaEnabled()) {
+      const verification = await verifyRecaptchaToken(inquiryData.recaptchaToken, "contact_form");
+      if (!verification.success) {
+        return NextResponse.json(
+          { success: false, error: "reCAPTCHA 検証に失敗しました。" },
+          { status: verification.status >= 500 ? 500 : 400 }
+        );
+      }
+    }
+
     // 🔹 XSS対策
     const sanitizedData = {
       name: xss(inquiryData.name || ""),
@@ -75,10 +90,10 @@ export async function POST(req: NextRequest) {
         inquiry: sanitizedData.inquiry,
         userId,
       },
+      select: { id: true, createdAt: true },
     });
 
     // 🔹 メール送信（失敗してもDB登録は成功として扱う）
-    let emailSent = true;
     try {
       const transporter = getTransporter();
       const adminAddress = process.env.CONTACT_TO_EMAIL || process.env.SMTP_USER;
@@ -119,15 +134,9 @@ export async function POST(req: NextRequest) {
       });
     } catch (emailError) {
       console.error("メール送信エラー（DB登録は完了）:", emailError);
-      emailSent = false;
     }
 
-    return NextResponse.json({
-      success: true,
-      message: emailSent
-        ? "問い合わせを登録し、メールを送信しました。"
-        : "問い合わせを登録しました。確認メールの送信に失敗しましたが、お問い合わせは受け付けております。",
-    });
+    return successResponse();
   } catch (error) {
     console.error("問い合わせ処理エラー:", error);
     return NextResponse.json(
@@ -186,9 +195,9 @@ export async function DELETE(req: NextRequest) {
 
     await prisma.inquiry.delete({
       where: { id },
+      select: { id: true },
     });
-
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     // 存在しないIDの削除は handleApiError が P2025 → 404 に変換する
     return handleApiError(error, {

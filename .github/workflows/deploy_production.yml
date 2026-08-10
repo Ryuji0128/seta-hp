@@ -13,7 +13,10 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # develop / PR は速いフィードバックのため進行中の実行をキャンセルするが、
+  # main（本番デプロイ）は途中キャンセルするとアプリ停止やマイグレーション中断で
+  # 本番が中途半端な状態に残りうるため、キャンセルせずキュー実行する。
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   REGISTRY: ghcr.io

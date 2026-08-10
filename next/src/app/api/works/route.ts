@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/db";
-import { notFoundResponse } from "@/lib/api-response";
+import { notFoundResponse, successResponse } from "@/lib/api-response";
 import {
   handleApiError,
   isErrorResponse,
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     const prisma = getPrismaClient();
     const { title, description, category, tags, image, isPublished } = parsed;
 
-    const work = await prisma.work.create({
+    await prisma.work.create({
       data: {
         title: xss(title),
         description: xss(description),
@@ -67,11 +67,12 @@ export async function POST(req: NextRequest) {
         image: image || null,
         isPublished: isPublished !== false,
       },
+      select: { id: true },
     });
 
     revalidateWorkPages();
 
-    return NextResponse.json({ message: "制作事例を作成しました", work });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, { log: "制作事例作成エラー", message: "制作事例の作成に失敗しました" });
   }
@@ -86,12 +87,15 @@ export async function PUT(req: NextRequest) {
     const { id, title, description, category, tags, image, isPublished } = parsed;
 
     // 存在確認
-    const existing = await prisma.work.findUnique({ where: { id } });
+    const existing = await prisma.work.findUnique({
+      where: { id },
+      select: { image: true },
+    });
     if (!existing) {
       return notFoundResponse("指定された制作事例が見つかりません");
     }
 
-    const work = await prisma.work.update({
+    await prisma.work.update({
       where: { id },
       data: {
         title: title ? xss(title) : undefined,
@@ -101,13 +105,14 @@ export async function PUT(req: NextRequest) {
         image: image !== undefined ? (image || null) : undefined,
         isPublished,
       },
+      select: { id: true },
     });
 
     await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
 
     revalidateWorkPages();
 
-    return NextResponse.json({ message: "制作事例を更新しました", work });
+    return successResponse();
   } catch (error) {
     return handleApiError(error, {
       log: "制作事例更新エラー",
@@ -121,13 +126,14 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const prisma = getPrismaClient();
   return deleteManagedResource(req, {
-    findById: (id) => prisma.work.findUnique({ where: { id } }),
-    deleteById: (id) => prisma.work.delete({ where: { id } }),
+    findById: (id) =>
+      prisma.work.findUnique({ where: { id }, select: { image: true } }),
+    deleteById: (id) =>
+      prisma.work.delete({ where: { id }, select: { id: true } }),
     afterDelete: async (existing) => {
       await deleteUnusedUploadedFiles(prisma, collectImageUrls(existing));
       revalidateWorkPages();
     },
-    successMessage: "制作事例を削除しました",
     notFoundMessage: "指定された制作事例が見つかりません",
     errorLog: "制作事例削除エラー",
     errorMessage: "制作事例の削除に失敗しました",

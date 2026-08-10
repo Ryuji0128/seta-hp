@@ -71,7 +71,6 @@ describe("deleteManagedResource", () => {
         findById,
         deleteById,
         afterDelete,
-        successMessage: "削除しました",
         notFoundMessage: "見つかりません",
         errorLog: "削除エラー",
         errorMessage: "削除に失敗しました",
@@ -79,7 +78,7 @@ describe("deleteManagedResource", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ message: "削除しました" });
+    expect(await response.json()).toEqual({ success: true });
     expect(findById).toHaveBeenCalledWith(7);
     expect(deleteById).toHaveBeenCalledWith(7);
     expect(afterDelete).toHaveBeenCalledWith(existing);
@@ -96,7 +95,6 @@ describe("deleteManagedResource", () => {
       {
         findById: vi.fn().mockResolvedValue(null),
         deleteById,
-        successMessage: "削除しました",
         notFoundMessage: "見つかりません",
         errorLog: "削除エラー",
         errorMessage: "削除に失敗しました",

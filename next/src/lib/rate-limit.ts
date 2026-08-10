@@ -43,7 +43,7 @@ export interface RateLimitConfig {
   windowMs: number;
 }
 
-export interface RateLimitResult {
+interface RateLimitResult {
   success: boolean;
   remaining: number;
   resetAt: number;
@@ -164,14 +164,23 @@ export async function checkRateLimit(
 }
 
 export function getClientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-
+  // nginx は X-Real-IP を接続元IP($remote_addr)で常に上書きするため最優先で信頼する。
   const realIp = request.headers.get("x-real-ip");
   if (realIp) {
-    return realIp;
+    return realIp.trim();
+  }
+
+  // X-Forwarded-For の先頭要素はクライアントが自由に詐称でき、per-IP レート制限を無効化できる。
+  // nginx($proxy_add_x_forwarded_for)は実IPを末尾に追記するので、最後の要素を採用する。
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const parts = forwarded
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (parts.length > 0) {
+      return parts[parts.length - 1];
+    }
   }
 
   return "unknown";

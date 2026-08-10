@@ -6,6 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { badRequestResponse } from "@/lib/api-response";
 import type { RateLimitConfig } from "@/lib/rate-limit";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
@@ -34,4 +35,20 @@ export function parseReviewId(raw: string | null): number | null {
   if (!raw) return null;
   const id = Number(raw);
   return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+/**
+ * 書き込みガードとパスパラメータのID検証をまとめて実行する。
+ */
+export async function parseGuardedReviewId(
+  req: Request,
+  params: Promise<{ id: string }>,
+  config?: RateLimitConfig
+): Promise<number | NextResponse> {
+  const blocked = await reviewWriteGuard(req, config);
+  if (blocked) return blocked;
+
+  const { id: rawId } = await params;
+  const id = parseReviewId(rawId);
+  return id ?? badRequestResponse("invalid id");
 }

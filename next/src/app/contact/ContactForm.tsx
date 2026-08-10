@@ -127,25 +127,16 @@ export default function ContactForm({ recaptchaEnabled }: ContactFormProps) {
     setModalContent("loading");
 
     try {
-      if (recaptchaEnabled) {
-        const token = await executeRecaptcha("contact_form");
-        const recaptchaRes = await fetch("/api/recaptcha", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, expectedAction: "contact_form" }),
-        });
-        const recaptchaData = await recaptchaRes.json();
-
-        if (!recaptchaData.success) {
-          setModalContent("error");
-          return;
-        }
-      }
+      // reCAPTCHAトークンは送信リクエスト本体に載せ、サーバー側（/api/email）で検証させる。
+      // 検証と送信処理を1リクエストに束ねることで、チャレンジ通過と送信を確実に結びつける。
+      const recaptchaToken = recaptchaEnabled
+        ? await executeRecaptcha("contact_form")
+        : undefined;
 
       const emailRes = await fetch("/api/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, recaptchaToken }),
       });
       const emailData = await emailRes.json();
 

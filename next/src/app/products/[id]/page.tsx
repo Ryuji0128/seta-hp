@@ -4,6 +4,7 @@ import { Box } from "@mui/material";
 import type { Metadata } from "next";
 import { getPrismaClient } from "@/lib/db";
 import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data";
+import { serializeJsonLd } from "@/lib/json-ld";
 import ProductDetail from "./_components/ProductDetail";
 import RelatedProducts from "./_components/RelatedProducts";
 import SectionContainer from "@/components/SectionContainer";
@@ -89,11 +90,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
       <Box sx={{ bgcolor: "#FFFFFF" }}>
         <SectionContainer sx={{ py: { xs: 4, md: 8 } }}>
