@@ -33,7 +33,7 @@ model Inquiry {
   name      String
   email     String
   phone     String
-  inquiry   String
+  inquiry   String   @db.Text
   userId    String?
   User      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 

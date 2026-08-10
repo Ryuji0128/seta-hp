@@ -16,6 +16,8 @@ import type { Transporter } from "nodemailer";
 import xss from "xss";
 import { parsePagination } from "@/lib/pagination";
 import { CONTACT_EMAIL } from "@/lib/site-config";
+import { isRecaptchaEnabled } from "@/lib/runtime-config";
+import { verifyRecaptchaToken } from "@/lib/recaptcha";
 
 const prisma = getPrismaClient();
 
@@ -47,6 +49,19 @@ export async function POST(req: NextRequest) {
 
     const inquiryData = await parseJsonBody(req);
     if (isErrorResponse(inquiryData)) return inquiryData;
+
+    // 🔹 reCAPTCHA検証（有効時のみ、送信処理と同一ハンドラ内で実施）
+    // フォームUIを経由しない /api/email への直接POSTでスパム・任意宛先への自動返信送信
+    // （踏み台化）を防ぐため、チャレンジ通過をこのハンドラ内で必須化する。
+    if (isRecaptchaEnabled()) {
+      const verification = await verifyRecaptchaToken(inquiryData.recaptchaToken, "contact_form");
+      if (!verification.success) {
+        return NextResponse.json(
+          { success: false, error: "reCAPTCHA 検証に失敗しました。" },
+          { status: verification.status >= 500 ? 500 : 400 }
+        );
+      }
+    }
 
     // 🔹 XSS対策
     const sanitizedData = {

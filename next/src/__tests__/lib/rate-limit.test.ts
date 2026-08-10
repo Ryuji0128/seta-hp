@@ -101,11 +101,12 @@ describe("enforceRateLimit", () => {
 });
 
 describe("getClientIp", () => {
-  it("x-forwarded-forヘッダーの最初のIPを返す", () => {
+  it("x-real-ipが無い場合はx-forwarded-forの末尾（プロキシが追記した実IP）を返す", () => {
+    // 先頭要素はクライアントが詐称できるため採用しない。nginxが末尾に実IPを追記する。
     const request = new Request("http://localhost", {
       headers: { "x-forwarded-for": "203.0.113.1, 10.0.0.1" },
     });
-    expect(getClientIp(request)).toBe("203.0.113.1");
+    expect(getClientIp(request)).toBe("10.0.0.1");
   });
 
   it("x-real-ipヘッダーを返す", () => {
@@ -120,13 +121,13 @@ describe("getClientIp", () => {
     expect(getClientIp(request)).toBe("unknown");
   });
 
-  it("x-forwarded-forがx-real-ipより優先される", () => {
+  it("x-real-ipがx-forwarded-forより優先される（詐称不能な値を信頼する）", () => {
     const request = new Request("http://localhost", {
       headers: {
         "x-forwarded-for": "203.0.113.1",
         "x-real-ip": "192.168.1.1",
       },
     });
-    expect(getClientIp(request)).toBe("203.0.113.1");
+    expect(getClientIp(request)).toBe("192.168.1.1");
   });
 });
